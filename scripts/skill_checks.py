@@ -27,7 +27,10 @@ DESCRIPTION_MAX_CHARS = 650
 
 # Top-level directories of this repository that never ship inside a skill. A path
 # that starts with one of them only resolves in a clone of the repo.
-REPO_ROOT_DIRS = ("docs", "tests", "skills", "dev-prompts", ".github", ".claude-plugin")
+# shared/ is listed because a skill reads its synced copy in references/shared/, never
+# the master.
+REPO_ROOT_DIRS = ("docs", "tests", "skills", "shared", "dev-prompts", ".github",
+                  ".claude-plugin")
 # Repo-root files. A bare mention is allowed only when the mentioning file has a
 # sibling of that name (assets/test-snippets/README.md talking about itself).
 REPO_ROOT_FILES = ("README.md", "CONTRIBUTING.md", "CHANGELOG.md", "CODE_OF_CONDUCT.md",

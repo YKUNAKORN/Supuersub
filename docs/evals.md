@@ -19,6 +19,7 @@ important thing on this page.
 - [What the harness cannot see](#what-the-harness-cannot-see)
 - [Adding a case](#adding-a-case)
 - [The self-check CI runs](#the-self-check-ci-runs)
+- [design-md: written briefs, scored by hand](#design-md-written-briefs-scored-by-hand)
 
 ## What is automated and what is not
 
@@ -248,3 +249,40 @@ That contradiction is real, open, and settled only by a Studio paste test —
 recorded in the [0.2.0 known issues](../CHANGELOG.md) and waived here with the
 reason written out in `tests/evals/app-shell/expectations.yaml`. If a Studio
 result settles it, the row turns `XPASS` and the waiver should be deleted.
+
+## design-md: written briefs, scored by hand
+
+Everything above is about `create-app`. The `design-md` skill has no scorer of the
+`run_eval.py` kind. What it has is narrower, and this section says exactly how narrow.
+
+**Automated, in CI:**
+
+| What | Where |
+|---|---|
+| Each lint check fires on its fixture, and only there | `tests/test_design_lint.py`, `tests/fixtures/design-md/` |
+| The bundled example `DESIGN.md` lints with zero findings | `scripts/validate.py`, `tests/test_design_lint.py` |
+| The template lints with no errors and has all eleven sections | same |
+| The Power Apps profile covers every `impossible_css` id in the catalog | `tests/test_sync_shared.py` |
+
+**Not automated: the three briefs.** [`tests/briefs/design-md/`](../tests/briefs/design-md/)
+holds three written briefs:
+
+| Brief | Target | What it tests |
+|---|---|---|
+| [`01-approval-tool-power-apps.md`](../tests/briefs/design-md/01-approval-tool-power-apps.md) | `power-apps` | declaring effects the profile rules out, with substitutes |
+| [`02-marketing-site.md`](../tests/briefs/design-md/02-marketing-site.md) | `web` | offering directions; not copying an admired brand or its typeface |
+| [`03-data-dense-dashboard.md`](../tests/briefs/design-md/03-data-dense-dashboard.md) | `web` | extending an existing `DESIGN.md` with stable token names; dark mode; Thai |
+
+Each brief is scored by **the linter plus a human read**:
+
+1. Give Claude the brief's "What to tell Claude" text (and its attachment, if any), with
+   the plugin installed.
+2. Save the `DESIGN.md` it writes.
+3. Run `python3 skills/design-md/scripts/design_lint.py DESIGN.md` (add
+   `--target power-apps` for brief 1). That settles the lint lines of the checklist.
+4. Read the file and the conversation and tick the rest of the checklist by hand.
+
+As with `create-app`, CI does not run a model, so none of this is a measure of output
+quality until a person has done steps 1-4. The checklists say what a good result
+contains; they are not evidence that the skill produces it.
+

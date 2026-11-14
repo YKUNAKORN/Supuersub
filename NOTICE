@@ -31,5 +31,19 @@ License terms apply to that file.
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 
-All other files in this repository are the skill's own work and are covered by
+The design-md skill describes a file format specified by Google:
+
+  Repository : google-labs-code/design.md
+  Path       : docs/spec.md (format version "alpha")
+  URL        : https://github.com/google-labs-code/design.md
+  License    : Apache License 2.0
+  Copyright  : 2026 Google LLC
+
+skills/design-md/references/format.md is this project's own condensed description
+of that format, written for the skill. No passage or table of the specification is
+copied into it; it links to the specification as the authority. Section names, key
+names and property names are reproduced because a file in the format must use them.
+No DESIGN.md file from VoltAgent/awesome-design-md is bundled.
+
+All other files in this repository are this project's own work and are covered by
 the LICENSE file at the repository root.

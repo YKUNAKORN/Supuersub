@@ -1,0 +1,11 @@
+{
+  "description": "rounded resolves to a colour, not a dimension.",
+  "target": "web",
+  "expected_exit_code": 1,
+  "expected_verdict_code": "will_fail",
+  "expected_findings": [
+    {
+      "check": "ref-type"
+    }
+  ]
+}

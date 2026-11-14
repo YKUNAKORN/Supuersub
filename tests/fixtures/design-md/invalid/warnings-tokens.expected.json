@@ -1,0 +1,23 @@
+{
+  "description": "Keys out of order, a literal component colour (surface then goes unused), an unlisted component property, an unlisted typography property.",
+  "target": "web",
+  "expected_exit_code": 0,
+  "expected_verdict_code": "unverified",
+  "expected_findings": [
+    {
+      "check": "key-order"
+    },
+    {
+      "check": "component-literal"
+    },
+    {
+      "check": "orphaned-color"
+    },
+    {
+      "check": "component-prop"
+    },
+    {
+      "check": "typography-prop"
+    }
+  ]
+}

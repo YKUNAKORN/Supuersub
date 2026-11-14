@@ -119,10 +119,23 @@ Full walkthrough: [`docs/quickstart.md`](docs/quickstart.md).
 
 Full walkthrough with the lint step: [`docs/quickstart.md`](docs/quickstart.md).
 
+## Before the mockup: a design system (`design-md`)
+
+The plugin's second skill, [`skills/design-md/`](skills/design-md/SKILL.md), runs before
+any mockup exists. It interviews you (at most two rounds of questions), offers two or three
+directions when you have no strong view, and writes a `DESIGN.md`: tokens in YAML front
+matter and eleven sections of prose, in the format Google published for Stitch. It lints
+the file offline with `skills/design-md/scripts/design_lint.py`, which ends in a verdict
+like `pa_lint.py` does. Ask for a "design system", a "style guide" or a "DESIGN.md".
+For a design headed for Power Apps, say so: the skill then keeps to what the `create-app`
+catalog can reproduce and states plainly what it cannot.
+
 ## Repository layout
 
 ```
 <repo>/
+├── shared/                          # files several skills need; copied into each by scripts/sync_shared.py
+├── skills/design-md/                 # interview -> DESIGN.md design system; scripts/design_lint.py
 ├── skills/create-app/                # the skill itself
 │   ├── SKILL.md                      # workflow, control picker, templates, checklist
 │   ├── scripts/                      # run-time tools, shipped inside the skill

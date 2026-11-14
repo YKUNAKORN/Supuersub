@@ -1,0 +1,11 @@
+{
+  "description": "A colour that is not a CSS colour (g is not hex). The component using it is not reported again.",
+  "target": "web",
+  "expected_exit_code": 1,
+  "expected_verdict_code": "will_fail",
+  "expected_findings": [
+    {
+      "check": "color-invalid"
+    }
+  ]
+}

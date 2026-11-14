@@ -1,0 +1,11 @@
+{
+  "description": "No front matter at all; token checks cannot run, section checks still do.",
+  "target": "web",
+  "expected_exit_code": 1,
+  "expected_verdict_code": "will_fail",
+  "expected_findings": [
+    {
+      "check": "frontmatter-missing"
+    }
+  ]
+}

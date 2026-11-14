@@ -685,6 +685,54 @@ if case_dirs:
               "the one thing a reader must not get wrong is that the scored half "
               "and the generated half are different halves")
 
+print("Shared files (scripts/sync_shared.py --check)")
+proc = subprocess.run([sys.executable, str(ROOT / "scripts" / "sync_shared.py"), "--check"],
+                      capture_output=True, text=True, cwd=str(ROOT))
+check(proc.returncode == 0, "every skill's references/shared/ copy matches shared/",
+      proc.stdout.strip().splitlines()[-1] if proc.stdout.strip() else proc.stderr.strip())
+
+print("design-md")
+DM_DIR = ROOT / "skills" / "design-md"
+DM_LINT = DM_DIR / "scripts" / "design_lint.py"
+for rel in ("references/format.md", "references/section-guide.md",
+            "references/interview.md", "references/shared/handoff.md",
+            "references/shared/powerapps-profile.md", "assets/DESIGN.template.md",
+            "assets/example/DESIGN.md", "scripts/design_lint.py"):
+    check((DM_DIR / rel).is_file(), f"skills/design-md/{rel} present")
+
+
+def dm_lint(path: Path, *extra: str):
+    proc = subprocess.run([sys.executable, str(DM_LINT), str(path), "--json", *extra],
+                          capture_output=True, text=True, cwd=str(ROOT))
+    try:
+        return proc.returncode, json.loads(proc.stdout)["files"][0]
+    except (json.JSONDecodeError, KeyError, IndexError):
+        return proc.returncode, {"findings": [], "errors": -1,
+                                 "verdict": proc.stderr.strip()[:200]}
+
+
+if DM_LINT.is_file():
+    code, report = dm_lint(DM_DIR / "assets" / "example" / "DESIGN.md")
+    check(code == 0 and report["errors"] == 0 and not report["findings"],
+          "assets/example/DESIGN.md lints clean (no errors, no warnings)",
+          f"{report['verdict']}: "
+          + ", ".join(sorted({f['check'] for f in report['findings']})))
+    code, report = dm_lint(DM_DIR / "assets" / "DESIGN.template.md")
+    check(report["errors"] == 0, "assets/DESIGN.template.md lints without errors",
+          report["verdict"])
+    check(not any(f["check"] == "section-missing" for f in report["findings"]),
+          "assets/DESIGN.template.md has all eleven sections")
+# The owner's reference DESIGN.md analyses a real company's brand: it must never ship
+# inside a skill or the test suite.
+leaked = [p.relative_to(ROOT).as_posix()
+          for base in (ROOT / "skills", ROOT / "tests") if base.is_dir()
+          for p in base.rglob("*") if p.is_file() and "apple" in p.name.lower()]
+check(not leaked, "no collection DESIGN.md is bundled in skills/ or tests/",
+      f"found: {leaked}")
+briefs = sorted((ROOT / "tests" / "briefs" / "design-md").glob("*.md"))
+check(len(briefs) >= 3, "tests/briefs/design-md/ holds at least three briefs",
+      f"found {len(briefs)}")
+
 print("Plugin metadata")
 plugin_json = ROOT / ".claude-plugin" / "plugin.json"
 market_json = ROOT / ".claude-plugin" / "marketplace.json"

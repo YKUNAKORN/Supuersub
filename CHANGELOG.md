@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Phase 02 of 2.0.0: the `design-md` skill, and a `shared/` folder for files more than
+one skill needs.
+
+### Added (phase 02)
+- **Skill `design-md`** (`skills/design-md/`). Interviews the user (at most two rounds),
+  offers two or three directions when they have no strong view, and writes a
+  `DESIGN.md` in Google's Stitch format as the VoltAgent collection practises it: all
+  tokens in YAML front matter (`version`, `name`, `description`, `colors`,
+  `typography`, `rounded`, `spacing`, `components`) and eleven `##` sections, the
+  spec's eight followed by Responsive Behavior, Iteration Guide and Known Gaps. Two
+  targets: `web`, and `power-apps`, which keeps the design inside what `create-app` can
+  reproduce and declares each ruled-out effect with its substitute. References:
+  `format.md` (own condensed description of the spec, with the lint rules),
+  `section-guide.md`, `interview.md`. Assets: a lint-clean template with all eleven
+  sections and an original example for an invented brand (Mossgate Commons).
+- **`skills/design-md/scripts/design_lint.py`**: offline linter, standard library plus
+  PyYAML, 18 error checks and 13 warning checks with stable ids, `--target power-apps`,
+  `--json`, `--strict`, ending in a verdict like `pa_lint.py`. It is stricter than
+  Google's CLI 0.4.0 where the spec says "error" and the CLI does not check (duplicate
+  `##` headings, `version`, missing `fontWeight`, unit-less `fontSize`) and it reads the
+  prose, which the CLI never does. Every difference is tabled in `format.md` §7.
+- **`shared/`** with `handoff.md` (the hand-off contract, written for a skill to read)
+  and `powerapps-profile.md` (derived from `create-app`'s `controls.yaml`: confirmed
+  controls and properties, `unattempted_controls`, every `impossible_css` entry; each
+  statement names its catalog key). **`scripts/sync_shared.py`** copies them into
+  `skills/<skill>/references/shared/` from a manifest; `--check` fails on a missing,
+  edited or stray copy.
+- Tests: `tests/test_design_lint.py` (25 fixtures under `tests/fixtures/design-md/`,
+  every error check covered by an invalid fixture, every documented check exercised)
+  and `tests/test_sync_shared.py` (fails when a catalog `impossible_css` id, confirmed
+  control or property is missing from the profile).
+- Three written briefs under `tests/briefs/design-md/`, scored by the linter plus a
+  human read, as `docs/evals.md` now states. They are not automated.
+
+### Changed (phase 02)
+- `scripts/validate.py` runs `sync_shared.py --check`, lints the bundled example (must
+  have zero findings) and the template (no errors, all eleven sections), and fails if a
+  collection `DESIGN.md` is found in `skills/` or `tests/`.
+- `scripts/skill_checks.py`: a skill may not point at the repository's `shared/`
+  folder; it reads its synced copy instead.
+- `NOTICE` records the Apache-2.0 DESIGN.md specification the new skill describes.
+  Nothing from it is copied.
+
 Phase 01 of 2.0.0: rename the plugin to `supersub`, rename the skill to `create-app`,
 and move everything the skill runs into the skill's own folder. The conversion
 behaviour is unchanged: the linter prints the same verdicts and `run_eval.py` prints
