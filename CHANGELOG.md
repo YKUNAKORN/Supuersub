@@ -60,6 +60,9 @@ the same table as in 1.0.0.
 - README, CONTRIBUTING, docs, issue template, `LICENSE`, `NOTICE` and `SECURITY.md`:
   names, paths and install commands updated. GitHub URLs are unchanged until the
   repository itself is renamed.
+- `.gitignore`: ignores the owner's `dev-prompts/`, local Claude Code state, the
+  validator's scratch directories, root-level plugin packages (`*.zip`, `*.plugin`,
+  `dist/`), tool caches and `.env` files.
 
 ### Migration from `power-app-yaml@power-app-yaml`
 In Claude Code:
