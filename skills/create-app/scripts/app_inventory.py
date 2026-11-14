@@ -10,7 +10,7 @@ Pasting the export into a conversation to find that out costs thousands of token
 and buries the five facts that matter. This tool answers those questions in about
 a page.
 
-    python scripts/app_inventory.py SRC [SRC...] [--json] [--names] [--max-bytes N]
+    python3 scripts/app_inventory.py SRC [SRC...] [--json] [--names] [--max-bytes N]
 
 SRC is a folder of `.pa.yaml` files (the `Src\\` folder of an unpacked app), a single
 `.pa.yaml`, or an `.msapp` (unzipped in memory, `src/**/*.pa.yaml` only).

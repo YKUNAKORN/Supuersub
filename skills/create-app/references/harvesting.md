@@ -1,6 +1,6 @@
 # Harvesting the control catalog from real Studio exports
 
-Phase 1 grew [`controls.yaml`](../skills/power-app-yaml/references/controls.yaml) by hand:
+Phase 1 grew [`controls.yaml`](controls.yaml) by hand:
 one paste test, one row. That works, but it is slow and it only ever covers controls
 somebody remembered to test.
 
@@ -9,6 +9,9 @@ This page describes the faster route. Power Apps Studio can write your app out a
 strongest evidence available that a control type and a property name are real — nobody
 guessed them, the product emitted them. `scripts/harvest_controls.py` reads them and
 turns them into catalog entries.
+
+Every path on this page is relative to this skill's folder (the one holding
+`SKILL.md`); run the commands from there.
 
 - [The absence caveat](#the-absence-caveat-read-this-first)
 - [Route A — Power Platform CLI](#route-a--power-platform-cli-pac)
@@ -50,7 +53,7 @@ So the harvester only ever makes positive claims:
   generated line says so in a comment.
 
 The same caveat is pinned at the top of
-[`controls.yaml`](../skills/power-app-yaml/references/controls.yaml) and printed by
+[`controls.yaml`](controls.yaml) and printed by
 `harvest_controls.py --report`.
 
 ---
@@ -186,7 +189,7 @@ The harvester opens `.msapp` archives itself and reads `src/**/*.pa.yaml` straig
 of them:
 
 ```bash
-python scripts/harvest_controls.py ./MyApp.msapp --report
+python3 scripts/harvest_controls.py ./MyApp.msapp --report
 ```
 
 ---
@@ -206,7 +209,7 @@ the files, point the harvester at them.
 ## Running the harvester
 
 ```
-python scripts/harvest_controls.py SRC [SRC...] [--out FILE] [--merge] [--report]
+python3 scripts/harvest_controls.py SRC [SRC...] [--out FILE] [--merge] [--report]
                                    [--catalog PATH] [--dry-run] [--date YYYY-MM-DD]
 ```
 
@@ -228,7 +231,7 @@ conflicts.
 ### Step 1 — look before you leap
 
 ```bash
-python scripts/harvest_controls.py ./harvest/myapp/src --report
+python3 scripts/harvest_controls.py ./harvest/myapp/src --report
 ```
 
 The report has four parts:
@@ -251,7 +254,7 @@ The report has four parts:
 ### Step 2 — see the fragment
 
 ```bash
-python scripts/harvest_controls.py ./harvest/myapp/src --out /tmp/fragment.yaml
+python3 scripts/harvest_controls.py ./harvest/myapp/src --out /tmp/fragment.yaml
 ```
 
 The fragment is a `controls.yaml`-shaped block with `evidence: studio-export` and
@@ -261,7 +264,7 @@ result.
 ### Step 3 — merge
 
 ```bash
-python scripts/harvest_controls.py ./harvest/myapp/src --merge
+python3 scripts/harvest_controls.py ./harvest/myapp/src --merge
 ```
 
 The merge is deliberately conservative:
@@ -282,11 +285,11 @@ The merge is deliberately conservative:
 
 ### Worked example
 
-The three bundled examples under `skills/power-app-yaml/assets/examples/` are real
+The three bundled examples under `assets/examples/` are real
 paste-tested screens, so they make a good dry run:
 
 ```bash
-python scripts/harvest_controls.py skills/power-app-yaml/assets/examples/ --report
+python3 scripts/harvest_controls.py assets/examples/ --report
 ```
 
 That reproduces the eight control types the catalog already carries
@@ -307,20 +310,20 @@ truth.
 In a git checkout:
 
 ```bash
-python scripts/harvest_controls.py ./harvest/myapp/src --merge
-git diff -- skills/power-app-yaml/references/controls.yaml
+python3 scripts/harvest_controls.py ./harvest/myapp/src --merge
+git diff -- references/controls.yaml
 ```
 
 Without git, or to see the plan first:
 
 ```bash
 # what would change, nothing written
-python scripts/harvest_controls.py ./harvest/myapp/src --merge --dry-run
+python3 scripts/harvest_controls.py ./harvest/myapp/src --merge --dry-run
 
 # or diff by hand
-cp skills/power-app-yaml/references/controls.yaml /tmp/controls.before.yaml
-python scripts/harvest_controls.py ./harvest/myapp/src --merge
-diff -u /tmp/controls.before.yaml skills/power-app-yaml/references/controls.yaml
+cp references/controls.yaml /tmp/controls.before.yaml
+python3 scripts/harvest_controls.py ./harvest/myapp/src --merge
+diff -u /tmp/controls.before.yaml references/controls.yaml
 ```
 
 Checklist for the diff:
@@ -333,16 +336,13 @@ Checklist for the diff:
 - [ ] Every new control entry has a `source:` naming the file it came from.
 - [ ] If a new control's base name is still listed in `unattempted_controls:`, remove
       it there — the merge prints a `! todo` line reminding you, and
-      `scripts/validate.py` fails if the two lists overlap.
-- [ ] `confirmed-controls.md` updated to match. `scripts/validate.py` fails if a
+      the plugin repository's validator fails if the two lists overlap.
+- [ ] `confirmed-controls.md` updated to match. The plugin repository's validator fails if a
       control is in one file and not the other; the two must move in the same commit.
 
-Then run the repo checks:
-
-```bash
-python scripts/validate.py
-python -m unittest discover tests
-```
+If the change is going back to the plugin's source repository, run that repository's
+validator and test suite from its root before you open the pull request; its
+contributing guide lists the commands.
 
 An entry merged from an export carries `evidence: studio-export`, which is deliberately
 weaker than `studio-tested`. Promoting it to `studio-tested` requires an actual isolated
@@ -356,7 +356,7 @@ A harvest is worth more to everyone else than to you. Two ways to share it:
 
 **1. Open a Control test report issue.** Use the
 [Control test report](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=control-report.yml)
-template (`.github/ISSUE_TEMPLATE/control-report.yml`). Map the harvest onto its fields:
+template. Map the harvest onto its fields:
 
 | Template field | From your harvest |
 |---|---|
@@ -374,8 +374,8 @@ into a blank screen, and report what actually happened. That one extra minute is
 turns `studio-export` into `studio-tested`.
 
 **2. Open a PR.** Run `--merge`, review the diff, update
-`confirmed-controls.md` to match, add a CHANGELOG entry, and open a pull request. See
-[CONTRIBUTING.md](../CONTRIBUTING.md). Do **not** hand-promote anything to
+`confirmed-controls.md` to match, add a CHANGELOG entry, and open a pull request, as the
+repository's contributing guide describes. Do **not** hand-promote anything to
 `studio-tested` in that PR without a Studio version to cite.
 
 Please don't attach a real app's `.msapp` or `.pa.yaml` to a public issue — they carry
@@ -406,7 +406,7 @@ Worth being blunt about the limits, so nobody over-reads a green run:
 ## Open question: does Microsoft publish a list of control ids?
 
 **Yes — and it is now mirrored here as
-[`control-ids-candidate.yaml`](../skills/power-app-yaml/references/control-ids-candidate.yaml),
+[`control-ids-candidate.yaml`](control-ids-candidate.yaml),
 with every entry marked `evidence: unverified`.** Recorded here so nobody spends another
 afternoon looking.
 
@@ -454,7 +454,7 @@ mirror so that a control it has never seen gets
 (check id `L2.candidate-control-type`) instead of the blunter "unverified control type"
 (`L2.unverified-control-type`). Same severity, same `# UNVERIFIED` tagging requirement,
 same paste-test snippet. Nothing in the candidate list is ever promoted into
-`controls.yaml` automatically, and `scripts/validate.py` fails if any entry there is
+`controls.yaml` automatically, and the plugin repository's validator fails if any entry there is
 marked as anything other than `unverified`.
 
 **Two smaller lists in the same schema**, worth knowing about but not mirrored, because

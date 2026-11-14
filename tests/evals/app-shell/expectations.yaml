@@ -57,7 +57,7 @@ catalog:
 reference:
   # Not model output. A hand-written screen that stands in for a good answer, so the
   # scorer itself can be exercised in CI without running a model. See docs/evals.md.
-  output: ../../../skills/power-app-yaml/assets/examples/example-app-shell.yaml
+  output: ../../../skills/create-app/assets/examples/example-app-shell.yaml
   known_deviations:
     - check: lint.verdict
       reason: >-

@@ -7,6 +7,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Phase 01 of 2.0.0: rename the plugin to `supersub`, rename the skill to `create-app`,
+and move everything the skill runs into the skill's own folder. The conversion
+behaviour is unchanged: the linter prints the same verdicts and `run_eval.py` prints
+the same table as in 1.0.0.
+
+### Changed -- BREAKING
+- **Plugin renamed `power-app-yaml` -> `supersub`**, marketplace renamed the same way,
+  version set to `2.0.0`. A plugin's `name` is its install identifier, so every
+  existing install of `power-app-yaml@power-app-yaml` stops resolving. `supersub` will
+  hold five skills; this phase ships the first.
+- **Skill renamed `power-app-yaml` -> `create-app`** (`skills/create-app/`, frontmatter
+  `name: create-app`). In Claude Code it runs as `/supersub:create-app`. Every trigger
+  phrase in the description is kept.
+- `.claude-plugin/marketplace.json`: top-level `description` added; `metadata`
+  (`description`, `pluginRoot: "."`) removed, because `pluginRoot` only affects bare
+  source names and has no effect next to `"source": "."`. A `renames` map
+  (`"power-app-yaml": "supersub"`) records the rename as Claude Code's documented
+  migration path for a renamed plugin entry.
+
+### Moved
+- `scripts/pa_lint.py`, `scripts/app_inventory.py`, `scripts/harvest_controls.py` ->
+  `skills/create-app/scripts/`, and `docs/harvesting.md` ->
+  `skills/create-app/references/harvesting.md`. **Why:** `SKILL.md` told Claude to run
+  `scripts/pa_lint.py` and linked to `../../README.md` and `../../docs/harvesting.md`.
+  Those paths exist only in a clone of this repository. Installed as a plugin the
+  working directory is the user's project, and in chat only the skill's own folder is
+  copied into the sandbox, so the lint step -- which the whole method depends on --
+  could not be relied on outside this repo. The scripts now find their data through
+  their own location (`Path(__file__).resolve().parent.parent`), so they work from any
+  directory. `scripts/run_eval.py` and `scripts/validate.py` stay at the repo root:
+  they are maintainer tools and never run inside an installed skill.
+
+### Changed
+- `SKILL.md` calls scripts as `python3 ${CLAUDE_SKILL_DIR}/scripts/<file>.py` and says
+  that every path is relative to the skill folder. The `README.md` rationale link is
+  gone and the harvesting link points at `references/harvesting.md`. Still under the
+  8,192-byte budget (8,178).
+- `references/*`, `assets/test-snippets/README.md` and the snippet `# Record` headers no
+  longer point outside the skill (`docs/test-plan.md`, `CONTRIBUTING.md`,
+  `scripts/validate.py`, `../../../docs/...`); they name those things in words instead.
+  Comments only -- no catalog entry, pattern or snippet body changed.
+- `scripts/validate.py` runs a new set of checks over **every** folder under
+  `skills/` (in `scripts/skill_checks.py`): folder name equals frontmatter `name` and is
+  kebab-case and at most 64 characters; description 40-650 characters; `SKILL.md` at
+  most 8,192 bytes; no path in `SKILL.md`, `references/**` or `assets/**/*.md` leaves the
+  skill; every `scripts/` and `references/` file `SKILL.md` names exists in the skill.
+  Plus plugin-level checks: no top-level `bin/`, no root `CLAUDE.md`, `plugin.json` name
+  is `supersub` and matches the marketplace entry. Tests: `tests/test_skill_checks.py`.
+- The CHANGELOG check accepts a version that is newer than every released section and
+  whose entries are still under `[Unreleased]`.
+- README, CONTRIBUTING, docs, issue template, `LICENSE`, `NOTICE` and `SECURITY.md`:
+  names, paths and install commands updated. GitHub URLs are unchanged until the
+  repository itself is renamed.
+
+### Migration from `power-app-yaml@power-app-yaml`
+In Claude Code:
+
+```bash
+/plugin uninstall power-app-yaml@power-app-yaml
+/plugin marketplace remove power-app-yaml
+/plugin marketplace add YKUNAKORN/power-app-yaml
+/plugin install supersub@supersub
+```
+
+The `renames` entry only maps the plugin name inside one marketplace; the marketplace
+itself is also renamed, so remove and re-add it rather than relying on the automatic
+migration. If you copied the skill folder by hand, replace `skills/power-app-yaml/`
+with `skills/create-app/`. Anything that called `scripts/pa_lint.py` from a clone now
+calls `skills/create-app/scripts/pa_lint.py`.
+
 ## [1.0.0] - 2026-09-11
 
 Phase 5: make it possible to tell whether a change to the skill made output better or

@@ -33,7 +33,7 @@ wrong.
 
 ## Reference output
 
-`skills/power-app-yaml/assets/examples/example-form.yaml` — 87 controls, screen
+`skills/create-app/assets/examples/example-form.yaml` — 87 controls, screen
 `Height: =2032`. **Not model output**: a hand-written screen used so the scorer
 can be exercised in CI without running a model. The mockup in this directory was
 written to match it field for field (16 inputs, 5 selects, 5 cards), so the ranges

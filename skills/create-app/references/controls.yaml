@@ -13,7 +13,7 @@
 # support" anything, and there is no such list to add one to. `scripts/harvest_controls.py`
 # enforces the same rule mechanically: it never writes to `properties_unverified`, never
 # removes an entry, and its "never exercised by this export" report section means
-# UNTESTED, not UNSUPPORTED. See docs/harvesting.md.
+# UNTESTED, not UNSUPPORTED. See references/harvesting.md.
 #
 # The mirror image of the caveat still holds, and is what makes the file useful:
 # anything absent from here is UNVERIFIED, so do not use it without a paste test.
@@ -23,17 +23,18 @@
 # `confirmed-controls.md` is the human-readable view of the same facts; when the two
 # disagree, fix both in the same commit.
 #
-# Consumed by `scripts/pa_lint.py` (layer L2) and cross-checked by `scripts/validate.py`.
+# Consumed by `scripts/pa_lint.py` (layer L2) and cross-checked by the plugin repository's
+# validator.
 #
-# RULES FOR EDITING (see CONTRIBUTING.md):
+# RULES FOR EDITING (the repository's contributing guide has the full process):
 #   - Never move a property from `properties_unverified` to `properties_confirmed`
 #     without a Power Apps Studio test to cite in `source`.
 #   - Never add a control or property by analogy with HTML/CSS or with another
 #     Power Apps control. Evidence or nothing.
 #   - Anything absent from this file is UNVERIFIED by definition.
 #   - Growing this file from a real Studio export is the preferred route:
-#     `python scripts/harvest_controls.py <export> --report --merge`
-#     (docs/harvesting.md). Review the diff before committing; the tool reports
+#     `python3 scripts/harvest_controls.py <export> --report --merge`
+#     (references/harvesting.md). Review the diff before committing; the tool reports
 #     conflicts, it never resolves them.
 
 schema_version: 1

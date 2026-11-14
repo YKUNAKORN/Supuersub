@@ -1,8 +1,8 @@
-# power-app-yaml
+# supersub
 
 [![validate](https://github.com/YKUNAKORN/power-app-yaml/actions/workflows/validate.yml/badge.svg)](https://github.com/YKUNAKORN/power-app-yaml/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Claude skill](https://img.shields.io/badge/Claude-skill-8A2BE2)](skills/power-app-yaml/SKILL.md)
+[![Claude skill](https://img.shields.io/badge/Claude-skill-8A2BE2)](skills/create-app/SKILL.md)
 
 A Claude **skill** that turns an HTML/CSS mockup or a UI screenshot into **Power Apps Canvas
 source code** (`.pa.yaml`, source schema v3.0) that pastes straight into Power Apps Studio via
@@ -92,12 +92,12 @@ has to be resolved into numbers by arithmetic, once, at authoring time.
 
 ```bash
 /plugin marketplace add YKUNAKORN/power-app-yaml
-/plugin install power-app-yaml@power-app-yaml
+/plugin install supersub@supersub
 ```
 
 ### As a plain skill folder
 
-Copy **`skills/power-app-yaml/`** (the folder containing `SKILL.md`) into wherever your Claude setup
+Copy **`skills/create-app/`** (the folder containing `SKILL.md`) into wherever your Claude setup
 loads skills from.
 
 Full walkthrough: [`docs/quickstart.md`](docs/quickstart.md).
@@ -107,7 +107,7 @@ Full walkthrough: [`docs/quickstart.md`](docs/quickstart.md).
 1. Give Claude an HTML mockup (Google Stitch / v0 / Figma export) or a screenshot and ask it to
    "convert this to pa.yaml".
 2. Claude reads the catalog, picks the matching patterns, derives the coordinates, writes
-   the full `.pa.yaml`, **lints it offline** (`scripts/pa_lint.py`), and hands it back with
+   the full `.pa.yaml`, **lints it offline** (`skills/create-app/scripts/pa_lint.py`), and hands it back with
    the verdict and any unverified items spelled out.
 3. In Power Apps Studio, on a **blank screen**, use **Paste code** and paste the whole file.
    If the hand-off came with isolated paste-test snippets, paste those on a scratch screen
@@ -122,10 +122,15 @@ Full walkthrough with the lint step: [`docs/quickstart.md`](docs/quickstart.md).
 ## Repository layout
 
 ```
-power-app-yaml/
-├── skills/power-app-yaml/            # the skill itself
+<repo>/
+├── skills/create-app/                # the skill itself
 │   ├── SKILL.md                      # workflow, control picker, templates, checklist
+│   ├── scripts/                      # run-time tools, shipped inside the skill
+│   │   ├── pa_lint.py                # offline .pa.yaml verifier (L0-L3) — run before handing a file over
+│   │   ├── app_inventory.py          # one-page summary of an existing app (.pa.yaml folder / .msapp)
+│   │   └── harvest_controls.py       # grow the catalog from real Studio exports (.pa.yaml / .msapp)
 │   ├── references/
+│   │   ├── harvesting.md             # how to grow the catalog from a Studio export
 │   │   ├── controls.yaml             # the catalog, machine-readable — source of truth
 │   │   ├── confirmed-controls.md     # the same catalog, human-readable
 │   │   ├── layout-mapping.md         # HTML/CSS geometry → absolute X/Y/Width/Height
@@ -142,12 +147,10 @@ power-app-yaml/
 │           ├── example-form.yaml         # multi-section form: TextInput + DropDown in cards
 │           └── example-card-grid.yaml    # selectable card/checklist grid with a footer
 ├── .claude-plugin/                   # plugin + marketplace manifests
-├── docs/                             # quickstart, troubleshooting, harvesting, test plan, evals
-├── scripts/
-│   ├── pa_lint.py                    # offline .pa.yaml verifier (L0-L3) — run before handing a file over
+├── docs/                             # quickstart, troubleshooting, test plan, evals
+├── scripts/                          # maintainer tools; never run inside an installed skill
 │   ├── run_eval.py                   # score a produced .pa.yaml against an eval case
-│   ├── app_inventory.py              # one-page summary of an existing app (.pa.yaml folder / .msapp)
-│   ├── harvest_controls.py           # grow the catalog from real Studio exports (.pa.yaml / .msapp)
+│   ├── skill_checks.py               # portability checks applied to every skill
 │   └── validate.py                   # repo sanity checks (run before a PR)
 ├── tests/
 │   ├── fixtures/                     # linter fixtures with .expected.json sidecars
@@ -163,11 +166,11 @@ to an example slice only when a pattern doesn't cover the case.
 
 ## Verify before you paste
 
-`scripts/pa_lint.py` is the step that stops the user acting as the compiler. It runs
+`skills/create-app/scripts/pa_lint.py` is the step that stops the user acting as the compiler. It runs
 offline, in four layers, and ends in a verdict:
 
 ```bash
-python scripts/pa_lint.py myscreen.pa.yaml
+python skills/create-app/scripts/pa_lint.py myscreen.pa.yaml
 ```
 
 | Layer | Severity | Checks | Studio equivalent |
@@ -200,7 +203,7 @@ there, and the palette gets hard-coded a second time next to the theme variables
 subtly wrong.
 
 ```bash
-python scripts/app_inventory.py <Src-folder-or-.msapp>
+python skills/create-app/scripts/app_inventory.py <Src-folder-or-.msapp>
 ```
 
 About a page: screens in editor order, controls per screen with nesting depth, the
@@ -210,14 +213,14 @@ taken. The export itself is tens of thousands of tokens of property values nobod
 going to read, so the tool has a hard byte budget and drops to coarser detail rather
 than overflowing it; `--json` and `--names` are the unbudgeted escape hatches. The
 procedure that uses it is
-[`references/extend-existing-app.md`](skills/power-app-yaml/references/extend-existing-app.md).
+[`references/extend-existing-app.md`](skills/create-app/references/extend-existing-app.md).
 
 ## The paste-test kit
 
 Gallery, Form, DataTable, Toggle, DatePicker, ComboBox, Slider, Timer, CheckBox,
 HtmlText and the modern layout containers are **not** in the catalog, and this repo has
 no evidence about any of them. Guessing is what the project exists to avoid, so instead
-[`assets/test-snippets/`](skills/power-app-yaml/assets/test-snippets/) holds one
+[`assets/test-snippets/`](skills/create-app/assets/test-snippets/) holds one
 single-control file per control, each a complete `Screens:` wrapper with one property per
 line so a failure can be bisected by deleting lines. Results go in
 [`docs/test-plan.md`](docs/test-plan.md), and only a real Studio result puts a control in
@@ -231,7 +234,7 @@ to insert a container in Studio and read its own code back.
 
 ## Keep the catalog honest
 
-Everything in `skills/power-app-yaml/references/confirmed-controls.md` was confirmed by pasting into a
+Everything in `skills/create-app/references/confirmed-controls.md` was confirmed by pasting into a
 specific version of Power Apps Studio. Studio pins control versions, so a newer Studio may emit
 different version numbers (it will warn and auto-substitute). **When your own Studio confirms or
 corrects something, update your copy of the catalog** — and, ideally,
@@ -240,18 +243,18 @@ everyone benefits. Anything not in the catalog is treated as unverified by desig
 
 **Grow the catalog from a real export.** If you can download your app's source — `pac canvas
 download -d <dir>`, or just unzip the `.msapp` — the `.pa.yaml` files under `src/` are Studio's own
-output, and `scripts/harvest_controls.py` turns them into catalog entries:
+output, and `skills/create-app/scripts/harvest_controls.py` turns them into catalog entries:
 
 ```bash
-python scripts/harvest_controls.py ./myapp/src --report   # what's new, what's untested
-python scripts/harvest_controls.py ./myapp/src --merge    # fold it in, then review the diff
+python skills/create-app/scripts/harvest_controls.py ./myapp/src --report   # what's new, what's untested
+python skills/create-app/scripts/harvest_controls.py ./myapp/src --merge    # fold it in, then review the diff
 ```
 
 One caveat governs all of it, and Microsoft documents it: *only properties that differ from the
 default values are serialized.* **A property missing from an export is not evidence that the
 control lacks it** — so the harvester only ever makes positive claims, and never writes a "does not
 support" list. Full walkthrough, both extraction routes, and the review checklist:
-[`docs/harvesting.md`](docs/harvesting.md).
+[`references/harvesting.md`](skills/create-app/references/harvesting.md).
 
 ## Telling better output from worse
 
@@ -287,7 +290,7 @@ by hand, not generated — and the tool says so on every run.
 Some CSS effects have no verified Power Fx equivalent: box shadows, `backdrop-blur`, CSS
 transitions/animations, `group-hover`, true one-sided borders, and any non-`Segoe UI` font. The
 full list is `impossible_css` in
-[`controls.yaml`](skills/power-app-yaml/references/controls.yaml). The skill will tell you plainly
+[`controls.yaml`](skills/create-app/references/controls.yaml). The skill will tell you plainly
 and suggest the closest practical substitute (e.g. a thin `Rectangle` for a left border) rather than
 faking a property or silently dropping the requirement — and the `impossible-effects` eval case
 exists to check that it actually does.
@@ -304,7 +307,7 @@ The most valuable contribution is a real Studio test result. See
 
 ## Attribution
 
-`skills/power-app-yaml/references/schema-v3.pa.yaml` is a copy of Microsoft's official Power Apps
+`skills/create-app/references/schema-v3.pa.yaml` is a copy of Microsoft's official Power Apps
 `pa.yaml` **v3.0** schema, from
 [`microsoft/PowerApps-Tooling`](https://github.com/microsoft/PowerApps-Tooling) (MIT-licensed,
 © Microsoft Corporation). It is included unmodified for offline reference. See [`NOTICE`](NOTICE).

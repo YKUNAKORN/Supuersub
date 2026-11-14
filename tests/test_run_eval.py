@@ -24,7 +24,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 RUNNER = ROOT / "scripts" / "run_eval.py"
 EVALS = ROOT / "tests" / "evals"
-EXAMPLES = ROOT / "skills" / "power-app-yaml" / "assets" / "examples"
+EXAMPLES = ROOT / "skills" / "create-app" / "assets" / "examples"
 
 REQUIRED_CASES = {
     "app-shell", "multi-section-form", "card-grid",
@@ -112,7 +112,7 @@ class CaseFixtureTests(unittest.TestCase):
         otherwise the case is testing an effect this repo has no position on."""
         import yaml
         catalog = yaml.safe_load(
-            (ROOT / "skills" / "power-app-yaml" / "references" / "controls.yaml")
+            (ROOT / "skills" / "create-app" / "references" / "controls.yaml")
             .read_text(encoding="utf-8-sig"))
         known = {e["id"] for e in catalog.get("impossible_css") or []}
         spec = yaml.safe_load(

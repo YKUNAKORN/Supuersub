@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping make `power-app-yaml` better. The single most valuable
+Thanks for helping make `supersub` better. The single most valuable
 contribution is a **real Power Apps Studio test result** — this skill lives or
 dies by whether its control catalog matches what Studio actually accepts.
 
@@ -8,7 +8,7 @@ dies by whether its control catalog matches what Studio actually accepts.
 
 | You have… | Do this |
 |---|---|
-| A control/property that Studio **accepted** or **rejected**, and the catalog is wrong or silent about it | Open a [Control test report](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=control-report.yml) issue, then (optionally) a PR editing `skills/power-app-yaml/references/confirmed-controls.md` |
+| A control/property that Studio **accepted** or **rejected**, and the catalog is wrong or silent about it | Open a [Control test report](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=control-report.yml) issue, then (optionally) a PR editing `skills/create-app/references/confirmed-controls.md` |
 | A `.pa.yaml` the skill produced that failed to paste | Open a [Bug report](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=bug_report.yml) with the file and the exact Studio error |
 | An idea for the workflow, templates, or a new example screen | Open a [Feature request](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=feature_request.yml) |
 
@@ -26,7 +26,7 @@ Always include:
 For the twelve controls the catalog is silent about — Gallery, Form, DataTable, Toggle,
 DatePicker, ComboBox, Slider, Timer, CheckBox, HtmlText and the modern layout containers
 — that snippet is already written for you in
-[`skills/power-app-yaml/assets/test-snippets/`](skills/power-app-yaml/assets/test-snippets/),
+[`skills/create-app/assets/test-snippets/`](skills/create-app/assets/test-snippets/),
 one file per control, one property per line so a failure can be bisected by deleting
 lines. [`docs/test-plan.md`](docs/test-plan.md) is the results table and explains exactly
 what to change in `controls.yaml` for each kind of outcome.
@@ -43,7 +43,7 @@ The catalog lives in **two files that must be edited together**:
 
 | File | Role |
 |---|---|
-| `references/controls.yaml` | machine-readable source of truth — what `scripts/pa_lint.py` reads |
+| `references/controls.yaml` | machine-readable source of truth — what `skills/create-app/scripts/pa_lint.py` reads |
 | `references/confirmed-controls.md` | the human-readable view of the same facts |
 
 `scripts/validate.py` fails if a control appears in one file but not the other, so a PR
@@ -54,7 +54,7 @@ Two other files sit alongside them:
 | File | Role |
 |---|---|
 | `references/control-ids-candidate.yaml` | Microsoft's first-party control-id enum, mirrored. Every entry is `evidence: unverified` and CI enforces that. It only improves a linter message; nothing in it may be promoted to `controls.yaml` without a Studio test. |
-| `scripts/harvest_controls.py` | Grows `controls.yaml` from a real Studio export. See [`docs/harvesting.md`](docs/harvesting.md). |
+| `skills/create-app/scripts/harvest_controls.py` | Grows `controls.yaml` from a real Studio export. See [`references/harvesting.md`](skills/create-app/references/harvesting.md). |
 
 If you grew the catalog from an export rather than a paste test, say so in the PR and leave the
 entry at `evidence: studio-export`. And remember the caveat that governs harvesting: Studio only
@@ -87,7 +87,7 @@ pip install pyyaml jsonschema
 To check a `.pa.yaml` you are working on:
 
 ```bash
-python scripts/pa_lint.py path/to/screen.pa.yaml
+python skills/create-app/scripts/pa_lint.py path/to/screen.pa.yaml
 ```
 
 ## Changing SKILL.md, the catalog, or the patterns

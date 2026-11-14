@@ -1,38 +1,40 @@
-# SNIPPET   htmltext.pa.yaml
-# What      An HTML text control rendering a small inline fragment.
-# Control   HtmlText   (no @version written -- see below)
+# SNIPPET   datepicker.pa.yaml
+# What      A date picker with a default date and a year range.
+# Control   DatePicker   (no @version written -- see below)
 # Evidence  UNVERIFIED. Never pasted into Power Apps Studio by this repo.
 #           property names: Microsoft's published control reference, mirrored at
 #           MicrosoftDocs/powerapps-docs (retrieved 2026-09-11)
-#           control id is NOT in Microsoft's 1P control-id enum either, so the id
-#           itself is part of what this test checks.
+#           control id appears in Microsoft's 1P control-id enum -- see
+#           references/control-ids-candidate.yaml. NOT evidence.
 # Test      Paste this WHOLE file onto a blank screen in Studio (Paste code).
 # Bisect    If it fails: delete ONE line below the bisect marker, paste again,
 #           repeat. The last line you deleted is the one Studio rejects.
-# Record    Put the result in docs/test-plan.md.
+# Record    Put the result in the paste-test results table (test-plan.md).
 #
 # No @version is written because this repo has no evidence for one, and an
 # invented version is exactly the guess this project exists to prevent. If
 # Studio rejects the bare id, insert the control from the Studio toolbar, select
 # it, and read the real id off its own code -- that costs one minute and settles
 # both the id and the version.
-# The casing of the id is itself unverified. If HtmlText fails, try HTMLText
-# and HtmlViewer before concluding the control cannot be pasted.
+# Format is left out on purpose: it takes an enum (DateTimeFormat.*), which
+# would layer a second guess on the first. Add it only after the rest passes.
 Screens:
   PasteTest:
     Children:
-      - ctlHtmlText:  # UNVERIFIED -- control type not paste-tested by this repo
-          Control: HtmlText
+      - ctlDatePicker:  # UNVERIFIED -- control type not paste-tested by this repo
+          Control: DatePicker
           Properties:
             # -- geometry: confirmed on every control this repo has tested --
             X: =40
             Y: =40
-            Width: =400
-            Height: =120
+            Width: =240
+            Height: =44
             # -- UNVERIFIED below here: delete one line at a time --
-            HtmlText: ="<b>Bold</b> and <i>italic</i>"
-            AutoHeight: =false
-            Color: =RGBA(65, 71, 84, 1)
+            DefaultDate: =Today()
+            StartYear: =2020
+            EndYear: =2030
+            IsEditable: =true
+            InputTextPlaceholder: ="Pick a date"
+            IconBackground: =RGBA(255, 255, 255, 1)
             Size: =14
-            PaddingLeft: =8
-            PaddingTop: =8
+            OnChange: =Notify("date changed")

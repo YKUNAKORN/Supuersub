@@ -22,7 +22,7 @@
 #           if it is somehow unavailable should you fall back to pasting guesses.
 # Bisect    Put the real id on the Control: line, then delete ONE property line at a
 #           time below the bisect marker.
-# Record    Put the id, the version and the Variant (if any) in docs/test-plan.md.
+# Record    Put the id, the version and the Variant (if any) in the paste-test results table (test-plan.md).
 #           Once a real result exists, the entry goes into controls.yaml -- not before.
 #
 # The placeholder id is spelled so it is impossible to mistake for a real one while

@@ -7,7 +7,7 @@ is downloaded with `pac canvas download` or unpacked from an `.msapp`. Those fil
 the strongest evidence available that a control type and a property name are real,
 because Studio itself wrote them.
 
-    python scripts/harvest_controls.py SRC [SRC...] [--out FILE] [--merge] [--report]
+    python3 scripts/harvest_controls.py SRC [SRC...] [--out FILE] [--merge] [--report]
 
 SRC is a `.pa.yaml` file, a folder containing them, or an `.msapp` (unzipped in memory).
 
@@ -50,8 +50,8 @@ except ImportError:  # pragma: no cover
     print("ERROR: PyYAML is not installed. Run: pip install pyyaml", file=sys.stderr)
     raise SystemExit(1)
 
-ROOT = Path(__file__).resolve().parent.parent
-SKILL_REFS = ROOT / "skills" / "power-app-yaml" / "references"
+SKILL_DIR = Path(__file__).resolve().parent.parent  # this skill's own folder
+SKILL_REFS = SKILL_DIR / "references"
 DEFAULT_CATALOG = SKILL_REFS / "controls.yaml"
 
 # Folder walks pick these up. Studio writes `.pa.yaml`; the bundled examples under

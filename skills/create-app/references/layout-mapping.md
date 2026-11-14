@@ -655,4 +655,4 @@ Screens:
                   Height: =19
 ```
 
-`scripts/validate.py` lints this block on every run, so it cannot drift out of date.
+The plugin repository's validator lints this block on every run, so it cannot drift out of date.

@@ -65,7 +65,7 @@ except ImportError:  # pragma: no cover
     raise SystemExit(2)
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT / "skills" / "create-app" / "scripts"))
 
 import pa_lint  # noqa: E402  (needs the sys.path line above)
 

@@ -1,17 +1,17 @@
 {
-  "name": "power-app-yaml",
+  "name": "supersub",
   "owner": {
     "name": "YKUNAKORN",
     "url": "https://github.com/YKUNAKORN"
   },
-  "metadata": {
-    "description": "A Claude skill that converts HTML/CSS mockups and UI screenshots into paste-ready Power Apps Canvas YAML.",
-    "pluginRoot": "."
-  },
+  "description": "supersub: Claude skills that take a Power Platform app from design system to mockups, Power Apps Canvas YAML, SharePoint lists and Power Automate flows.",
   "plugins": [
     {
-      "name": "power-app-yaml",
+      "name": "supersub",
       "source": "."
     }
-  ]
+  ],
+  "renames": {
+    "power-app-yaml": "supersub"
+  }
 }

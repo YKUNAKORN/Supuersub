@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fixture-driven tests for scripts/pa_lint.py.
+"""Fixture-driven tests for skills/create-app/scripts/pa_lint.py.
 
 Each fixture under tests/fixtures/{valid,invalid}/ is a small .pa.yaml paired with a
 <name>.expected.json sidecar naming the layer and check id that must fire.
@@ -19,9 +19,9 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-LINTER = ROOT / "scripts" / "pa_lint.py"
+LINTER = ROOT / "skills" / "create-app" / "scripts" / "pa_lint.py"
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
-EXAMPLES = ROOT / "skills" / "power-app-yaml" / "assets" / "examples"
+EXAMPLES = ROOT / "skills" / "create-app" / "assets" / "examples"
 
 
 def run_linter(*args: str) -> tuple[int, dict, str]:

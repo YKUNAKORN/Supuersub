@@ -21,7 +21,7 @@ You need the app's source, not a screenshot of it. Any of:
   directly; it reads `src/**/*.pa.yaml` from inside the archive without unzipping.
 - **Manual**: rename the `.msapp` to `.zip`, extract, use the `Src\` folder.
 
-[`docs/harvesting.md`](../../../docs/harvesting.md) has the full write-up. If no export
+[`harvesting.md`](harvesting.md) has the full write-up. If no export
 is available at all, say so and work from what the user can tell you — but then say
 plainly which of the checks below you could not run, rather than guessing your way
 through them.
@@ -30,8 +30,10 @@ through them.
 
 ## 1. Run the inventory first — never paste the export into the conversation
 
+Script paths are relative to this skill's folder (`scripts/` sits next to `SKILL.md`).
+
 ```bash
-python scripts/app_inventory.py <folder-or-.msapp>
+python3 scripts/app_inventory.py <folder-or-.msapp>
 ```
 
 About a page: screens in editor order, controls per screen with their nesting depth,
@@ -42,8 +44,8 @@ The export itself is tens of thousands of tokens of property values you will not
 and cannot use. Two extra flags when the page is not enough:
 
 ```bash
-python scripts/app_inventory.py <src> --names   # the full collision list
-python scripts/app_inventory.py <src> --json    # everything, machine-readable
+python3 scripts/app_inventory.py <src> --names   # the full collision list
+python3 scripts/app_inventory.py <src> --json    # everything, machine-readable
 ```
 
 **Prevents:** burning the context you need for the actual conversion on a file you are
@@ -79,7 +81,7 @@ Power Apps control names are unique across the whole app, not per screen. On pas
 nothing in the pasted file says it happened.
 
 ```bash
-python scripts/app_inventory.py <src> --names | tr ' ' '\n' | sort > /tmp/taken.txt
+python3 scripts/app_inventory.py <src> --names | tr ' ' '\n' | sort > /tmp/taken.txt
 # then check each name you intend to use against that list
 ```
 
@@ -164,7 +166,7 @@ every screen except the new one.
 Unchanged from the main workflow, and the last two are not optional:
 
 ```bash
-python scripts/pa_lint.py <your-file>.pa.yaml
+python3 scripts/pa_lint.py <your-file>.pa.yaml
 ```
 
 Zero L0/L1 errors before anything is handed over. Every L2/L3 warning is reported

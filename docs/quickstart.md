@@ -10,14 +10,14 @@ You have two options. They deliver the same skill — pick whichever fits your s
 
 ```bash
 /plugin marketplace add YKUNAKORN/power-app-yaml
-/plugin install power-app-yaml@power-app-yaml
+/plugin install supersub@supersub
 ```
 
 Claude Code reads the plugin from `.claude-plugin/plugin.json` and loads the skill
-from `skills/power-app-yaml/`. Update later with:
+from `skills/create-app/`. Update later with:
 
 ```bash
-/plugin marketplace update power-app-yaml
+/plugin marketplace update supersub
 ```
 
 ### Option B — as a plain skill folder
@@ -26,16 +26,16 @@ Copy the skill directory into wherever your Claude setup loads skills from:
 
 ```bash
 git clone https://github.com/YKUNAKORN/power-app-yaml.git
-cp -r power-app-yaml/skills/power-app-yaml  <your-skills-directory>/
+cp -r power-app-yaml/skills/create-app  <your-skills-directory>/
 ```
 
 The folder that must land in your skills directory is
-**`skills/power-app-yaml/`** (the one containing `SKILL.md`), not the repository
+**`skills/create-app/`** (the one containing `SKILL.md`), not the repository
 root.
 
 ### Optional, but worth two minutes: the linter's dependencies
 
-The scripts under `scripts/` are plain Python and need two packages:
+The scripts under `skills/create-app/scripts/` are plain Python and need two packages:
 
 ```bash
 pip install pyyaml jsonschema
@@ -61,10 +61,10 @@ Ask, in plain words:
 
 If the screen is going into an **app that already exists**, say so and hand over an
 export of it (`pac canvas download -d <dir>`, or just unzip the `.msapp`). Claude
-runs `scripts/app_inventory.py` over it first, so the new screen matches the app's
+runs `skills/create-app/scripts/app_inventory.py` over it first, so the new screen matches the app's
 naming convention, reuses its theme variables, and does not collide with a name
 that is already taken. See
-[`extend-existing-app.md`](../skills/power-app-yaml/references/extend-existing-app.md).
+[`extend-existing-app.md`](../skills/create-app/references/extend-existing-app.md).
 
 ## 3. Claude produces the `.pa.yaml`
 
@@ -79,7 +79,7 @@ This is the step that saves the round trip, and Claude runs it as part of its ow
 workflow. Run it yourself on anything you did not watch it lint:
 
 ```bash
-python scripts/pa_lint.py myscreen.pa.yaml
+python skills/create-app/scripts/pa_lint.py myscreen.pa.yaml
 ```
 
 Four layers run in order, and each maps to something Studio would have told you
@@ -129,8 +129,8 @@ so the next person benefits. Results for the twelve bundled test snippets go in
 - **Add another screen:** ask Claude to "add a screen to this app" and give it the
   new mockup — it reuses the existing screen names for `Navigate()`.
 - **Grow the catalog from a real export** instead of one paste test at a time:
-  `python scripts/harvest_controls.py ./myapp/src --report`, then `--merge`. Full
-  walkthrough in [`harvesting.md`](harvesting.md).
+  `python skills/create-app/scripts/harvest_controls.py ./myapp/src --report`, then `--merge`. Full
+  walkthrough in [`harvesting.md`](../skills/create-app/references/harvesting.md).
 - **Check whether a change helped.** If you edit `SKILL.md` or the catalog, the
   eval cases under `tests/evals/` and `scripts/run_eval.py` are how you tell better
   from worse — see [`evals.md`](evals.md).

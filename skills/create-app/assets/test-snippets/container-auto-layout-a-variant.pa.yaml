@@ -19,7 +19,7 @@
 # Test      Paste this WHOLE file onto a blank screen in Studio (Paste code).
 # Bisect    Change the Variant FIRST (see the candidate list), then, once something
 #           pastes, delete ONE property line at a time below the bisect marker.
-# Record    Put the result in docs/test-plan.md -- including which Variant string won.
+# Record    Put the result in the paste-test results table (test-plan.md) -- including which Variant string won.
 #
 # THE VARIANT BELOW IS A PLACEHOLDER, NOT A CLAIM.
 # Candidate strings to try, in order, all of them guesses:

@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""Repository sanity checks for the power-app-yaml skill.
+"""Repository sanity checks for the supersub plugin and its skills.
 
 Run locally before opening a PR:
 
     python scripts/validate.py
 
 Exits non-zero if anything fails. Requires PyYAML (`pip install pyyaml`).
+
+The checks that apply to every skill under skills/ live in scripts/skill_checks.py;
+everything below them is specific to the create-app skill.
 """
 
 from __future__ import annotations
@@ -17,7 +20,11 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SKILL_DIR = ROOT / "skills" / "power-app-yaml"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import skill_checks  # noqa: E402  (needs the sys.path line above)
+
+SKILL_DIR = ROOT / "skills" / "create-app"
+SKILL_SCRIPTS = SKILL_DIR / "scripts"
 
 # --- Budgets -----------------------------------------------------------------
 # SKILL.md is loaded into context on every single invocation, so its size is a
@@ -87,8 +94,12 @@ def load_yaml():
 
 yaml = load_yaml()
 
-print("Layout")
-check(SKILL_DIR.is_dir(), "skills/power-app-yaml/ exists")
+print("Every skill (portability rules)")
+for ok, label, detail in skill_checks.run_all(ROOT, yaml):
+    check(ok, label, detail)
+
+print("Layout (create-app)")
+check(SKILL_DIR.is_dir(), "skills/create-app/ exists")
 skill_md = SKILL_DIR / "SKILL.md"
 check(skill_md.is_file(), "SKILL.md present")
 schema = SKILL_DIR / "references" / "schema-v3.pa.yaml"
@@ -106,7 +117,7 @@ check((SKILL_DIR / "assets" / "patterns").is_dir(),
 check((SKILL_DIR / "assets" / "examples" / "INDEX.md").is_file(),
       "assets/examples/INDEX.md present",
       "the line-range index that lets a slice be read instead of a whole example")
-check((ROOT / "scripts" / "pa_lint.py").is_file(), "scripts/pa_lint.py present")
+check((SKILL_SCRIPTS / "pa_lint.py").is_file(), "skills/create-app/scripts/pa_lint.py present")
 check((SKILL_DIR / "references" / "extend-existing-app.md").is_file(),
       "extend-existing-app.md present",
       "the procedure SKILL.md branches to when the app already exists")
@@ -116,16 +127,21 @@ check((SKILL_DIR / "assets" / "test-snippets").is_dir(),
       "assets/test-snippets/ present", "the one-control paste-test kit")
 check((ROOT / "docs" / "test-plan.md").is_file(), "docs/test-plan.md present",
       "the results table the paste-test kit reports into")
-check((ROOT / "scripts" / "app_inventory.py").is_file(),
-      "scripts/app_inventory.py present",
+check((SKILL_SCRIPTS / "app_inventory.py").is_file(),
+      "skills/create-app/scripts/app_inventory.py present",
       "the one-page summariser for an app that already exists")
 check((ROOT / "tests" / "apps" / "ten-screen-app").is_dir(),
       "tests/apps/ten-screen-app/ present",
       "the synthetic fixture the inventory byte budget is measured against")
-check((ROOT / "scripts" / "harvest_controls.py").is_file(),
-      "scripts/harvest_controls.py present",
-      "the Studio-export harvester documented in docs/harvesting.md")
-check((ROOT / "docs" / "harvesting.md").is_file(), "docs/harvesting.md present")
+check((SKILL_SCRIPTS / "harvest_controls.py").is_file(),
+      "skills/create-app/scripts/harvest_controls.py present",
+      "the Studio-export harvester documented in references/harvesting.md")
+check((SKILL_DIR / "references" / "harvesting.md").is_file(),
+      "references/harvesting.md present", "SKILL.md step 8 sends the reader there")
+for moved in ("pa_lint.py", "app_inventory.py", "harvest_controls.py"):
+    check(not (ROOT / "scripts" / moved).exists(),
+          f"no stale scripts/{moved} at the repo root",
+          "run-time scripts live inside the skill so an installed plugin can reach them")
 check((SKILL_DIR / "references" / "control-ids-candidate.yaml").is_file(),
       "control-ids-candidate.yaml present",
       "the mirrored Microsoft control-id enum pa_lint.py reads for wording")
@@ -146,8 +162,8 @@ if skill_md.is_file():
             check(False, "frontmatter parses as YAML", str(e))
         check(isinstance(fm.get("name"), str) and fm.get("name").strip() != "",
               "frontmatter has non-empty 'name'")
-        check(fm.get("name") == "power-app-yaml",
-              "frontmatter name is 'power-app-yaml'", f"got {fm.get('name')!r}")
+        check(fm.get("name") == "create-app",
+              "frontmatter name is 'create-app'", f"got {fm.get('name')!r}")
         desc = fm.get("description")
         check(isinstance(desc, str) and len(desc.strip()) >= DESCRIPTION_MIN_CHARS,
               "frontmatter has a substantive 'description'")
@@ -228,7 +244,7 @@ if isinstance(catalog, dict):
 
     # A harvest merge adds a control entry but deliberately does not edit the
     # hand-curated "not yet attempted" list; this is the check that catches the
-    # leftover. See docs/harvesting.md.
+    # leftover. See skills/create-app/references/harvesting.md.
     catalogued_bases = {str(t).split("@", 1)[0].rsplit("/", 1)[-1] for t in yaml_types}
     overlap = sorted(catalogued_bases & set(catalog.get("unattempted_controls") or []))
     check(not overlap,
@@ -283,7 +299,7 @@ if isinstance(candidates, dict):
               "provenance is the only thing that makes this file re-checkable")
 
 print("Linter accepts the bundled examples")
-lint = ROOT / "scripts" / "pa_lint.py"
+lint = SKILL_SCRIPTS / "pa_lint.py"
 if lint.is_file() and examples:
     proc = subprocess.run(
         [sys.executable, str(lint), *[str(p) for p in examples], "--quiet"],
@@ -462,7 +478,7 @@ if data_binding.is_file():
             tmp.rmdir()
 
 print("app_inventory.py stays inside its page budget")
-inventory = ROOT / "scripts" / "app_inventory.py"
+inventory = SKILL_SCRIPTS / "app_inventory.py"
 fixture = ROOT / "tests" / "apps" / "ten-screen-app"
 if inventory.is_file() and fixture.is_dir():
     proc = subprocess.run([sys.executable, str(inventory), str(fixture)],
@@ -685,7 +701,6 @@ except (OSError, json.JSONDecodeError) as e:
     check(False, "marketplace.json is valid JSON", str(e))
 
 if plugin:
-    check(plugin.get("name") == "power-app-yaml", "plugin.json name is 'power-app-yaml'")
     check(bool(re.match(r"^\d+\.\d+\.\d+$", str(plugin.get("version", "")))),
           "plugin.json version is SemVer", f"got {plugin.get('version')!r}")
 if plugin and market:
@@ -696,8 +711,24 @@ if plugin and market:
 print("CHANGELOG mentions the current version")
 if plugin:
     cl = (ROOT / "CHANGELOG.md")
-    check(cl.is_file() and f"[{plugin.get('version')}]" in cl.read_text(encoding="utf-8"),
-          f"CHANGELOG.md has a section for {plugin.get('version')}")
+    cl_text = cl.read_text(encoding="utf-8") if cl.is_file() else ""
+    version = str(plugin.get("version"))
+    if f"[{version}]" in cl_text:
+        check(True, f"CHANGELOG.md has a section for {version}")
+    else:
+        # Between the version bump and the release, the entries sit under
+        # [Unreleased]. Accept that only while the version is newer than every
+        # released section, so a forgotten entry for an old version still fails.
+        def _v(s: str) -> tuple[int, ...]:
+            return tuple(int(x) for x in s.split("."))
+        released = re.findall(r"^## \[(\d+\.\d+\.\d+)\]", cl_text, re.M)
+        newer = bool(re.match(r"^\d+\.\d+\.\d+$", version)) and all(
+            _v(version) > _v(r) for r in released)
+        check("## [Unreleased]" in cl_text and newer,
+              f"CHANGELOG.md has a section for {version}, or it is pending under "
+              "[Unreleased]",
+              f"no [{version}] section, and either [Unreleased] is missing or "
+              f"{version} is not newer than {released[:1]}")
 
 print("Internal Markdown links resolve")
 md_files = [p for p in ROOT.rglob("*.md") if ".git" not in p.parts]

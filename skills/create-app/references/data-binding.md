@@ -3,8 +3,8 @@
 **Read this first: everything in this file that is a Power Fx expression is
 UNVERIFIED.** No expression here has been pasted into Power Apps Studio by this repo,
 and no control it depends on is in [`controls.yaml`](controls.yaml). The file exists so
-that when the paste tests in [`docs/test-plan.md`](../../../docs/test-plan.md) come
-back, there is somewhere for the answers to land — not so the skill can start writing
+that when the paste tests in the paste-test results table (`test-plan.md` in the
+plugin's source repository) come back, there is somewhere for the answers to land — not so the skill can start writing
 data-bound screens today.
 
 Three different levels of confidence appear below. Keep them apart:
@@ -37,7 +37,7 @@ candidate documents:
 ```bash
 python3 - <<'PY'
 import yaml, jsonschema
-schema = yaml.safe_load(open('skills/power-app-yaml/references/schema-v3.pa.yaml'))
+schema = yaml.safe_load(open('references/schema-v3.pa.yaml'))
 V = jsonschema.Draft7Validator(schema)
 for name, doc in {
     "Table, no Parameters":  {"DataSources": {"Requests": {"Type": "Table"}}},
@@ -75,14 +75,14 @@ Two things worth knowing about that table:
    actually serialises a SharePoint list into `DataSources:` — whether as a bare
    `Type: Table`, with some `Parameters` the published schema does not model, or not in
    `DataSources` at all. Do not guess this from the schema; read it off a real export
-   (`python scripts/app_inventory.py <export>` prints the `DataSources:` entries of an
+   (`python3 scripts/app_inventory.py <export>` prints the `DataSources:` entries of an
    app in one line each).
 
 The minimum legal declaration of a list-shaped source is therefore:
 
 ```yaml
 # UNVERIFIED as a Studio round-trip. SCHEMA-VERIFIED as legal pa.yaml v3.0.
-# Paste test: none of the kit covers this -- see docs/test-plan.md, "DataSources block".
+# Paste test: none of the kit covers this -- see the paste-test results table, "DataSources block".
 DataSources:
   Requests:
     Type: Table
@@ -335,14 +335,14 @@ fire-and-forget flow returns nothing and the `Set` is pointless.
 1. **Do not write it into a screen yet.** Every section above is blocked on a control
    that has never pasted here. `scripts/pa_lint.py` will flag those controls at L2 and
    generate the isolated snippet; hand it over, do not bury it.
-2. **Run the blocking test first.** The rows in
-   [`docs/test-plan.md`](../../../docs/test-plan.md) are ordered so that Gallery and
+2. **Run the blocking test first.** The rows in the paste-test
+   results table (`test-plan.md` in the plugin's source repository) are ordered so that Gallery and
    Form — which unblock most of this file — come first.
 3. **When a test comes back, the control goes in `controls.yaml` and the expression
    does not.** The catalog records controls and properties. A Power Fx expression that
    worked once is a note for this file, upgraded from UNVERIFIED to a cited result with
    the Studio version beside it.
 4. **An export beats all of it.** If you can download the app you are targeting,
-   `python scripts/app_inventory.py <export>` prints its real `DataSources:` names and
+   `python3 scripts/app_inventory.py <export>` prints its real `DataSources:` names and
    the variables its `App.OnStart` already sets, which replaces several guesses above
    with facts in one command.

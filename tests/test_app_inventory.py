@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for scripts/app_inventory.py.
+"""Tests for skills/create-app/scripts/app_inventory.py.
 
 The headline acceptance criterion is a size limit, so it is asserted directly: the
 synthetic 10-screen app under tests/apps/ must summarise in under 2 KB. Everything
@@ -22,7 +22,7 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
-TOOL = ROOT / "scripts" / "app_inventory.py"
+TOOL = ROOT / "skills" / "create-app" / "scripts" / "app_inventory.py"
 APP = ROOT / "tests" / "apps" / "ten-screen-app"
 SRC = APP / "src"
 

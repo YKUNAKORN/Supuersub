@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for scripts/harvest_controls.py.
+"""Tests for skills/create-app/scripts/harvest_controls.py.
 
 The acceptance criteria for the harvester are unusual enough to be worth stating as
 tests rather than prose:
@@ -26,9 +26,9 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
-HARVESTER = ROOT / "scripts" / "harvest_controls.py"
-CATALOG = ROOT / "skills" / "power-app-yaml" / "references" / "controls.yaml"
-EXAMPLES = ROOT / "skills" / "power-app-yaml" / "assets" / "examples"
+HARVESTER = ROOT / "skills" / "create-app" / "scripts" / "harvest_controls.py"
+CATALOG = ROOT / "skills" / "create-app" / "references" / "controls.yaml"
+EXAMPLES = ROOT / "skills" / "create-app" / "assets" / "examples"
 
 # Frozen so a date-stamped `source:` line cannot make a test flaky.
 DATE = "2026-01-01"

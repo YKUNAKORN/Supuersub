@@ -6,7 +6,7 @@ someone with Power Apps Studio open can, so everything here is written to be fil
 by hand, one row at a time, without asking anything back.
 
 The snippets live in
-[`skills/power-app-yaml/assets/test-snippets/`](../skills/power-app-yaml/assets/test-snippets/).
+[`skills/create-app/assets/test-snippets/`](../skills/create-app/assets/test-snippets/).
 Each is a complete file: paste the whole thing onto a **blank** screen with **Paste
 code**, one file per screen.
 
@@ -81,7 +81,7 @@ in the table.
 
 ### Data-binding expressions
 
-[`references/data-binding.md`](../skills/power-app-yaml/references/data-binding.md)
+[`references/data-binding.md`](../skills/create-app/references/data-binding.md)
 carries the Power Fx for SharePoint lists, `Patch`, `SubmitForm` and `User().Email`
 filtering. Every expression in it is marked UNVERIFIED and points at a row above.
 Those rows must pass before any of that prose can be trusted, because a `Gallery`
@@ -96,14 +96,14 @@ DataSources: block survives a Studio round-trip?   yes / no / not applicable  __
 ## Feeding a result back into the catalog
 
 A result becomes durable only when it lands in
-[`controls.yaml`](../skills/power-app-yaml/references/controls.yaml), which is the file
+[`controls.yaml`](../skills/create-app/references/controls.yaml), which is the file
 the linter and the skill actually read. For an `OK` or `OK/ver X` row, add a `controls:`
 entry with `name`, `type` (the id **and** the version Studio confirmed — the bare id is
 not enough), `evidence: studio-tested`, a `source:` naming this test plan and the Studio
 version, `accepts_children`, `variant`, and the properties that pasted in
 `properties_confirmed`; then remove the control from `unattempted_controls` (leave it
 there if it is not listed), add the matching row and property bullet to
-[`confirmed-controls.md`](../skills/power-app-yaml/references/confirmed-controls.md) in
+[`confirmed-controls.md`](../skills/create-app/references/confirmed-controls.md) in
 the same commit — `scripts/validate.py` fails if the two files disagree — and run
 `python scripts/validate.py && python -m unittest discover tests`. For a `PA2108` row,
 record only the properties that *did* paste; a property that failed goes in
@@ -112,6 +112,6 @@ into a "does not support" list, because Studio only serialises non-default value
 absence never proves absence. For `PA1001` / `UNKNOWN-ID`, change nothing in
 `controls.yaml` — an id that does not paste is not a catalog entry — and instead note
 the failure in this table so the next attempt starts from it. If you have a real app
-export to hand, `python scripts/harvest_controls.py <export> --report --merge` is the
+export to hand, `python skills/create-app/scripts/harvest_controls.py <export> --report --merge` is the
 better route for everything except the version question, and
-[`docs/harvesting.md`](harvesting.md) covers it.
+[`harvesting.md`](../skills/create-app/references/harvesting.md) covers it.

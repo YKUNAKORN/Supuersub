@@ -5,7 +5,7 @@
 #     src/schemas/pa-yaml/v3.0/ControlLibraryVDev/ControlTypeId-1P-controls-enum.schema.yaml
 #   commit  aed72a37c3b10b08f81c9d2257d5c38da33dccbe  (2026-08-24)
 #   sha256  db2598fa9bd03dd24040e99c3f83c705c5da76baceec3e4c0e9cd55cbd3a2639
-#   Retrieved 2026-09-10. See docs/harvesting.md for the full write-up.
+#   Retrieved 2026-09-10. See references/harvesting.md for the full write-up.
 #
 # WHY EVERY ENTRY IS `unverified`
 #   1. The list is Microsoft's *tooling* view, not a paste test. It says the schema

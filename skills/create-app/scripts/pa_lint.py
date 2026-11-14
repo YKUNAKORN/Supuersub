@@ -4,8 +4,8 @@
 Proves a .pa.yaml is correct BEFORE it reaches the user, instead of making the user act
 as the compiler by pasting into Power Apps Studio and reading back errors.
 
-    python scripts/pa_lint.py FILE [FILE...] [--catalog PATH] [--candidates PATH]
-                              [--json] [--strict] [--quiet]
+    python3 scripts/pa_lint.py FILE [FILE...] [--catalog PATH] [--candidates PATH]
+                               [--json] [--strict] [--quiet]
 
 Four layers, run in order. A layer that makes later layers meaningless stops the run:
 
@@ -45,8 +45,8 @@ try:
 except ImportError:  # pragma: no cover - exercised on minimal installs
     HAVE_JSONSCHEMA = False
 
-ROOT = Path(__file__).resolve().parent.parent
-SKILL_REFS = ROOT / "skills" / "power-app-yaml" / "references"
+SKILL_DIR = Path(__file__).resolve().parent.parent  # this skill's own folder
+SKILL_REFS = SKILL_DIR / "references"
 DEFAULT_CATALOG = SKILL_REFS / "controls.yaml"
 DEFAULT_CANDIDATES = SKILL_REFS / "control-ids-candidate.yaml"
 SCHEMA_PATH = SKILL_REFS / "schema-v3.pa.yaml"

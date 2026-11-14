@@ -1,5 +1,5 @@
 ---
-name: power-app-yaml
+name: create-app
 description: >-
   Converts an HTML/CSS mockup (Google Stitch, v0, Figma export) or a UI screenshot into
   Power Apps Canvas source code (.pa.yaml, source schema v3.0) for "Paste code" on a blank
@@ -15,11 +15,12 @@ description: >-
 
 Turn a mockup into a `.pa.yaml` that pastes cleanly into Studio ("Paste code" on a blank
 screen). Work the steps in order, use only catalogued controls, never improvise schema.
-Rationale: [`README.md`](../../README.md).
+Paths are relative to this skill's folder: `${CLAUDE_SKILL_DIR}`, or run from that folder.
 
 ## The workflow (in order)
 
-Two branches. **App already exists** — run `scripts/app_inventory.py` first, then
+Two branches. **App already exists** — first
+`python3 ${CLAUDE_SKILL_DIR}/scripts/app_inventory.py <src>`, then
 [`extend-existing-app.md`](references/extend-existing-app.md) alongside these steps.
 **Data-bound** — [`data-binding.md`](references/data-binding.md); none of it is
 confirmed, so hand over the matching [`assets/test-snippets/`](assets/test-snippets/).
@@ -28,27 +29,26 @@ confirmed, so hand over the matching [`assets/test-snippets/`](assets/test-snipp
    works. Fresh each time; the user may have added entries since.
    [`confirmed-controls.md`](references/confirmed-controls.md) is the same facts in prose,
    plus gotchas and the paste-error table.
-2. **Pick pattern(s) from [`assets/patterns/`](assets/patterns/)** — 13 lint-clean 30–85
-   line snippets extracted from the examples. Read only what you need:
+2. **Pick pattern(s) from [`assets/patterns/`](assets/patterns/)** — 13 lint-clean snippets
+   extracted from the examples. Read only what you need:
    `screen-shell`, `sidebar-nav-item`, `top-bar`, `card-container`, `section-header`,
    `form-field-text`, `form-field-dropdown`, `tile-grid-cell`, `badge`, `divider`,
    `avatar-row`, `footer-nav`, `two-column-split`.
 3. **Apply [`references/layout-mapping.md`](references/layout-mapping.md)** for absolute
    `X`/`Y`/`Width`/`Height`: canvas size and scale, Tailwind→px, flex/grid arithmetic,
-   nesting, screen `Height`. This is the step usually guessed.
+   nesting, screen `Height`.
 4. **Only if the patterns don't cover it, read a *slice*** of an example, via the line
-   ranges in [`assets/examples/INDEX.md`](assets/examples/INDEX.md). All 3,234 lines
-   cost more than the rest of the skill combined.
+   ranges in [`assets/examples/INDEX.md`](assets/examples/INDEX.md), never a whole one.
 5. **Write the full `.pa.yaml`** from the templates below. Tag anything unconfirmed.
-6. **Lint: `python scripts/pa_lint.py <file>`.** Never hand over a file with an L0/L1
-   error. Report every L2/L3 warning verbatim as the UNVERIFIED list, with the snippets
-   the linter generates. `L2.unverified-control-type` and `L2.candidate-control-type` get
+6. **Lint: `python3 ${CLAUDE_SKILL_DIR}/scripts/pa_lint.py <file>`.** Never hand over a
+   file with an L0/L1 error. Report every L2/L3 warning verbatim as the UNVERIFIED list,
+   with the snippets the linter generates. `L2.unverified-control-type` and `L2.candidate-control-type` get
    identical treatment — Microsoft's control-id enum is not evidence.
 7. **Hand over the whole file** plus those snippets, **read back the Studio result**, fix
    only what broke.
 8. **If Studio confirms something new**, record it in `controls.yaml` *and*
    `confirmed-controls.md`. With a real export, harvest instead of guessing —
-   [`docs/harvesting.md`](../../docs/harvesting.md).
+   [`references/harvesting.md`](references/harvesting.md).
 
 ## Control picker
 

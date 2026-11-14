@@ -5,7 +5,8 @@ blank screen in Power Apps Studio. **Nothing here is confirmed.** The whole poin
 the kit is that only the person with Studio open can confirm it, and these files exist
 to make that as cheap as possible.
 
-Results go in [`docs/test-plan.md`](../../../../docs/test-plan.md). Only after a real
+Results go in the paste-test results table (`test-plan.md` in the plugin's source
+repository). Only after a real
 result does a control enter [`controls.yaml`](../../references/controls.yaml).
 
 ## How to use one
@@ -100,5 +101,6 @@ enum lists them bare. If a bare id here fails, `Classic/<Id>` is the next thing 
 
 Every file passes L0 (YAML) and L1 (schema) of `scripts/pa_lint.py` and raises L2
 warnings. The L2 warnings are the point — they are the linter agreeing that nothing
-here is verified. `scripts/validate.py` enforces exactly that on every CI run, plus
+here is verified. The plugin repository's validator enforces exactly that on every CI
+run, plus
 one control per file.

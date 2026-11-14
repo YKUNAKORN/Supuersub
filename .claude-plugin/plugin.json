@@ -1,7 +1,7 @@
 {
-  "name": "power-app-yaml",
-  "version": "1.0.0",
-  "description": "Turn an HTML/CSS mockup or a UI screenshot into Power Apps Canvas source code (.pa.yaml, source schema v3.0) that pastes straight into Power Apps Studio.",
+  "name": "supersub",
+  "version": "2.0.0",
+  "description": "Skills for building a Power Platform app end to end: interview for a DESIGN.md design system, mock up linked HTML screens, convert mockups or screenshots into paste-ready Power Apps Canvas YAML (.pa.yaml), design SharePoint lists with import files, and plan Power Automate flows as import packages.",
   "author": {
     "name": "YKUNAKORN",
     "url": "https://github.com/YKUNAKORN"
@@ -14,6 +14,12 @@
     "canvas-apps",
     "pa-yaml",
     "power-fx",
+    "power-platform",
+    "power-automate",
+    "sharepoint-lists",
+    "design-system",
+    "design-md",
+    "mockup",
     "low-code",
     "claude-skill",
     "html-to-powerapps",
