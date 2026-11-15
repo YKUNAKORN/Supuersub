@@ -1,0 +1,18 @@
+{
+  "description": "--strict turns warnings into exit 2",
+  "edits": [
+    {
+      "file": "Requests.list.json",
+      "set": "rows/0/Requester",
+      "value": "someone@contoso.com"
+    }
+  ],
+  "args": [
+    "--strict"
+  ],
+  "checks": [
+    "personal-data"
+  ],
+  "exit": 2,
+  "verdict": "unverified"
+}

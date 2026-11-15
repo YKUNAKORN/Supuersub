@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "name": "Sites",
+  "displayName": "Sites",
+  "description": "Where items are collected.",
+  "columns": [
+    {
+      "name": "SiteCode",
+      "displayName": "Code",
+      "importType": "text",
+      "finalType": "text",
+      "required": true,
+      "unique": true,
+      "indexed": true,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": ""
+    },
+    {
+      "name": "SiteName",
+      "displayName": "Site",
+      "importType": "text",
+      "finalType": "text",
+      "required": true,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": ""
+    },
+    {
+      "name": "Region",
+      "displayName": "Region",
+      "importType": "choice",
+      "finalType": "choice",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": "North",
+      "choices": [
+        "North",
+        "South",
+        "East"
+      ],
+      "lookup": null,
+      "notes": ""
+    }
+  ],
+  "rows": [
+    {
+      "SiteCode": "N01",
+      "SiteName": "North depot",
+      "Region": "North"
+    },
+    {
+      "SiteCode": "S01",
+      "SiteName": "South depot",
+      "Region": "South"
+    },
+    {
+      "SiteCode": "E01",
+      "SiteName": "East depot",
+      "Region": "East"
+    }
+  ],
+  "sampleRows": true
+}

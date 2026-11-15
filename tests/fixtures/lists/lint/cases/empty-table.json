@@ -1,0 +1,16 @@
+{
+  "description": "--empty-table: no rows is allowed, and relies on the empty-table row",
+  "edits": [
+    {
+      "file": "Sites.list.json",
+      "set": "rows",
+      "value": []
+    }
+  ],
+  "args": [
+    "--empty-table"
+  ],
+  "checks": [],
+  "exit": 0,
+  "verdict": "safe"
+}

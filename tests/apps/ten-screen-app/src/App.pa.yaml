@@ -25,7 +25,7 @@ DataSources:
     Type: Table
     Parameters:
       TableLogicalName: Approvals
-  GenerateDocument:
+  CreatePdf:
     Type: Actions
 
 EditorState:

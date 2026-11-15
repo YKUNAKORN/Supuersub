@@ -1,0 +1,18 @@
+{
+  "description": "lookup set on a text column",
+  "edits": [
+    {
+      "file": "Sites.list.json",
+      "set": "columns/1/lookup",
+      "value": {
+        "list": "Requests",
+        "column": "RequestTitle"
+      }
+    }
+  ],
+  "checks": [
+    "lookup-target"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

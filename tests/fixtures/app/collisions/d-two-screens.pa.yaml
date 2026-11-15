@@ -1,0 +1,40 @@
+# App fixture 'collisions', file d. Two screens in one file. lblShared sits on both
+# (an app-level collision); lblTwice sits twice on scrD1, which the single-file check
+# L3.duplicate-control-name reports and the app check leaves alone.
+Screens:
+  scrD1:
+    Children:
+      - lblShared:
+          Control: Label@2.5.1
+          Properties:
+            Text: ="Shared"
+            X: =40
+            Y: =40
+            Width: =400
+            Height: =32
+      - lblTwice:
+          Control: Label@2.5.1
+          Properties:
+            Text: ="One"
+            X: =40
+            Y: =80
+            Width: =400
+            Height: =32
+      - lblTwice:
+          Control: Label@2.5.1
+          Properties:
+            Text: ="Two"
+            X: =40
+            Y: =120
+            Width: =400
+            Height: =32
+  scrD2:
+    Children:
+      - lblShared:
+          Control: Label@2.5.1
+          Properties:
+            Text: ="Shared again"
+            X: =40
+            Y: =40
+            Width: =400
+            Height: =32

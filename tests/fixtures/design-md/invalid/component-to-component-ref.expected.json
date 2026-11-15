@@ -1,0 +1,14 @@
+{
+  "description": "Neither {components.x.y} nor {component.x.y} resolves: components are not in the token tree (Google CLI 0.4.0 agrees). surface becomes unused.",
+  "target": "web",
+  "expected_exit_code": 1,
+  "expected_verdict_code": "will_fail",
+  "expected_findings": [
+    {
+      "check": "broken-ref"
+    },
+    {
+      "check": "orphaned-color"
+    }
+  ]
+}

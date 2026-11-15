@@ -1,0 +1,20 @@
+{
+  "description": "an imported column filled in once",
+  "edits": [
+    {
+      "file": "Requests.list.json",
+      "set": "rows/1/Amount",
+      "value": null
+    },
+    {
+      "file": "Requests.list.json",
+      "set": "rows/2/Amount",
+      "value": null
+    }
+  ],
+  "checks": [
+    "column-sparse"
+  ],
+  "exit": 0,
+  "verdict": "unverified"
+}

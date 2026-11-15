@@ -1,0 +1,9 @@
+{
+  "description": "Two screen files linted as one app with --sitemap: every Navigate() target is a screen in the other file or in sitemap.json, and no name collides. Zero findings.",
+  "args": ["--app-dir", "tests/fixtures/app/clean", "--sitemap", "tests/fixtures/app/clean/sitemap.json"],
+  "expected_exit_code": 0,
+  "expected_files": {
+    "scrDetail.pa.yaml": {"expected_verdict_code": "safe", "expected_findings": []},
+    "scrHome.pa.yaml": {"expected_verdict_code": "safe", "expected_findings": []}
+  }
+}

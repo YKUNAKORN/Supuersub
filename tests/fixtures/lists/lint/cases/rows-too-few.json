@@ -1,0 +1,14 @@
+{
+  "description": "two rows",
+  "edits": [
+    {
+      "file": "Sites.list.json",
+      "delete": "rows/2"
+    }
+  ],
+  "checks": [
+    "rows-too-few"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

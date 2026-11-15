@@ -1,0 +1,15 @@
+{
+  "description": "an importType the type table does not allow",
+  "edits": [
+    {
+      "file": "Requests.list.json",
+      "set": "columns/3/importType",
+      "value": "text"
+    }
+  ],
+  "checks": [
+    "import-type"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

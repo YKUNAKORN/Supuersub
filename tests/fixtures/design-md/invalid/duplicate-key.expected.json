@@ -1,0 +1,11 @@
+{
+  "description": "rounded.sm defined twice; YAML would silently keep the second.",
+  "target": "web",
+  "expected_exit_code": 1,
+  "expected_verdict_code": "will_fail",
+  "expected_findings": [
+    {
+      "check": "duplicate-key"
+    }
+  ]
+}

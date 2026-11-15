@@ -1,0 +1,11 @@
+{
+  "description": "Light blue text on the primary blue: about 2.6:1.",
+  "target": "web",
+  "expected_exit_code": 1,
+  "expected_verdict_code": "will_fail",
+  "expected_findings": [
+    {
+      "check": "contrast"
+    }
+  ]
+}

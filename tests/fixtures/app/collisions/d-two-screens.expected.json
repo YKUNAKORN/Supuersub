@@ -1,0 +1,8 @@
+{
+  "description": "Linted alone: lblTwice twice on scrD1 is the single-file duplicate check. lblShared on two screens is only reported in app mode.",
+  "expected_exit_code": 0,
+  "expected_verdict_code": "unverified",
+  "expected_findings": [
+    {"layer": "L3", "check": "L3.duplicate-control-name"}
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "defect": "A rem length on a fixed canvas.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "\n</style>",
+      "replace": "\n  .row { padding-left: 1rem; }\n</style>"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "pa-geometry"
+    ],
+    "exit": 0,
+    "verdict": "unverified"
+  }
+}

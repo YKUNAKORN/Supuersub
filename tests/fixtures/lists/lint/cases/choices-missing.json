@@ -1,0 +1,27 @@
+{
+  "description": "a choice column with one choice",
+  "edits": [
+    {
+      "file": "Sites.list.json",
+      "set": "columns/2/choices",
+      "value": [
+        "North"
+      ]
+    },
+    {
+      "file": "Sites.list.json",
+      "set": "rows/1/Region",
+      "value": "North"
+    },
+    {
+      "file": "Sites.list.json",
+      "set": "rows/2/Region",
+      "value": "North"
+    }
+  ],
+  "checks": [
+    "choices-missing"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

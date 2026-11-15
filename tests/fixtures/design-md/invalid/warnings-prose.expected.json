@@ -1,0 +1,17 @@
+{
+  "description": "Prose hex that is no token, a singular component reference, and a prose reference that does not resolve.",
+  "target": "web",
+  "expected_exit_code": 0,
+  "expected_verdict_code": "unverified",
+  "expected_findings": [
+    {
+      "check": "prose-hex"
+    },
+    {
+      "check": "prose-ref-singular"
+    },
+    {
+      "check": "prose-ref"
+    }
+  ]
+}

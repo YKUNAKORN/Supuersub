@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "name": "LeaveRequests",
+  "displayName": "ใบลา",
+  "description": "ใบลาของพนักงาน หนึ่งแถวต่อหนึ่งใบลา ผู้ยื่นคือ Created By ของแถว",
+  "language": "th",
+  "columns": [
+    {
+      "name": "LeaveType",
+      "displayName": "ประเภทการลา",
+      "importType": "choice",
+      "finalType": "choice",
+      "required": true,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": ["ลาพักร้อน", "ลาป่วย", "ลากิจ"],
+      "lookup": null,
+      "notes": ""
+    },
+    {
+      "name": "StartDate",
+      "displayName": "วันเริ่ม",
+      "importType": "datetime",
+      "finalType": "date",
+      "required": true,
+      "unique": false,
+      "indexed": true,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": "ตั้ง Date only หลัง import"
+    },
+    {
+      "name": "EndDate",
+      "displayName": "วันสิ้นสุด",
+      "importType": "datetime",
+      "finalType": "date",
+      "required": true,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": "ตั้ง Date only หลัง import"
+    },
+    {
+      "name": "Reason",
+      "displayName": "เหตุผล",
+      "importType": "note",
+      "finalType": "note",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": ""
+    },
+    {
+      "name": "ApproverEmail",
+      "displayName": "อีเมลผู้อนุมัติ",
+      "importType": "text",
+      "finalType": "text",
+      "required": true,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": "flow NotifyApprover ส่งอีเมลไปที่อยู่นี้ ภายหลังเปลี่ยนเป็น Person ได้ แต่ต้องสร้างคอลัมน์ใหม่เอง"
+    },
+    {
+      "name": "Status",
+      "displayName": "สถานะ",
+      "importType": "choice",
+      "finalType": "choice",
+      "required": true,
+      "unique": false,
+      "indexed": true,
+      "default": "รออนุมัติ",
+      "choices": ["รออนุมัติ", "อนุมัติ", "ไม่อนุมัติ"],
+      "lookup": null,
+      "notes": "ผู้อนุมัติเปลี่ยนสถานะเองใน list"
+    }
+  ],
+  "rows": [
+    {
+      "LeaveType": "ลาพักร้อน",
+      "StartDate": "2026-12-21",
+      "EndDate": "2026-12-25",
+      "Reason": "เดินทางกับครอบครัว",
+      "ApproverEmail": "manager@example.com",
+      "Status": "รออนุมัติ"
+    },
+    {
+      "LeaveType": "ลาป่วย",
+      "StartDate": "2026-11-03",
+      "EndDate": "2026-11-04",
+      "Reason": "ไข้หวัด มีใบรับรองแพทย์",
+      "ApproverEmail": "manager@example.com",
+      "Status": "อนุมัติ"
+    },
+    {
+      "LeaveType": "ลากิจ",
+      "StartDate": "2026-10-16",
+      "EndDate": "2026-10-16",
+      "Reason": "ติดต่อราชการ",
+      "ApproverEmail": "lead@example.com",
+      "Status": "ไม่อนุมัติ"
+    }
+  ],
+  "sampleRows": true,
+  "setup": {
+    "headers": [
+      "Column",
+      "เลือกชนิดในหน้า import",
+      "ตั้งค่าหลัง import (Column settings)",
+      "หมายเหตุ"
+    ],
+    "notesHeading": "หลัง import:",
+    "notes": [
+      "ลบสามแถวตัวอย่างหลังตรวจชนิดคอลัมน์แล้ว",
+      "เปลี่ยนชื่อที่แสดงของแต่ละคอลัมน์เป็นภาษาไทยตามตาราง"
+    ]
+  }
+}

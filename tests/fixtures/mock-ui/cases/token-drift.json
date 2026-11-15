@@ -1,0 +1,21 @@
+{
+  "defect": "A :root value edited by hand.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "--color-primary: #1f4fd1;",
+      "replace": "--color-primary: #2255ee;"
+    }
+  ],
+  "args": [
+    "--design",
+    "{dir}/DESIGN.md"
+  ],
+  "expect": {
+    "checks": [
+      "token-drift"
+    ],
+    "exit": 0,
+    "verdict": "unverified"
+  }
+}

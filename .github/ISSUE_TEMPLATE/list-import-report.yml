@@ -1,0 +1,77 @@
+name: List import report
+description: Report what SharePoint did with a file create-list built (From Excel / From CSV)
+title: "[list import] <ListName> / <xlsx|csv>"
+labels: ["create-list", "evidence", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Each open question about the import screen is a row in
+        `skills/create-list/references/import-behavior.md`. A report with context is what
+        moves a row. See CONTRIBUTING.md, "Reporting a SharePoint import result".
+        Never paste a tenant name, a site URL, or real people's names or addresses.
+  - type: dropdown
+    id: format
+    attributes:
+      label: File
+      options:
+        - ".xlsx (From Excel)"
+        - ".csv with a byte-order mark (default)"
+        - ".csv without a byte-order mark (--csv-encoding utf-8)"
+    validations:
+      required: true
+  - type: dropdown
+    id: entry
+    attributes:
+      label: Entry point
+      options: ["Lists app", "SharePoint Create > List", "Teams", "Other (say in notes)"]
+    validations:
+      required: true
+  - type: input
+    id: tenant-kind
+    attributes:
+      label: Tenant kind
+      description: Commercial, GCC, education, ... Never the tenant name.
+    validations:
+      required: true
+  - type: textarea
+    id: columns
+    attributes:
+      label: Per column, proposed and offered types
+      description: One line per column, e.g. `StartDate: proposed Date and time; offered Single line of text, Number, Date and time`.
+    validations:
+      required: true
+  - type: dropdown
+    id: title
+    attributes:
+      label: Title column
+      options:
+        - "Not asked for; the list had no Title column"
+        - "Not asked for; the list got a Title column anyway"
+        - "Asked for, optional"
+        - "Forced: the import would not continue without one"
+    validations:
+      required: true
+  - type: dropdown
+    id: text
+    attributes:
+      label: Non-ASCII text after import
+      options: ["Readable", "Garbled", "No non-ASCII text in the file"]
+    validations:
+      required: true
+  - type: input
+    id: rows
+    attributes:
+      label: Evidence rows this bears on
+      description: From the linter's unverified-behavior warnings, e.g. offer-person, title-mapping, csv-encoding.
+  - type: input
+    id: date
+    attributes:
+      label: Date of the import
+      placeholder: "2026-11-15"
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes / exact messages

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "create-flow <FlowName>.flow.json",
+  "description": "One Power Automate flow, written by the model and turned into a legacy import package by scripts/build_flow_package.py. triggers and actions are the Logic Apps workflow definition's own triggers and actions; the builder adds every GUID, operationMetadataId, the $connections and $authentication parameters, host.apiId, the authentication input and the connection references. Tenant values are written as named placeholders, {{Name}}, declared under placeholders. Checked by scripts/flow_lint.py.",
+  "type": "object",
+  "required": ["version", "name", "displayName", "description", "connectors", "triggers", "actions", "placeholders"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 1 },
+    "name": {
+      "description": "ASCII PascalCase. The package is written as <name>_LegacyPackage.zip.",
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9]{0,63}$"
+    },
+    "displayName": {
+      "description": "The flow's name in Power Automate, in the user's language. Unique within flow.md.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "description": { "type": "string" },
+    "connectors": {
+      "description": "API names of every connector an action or trigger uses, e.g. shared_office365.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^shared_[a-z0-9]+$" }
+    },
+    "triggers": {
+      "description": "Exactly one trigger, keyed by its name (the button trigger is 'manual').",
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/trigger" }
+    },
+    "actions": { "$ref": "#/$defs/actions" },
+    "placeholders": {
+      "description": "Every {{Name}} used in triggers or actions: what it stands for and where to set it after import.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[A-Z][A-Za-z0-9]*$" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["description", "setAfterImport"],
+        "additionalProperties": false,
+        "properties": {
+          "description": { "type": "string", "minLength": 1 },
+          "setAfterImport": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "trigger": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string" },
+        "inputs": {},
+        "metadata": { "type": "object" }
+      }
+    },
+    "actions": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/action" }
+    },
+    "action": {
+      "type": "object",
+      "required": ["type", "runAfter"],
+      "properties": {
+        "type": { "type": "string", "minLength": 1 },
+        "runAfter": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "enum": ["Succeeded", "Failed", "Skipped", "TimedOut"] }
+          }
+        },
+        "inputs": {},
+        "metadata": { "type": "object" },
+        "actions": { "$ref": "#/$defs/actions" }
+      }
+    }
+  }
+}

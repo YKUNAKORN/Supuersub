@@ -1,0 +1,11 @@
+{
+  "description": "Outside components, a reference to a typography group instead of a value.",
+  "target": "web",
+  "expected_exit_code": 1,
+  "expected_verdict_code": "will_fail",
+  "expected_findings": [
+    {
+      "check": "group-ref"
+    }
+  ]
+}

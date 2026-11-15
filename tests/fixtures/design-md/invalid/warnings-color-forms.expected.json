@@ -1,0 +1,14 @@
+{
+  "description": "rgb() with slash alpha is measured; oklch() is valid but not converted, so its pair is unmeasured.",
+  "target": "web",
+  "expected_exit_code": 0,
+  "expected_verdict_code": "unverified",
+  "expected_findings": [
+    {
+      "check": "color-unparsed"
+    },
+    {
+      "check": "contrast-unmeasured"
+    }
+  ]
+}

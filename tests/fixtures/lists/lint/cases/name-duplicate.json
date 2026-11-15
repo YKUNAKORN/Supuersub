@@ -1,0 +1,23 @@
+{
+  "description": "two columns differing only by case",
+  "edits": [
+    {
+      "file": "Requests.list.json",
+      "set": "columns/2/name",
+      "value": "quantity"
+    },
+    {
+      "file": "Requests.list.json",
+      "rename_key": [
+        "Amount",
+        "quantity"
+      ]
+    }
+  ],
+  "checks": [
+    "name-duplicate",
+    "name-invalid"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

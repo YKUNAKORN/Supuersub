@@ -1,0 +1,13 @@
+# App fixture 'collisions', file c. Defines scrA again (a-first.pa.yaml has it).
+# Its controls are not compared again: lblTitle would otherwise be reported twice.
+Screens:
+  scrA:
+    Children:
+      - lblTitle:
+          Control: Label@2.5.1
+          Properties:
+            Text: ="A again"
+            X: =40
+            Y: =40
+            Width: =400
+            Height: =32

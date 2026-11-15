@@ -1,0 +1,221 @@
+{
+  "version": 1,
+  "name": "TypeProbe",
+  "displayName": "Type probe",
+  "description": "One column per candidate import type, for the owner to import once and record what the import screen offers. Delete the list after the test.",
+  "language": "en",
+  "columns": [
+    {
+      "name": "ProbeText",
+      "displayName": "Text",
+      "importType": "text",
+      "finalType": "text",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": "offer-text"
+    },
+    {
+      "name": "ProbeNote",
+      "displayName": "Long text",
+      "importType": "note",
+      "finalType": "note",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": "offer-note: values longer than one line"
+    },
+    {
+      "name": "ProbeNumber",
+      "displayName": "Number",
+      "importType": "number",
+      "finalType": "number",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": "offer-number"
+    },
+    {
+      "name": "ProbeCurrency",
+      "displayName": "Amount",
+      "importType": "currency",
+      "finalType": "currency",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": "offer-currency"
+    },
+    {
+      "name": "ProbeDate",
+      "displayName": "Date",
+      "importType": "datetime",
+      "finalType": "date",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": "offer-datetime: is Date only offered too?"
+    },
+    {
+      "name": "ProbeDateTime",
+      "displayName": "Date and time",
+      "importType": "datetime",
+      "finalType": "datetime",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": "offer-datetime, with a time"
+    },
+    {
+      "name": "ProbeYesNo",
+      "displayName": "Yes/No",
+      "importType": "boolean",
+      "finalType": "boolean",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": "offer-boolean"
+    },
+    {
+      "name": "ProbeChoice",
+      "displayName": "Choice",
+      "importType": "choice",
+      "finalType": "choice",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": [
+        "Draft",
+        "Submitted",
+        "Approved"
+      ],
+      "lookup": null,
+      "notes": "offer-choice and choice-from-data: are Draft, Submitted, Approved filled in?"
+    },
+    {
+      "name": "ProbePerson",
+      "displayName": "Person",
+      "importType": "person",
+      "finalType": "person",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": "offer-person: replace the example.com addresses with colleagues' in your own copy if you want them to resolve"
+    },
+    {
+      "name": "ProbeLink",
+      "displayName": "Link",
+      "importType": "hyperlink",
+      "finalType": "hyperlink",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": "offer-hyperlink"
+    },
+    {
+      "name": "ProbeThai",
+      "displayName": "ข้อความภาษาไทย",
+      "importType": "text",
+      "finalType": "text",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": "csv-encoding: does the Thai text survive?"
+    }
+  ],
+  "rows": [
+    {
+      "ProbeText": "Alpha",
+      "ProbeNote": "First line of a longer note that runs well past a single short line of text.",
+      "ProbeNumber": 12,
+      "ProbeCurrency": 1250.5,
+      "ProbeDate": "2026-01-15",
+      "ProbeDateTime": "2026-01-15T09:30",
+      "ProbeYesNo": true,
+      "ProbeChoice": "Draft",
+      "ProbePerson": "ada@example.com",
+      "ProbeLink": "https://example.com/a",
+      "ProbeThai": "ทดสอบภาษาไทย"
+    },
+    {
+      "ProbeText": "Bravo",
+      "ProbeNote": "Second note, also long enough that a reader would call it a paragraph rather than a label.",
+      "ProbeNumber": 7,
+      "ProbeCurrency": 99.99,
+      "ProbeDate": "2026-02-28",
+      "ProbeDateTime": "2026-02-28T17:05",
+      "ProbeYesNo": false,
+      "ProbeChoice": "Submitted",
+      "ProbePerson": "grace@example.com",
+      "ProbeLink": "https://example.com/b",
+      "ProbeThai": "วันหยุดสงกรานต์"
+    },
+    {
+      "ProbeText": "Charlie",
+      "ProbeNote": "Third note with punctuation: commas, \"quotes\" and a semicolon; to test CSV quoting.",
+      "ProbeNumber": 0,
+      "ProbeCurrency": 0,
+      "ProbeDate": "2026-03-31",
+      "ProbeDateTime": "2026-03-31T00:00",
+      "ProbeYesNo": true,
+      "ProbeChoice": "Approved",
+      "ProbePerson": "alan@example.com",
+      "ProbeLink": "https://example.com/c",
+      "ProbeThai": "กรุงเทพมหานคร"
+    },
+    {
+      "ProbeText": "Delta",
+      "ProbeNote": "Fourth note.",
+      "ProbeNumber": 3.25,
+      "ProbeCurrency": 10,
+      "ProbeDate": "2026-12-31",
+      "ProbeDateTime": "2026-12-31T23:59",
+      "ProbeYesNo": false,
+      "ProbeChoice": "Draft",
+      "ProbePerson": "edsger@example.com",
+      "ProbeLink": "https://example.com/d",
+      "ProbeThai": "ภาษาไทย ๑๒๓"
+    }
+  ],
+  "sampleRows": true,
+  "setup": {
+    "notesHeading": "What to record after the import:",
+    "notes": [
+      "For each column: the type the import screen proposed, and every type its drop-down offered.",
+      "Whether the screen asked for a Title column, and what it did when none was mapped.",
+      "Whether the Thai text in ProbeThai looks right after import.",
+      "Whether ProbeChoice became Choice with Draft, Submitted and Approved filled in.",
+      "These are sample rows: delete the list after the test."
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "description": "## Colors appears twice (the second is also out of order, but a duplicate is reported once, as a duplicate).",
+  "target": "web",
+  "expected_exit_code": 1,
+  "expected_verdict_code": "will_fail",
+  "expected_findings": [
+    {
+      "check": "section-duplicate"
+    }
+  ]
+}

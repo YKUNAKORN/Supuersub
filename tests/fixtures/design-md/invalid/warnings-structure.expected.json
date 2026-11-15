@@ -1,0 +1,17 @@
+{
+  "description": "Eight typography levels, no Known Gaps section, and a yaml token block in the body.",
+  "target": "web",
+  "expected_exit_code": 0,
+  "expected_verdict_code": "unverified",
+  "expected_findings": [
+    {
+      "check": "typography-levels"
+    },
+    {
+      "check": "section-missing"
+    },
+    {
+      "check": "yaml-block-in-body"
+    }
+  ]
+}

@@ -8,7 +8,7 @@ executable application code and no runtime service. The realistic security
 concerns are:
 
 - A bundled file that is malicious or has been tampered with
-  (`skills/power-app-yaml/references/schema-v3.pa.yaml`).
+  (`skills/create-app/references/schema-v3.pa.yaml`).
 - An example `.pa.yaml` that leaks real data, credentials, or internal URLs.
 - Instructions that could lead a model to produce unsafe Power Fx (e.g. calling
   out to an attacker-controlled endpoint).

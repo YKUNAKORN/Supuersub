@@ -1,0 +1,18 @@
+{
+  "defect": "A repeat container with four sample rows.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "<div class=\"row row-2\"><span class=\"cell\" data-field=\"Title\">Desk lamp</span><span class=\"cell\" data-field=\"Status\">Closed</span></div>",
+      "replace": "<div class=\"row row-2\"><span class=\"cell\" data-field=\"Title\">Desk lamp</span><span class=\"cell\" data-field=\"Status\">Closed</span></div>\n      <div class=\"row row-2\"><span class=\"cell\" data-field=\"Title\">Desk lamp</span><span class=\"cell\" data-field=\"Status\">Closed</span></div>\n      <div class=\"row row-2\"><span class=\"cell\" data-field=\"Title\">Desk lamp</span><span class=\"cell\" data-field=\"Status\">Closed</span></div>"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "repeat-rows"
+    ],
+    "exit": 0,
+    "verdict": "unverified"
+  }
+}

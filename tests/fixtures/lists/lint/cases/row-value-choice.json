@@ -1,0 +1,15 @@
+{
+  "description": "a value outside the choices",
+  "edits": [
+    {
+      "file": "Requests.list.json",
+      "set": "rows/0/Status",
+      "value": "Rejected"
+    }
+  ],
+  "checks": [
+    "row-value"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

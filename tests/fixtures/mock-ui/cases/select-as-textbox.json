@@ -1,0 +1,18 @@
+{
+  "defect": "A <select> with a single option reads as a text box.",
+  "edits": [
+    {
+      "file": "new-request.html",
+      "find": "      <option>Low</option>\n      <option>High</option>",
+      "replace": "      <option>Choose...</option>"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "select-options"
+    ],
+    "exit": 0,
+    "verdict": "unverified"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "defect": "The HTML shows a column sitemap.json does not list.",
+  "edits": [
+    {
+      "file": "sitemap.json",
+      "find": "\"fields\": [\n            \"Title\",\n            \"Status\"\n          ]",
+      "replace": "\"fields\": [\n            \"Title\"\n          ]"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "sitemap-data"
+    ],
+    "exit": 0,
+    "verdict": "unverified"
+  }
+}

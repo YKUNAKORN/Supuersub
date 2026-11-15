@@ -1,0 +1,79 @@
+# Eval case: multi-screen-mock
+#
+# Scored by:  python scripts/run_eval.py OUTPUT.pa.yaml --case tests/evals/multi-screen-mock
+#             once per screen file the conversion produced (three of them).
+# Cross-file: python skills/create-app/scripts/pa_lint.py --app-dir <app dir> \
+#               --sitemap tests/evals/multi-screen-mock/supersub/mockup/sitemap.json
+# Written up: notes.md (what this case stresses, and why it is scored this way),
+#             docs/evals.md (how to run it)
+#
+# The input is a mock-ui mockup FOLDER, not one mockup.html: supersub/mockup/ is a
+# byte-for-byte copy of skills/mock-ui/assets/example/ (tests/test_run_eval.py
+# keeps the two identical). The output is one .pa.yaml per screen.
+#
+# run_eval.py scores one file per run, so the assertions below hold for EACH of the
+# three screen files. The ranges cover all three screens; the per-screen counts of
+# the reference conversion are in the comments. What only shows across files --
+# a control name used on two screens, a screen defined twice -- is the linter's
+# --app-dir check, not this scorer's.
+
+case: multi-screen-mock
+title: "mock-ui folder: three linked screens, one file each"
+mockup: supersub/mockup/
+
+canvas:
+  width: 1366
+  height: 768
+
+structure:
+  # One screen per file is the point of the case. A file with all three screens in
+  # it is the single-file habit the pipeline branch replaces.
+  screens: {min: 1, max: 1}
+  required_screen_properties: [Fill]
+
+lint:
+  # Every control the mockup needs is in the catalog, and every Navigate() target is
+  # a screen in sitemap.json, so a good conversion has nothing to warn about.
+  verdict: [safe]
+  max_errors: 0
+  max_warnings: 0
+
+controls:
+  # reference: scrLoanList 47, scrNewLoan 32, scrLoanDetail 40
+  total: {min: 24, max: 60}
+  required_types: [Label, Classic/Button, GroupContainer]
+  # Data hints (data-repeat, data-source) render as static sample controls while
+  # Gallery and Form are in unattempted_controls. Emitting either is the guess this
+  # case exists to catch.
+  forbidden_types: [Gallery, Form, DataTable]
+  by_type:
+    Label:          {min: 10, max: 30}   # ref 23 / 14 / 18
+    Classic/Button: {min: 3, max: 10}    # 2 sidebar rows + at least one action; ref 7 / 4 / 5
+    GroupContainer: {min: 3, max: 10}    # sidebar + top bar + at least one card; ref 7 / 5 / 7
+    Rectangle:      {min: 1, max: 12}    # top-bar rule, row rules; ref 6 / 2 / 8
+    Classic/Icon:   {min: 0, max: 6}
+
+geometry:
+  in_bounds: true
+  max_unresolved: 0
+
+navigation:
+  # Every screen has two sidebar rows plus at least one content link (sitemap nav).
+  count: {min: 3}
+  targets_resolve: true
+  # The other screens of the app. A Navigate() to one of them resolves without a
+  # placeholder comment; a target that is in neither the file nor the sitemap is
+  # still dangling.
+  sitemap: supersub/mockup/sitemap.json
+
+catalog:
+  max_untagged_unverified: 0
+  max_unverified_properties: 0
+
+reference:
+  # Not a fresh-session model run: written in the Phase 04 working session by
+  # following SKILL.md and references/from-mock-ui.md, with the mockup in view. It
+  # exercises the scorer in CI. The detail screen is the reference because it carries
+  # the most: a data-unsupported mark, two actions, and navigation to both other
+  # screens. The other two files are scored by hand (notes.md).
+  output: supersub/app/scrLoanDetail.pa.yaml

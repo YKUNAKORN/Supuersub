@@ -1,0 +1,15 @@
+{
+  "description": "unique without indexed",
+  "edits": [
+    {
+      "file": "Sites.list.json",
+      "set": "columns/0/indexed",
+      "value": false
+    }
+  ],
+  "checks": [
+    "unique-not-indexed"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

@@ -1,0 +1,18 @@
+{
+  "defect": "sitemap.json lists an action no control has.",
+  "edits": [
+    {
+      "file": "sitemap.json",
+      "find": "\"id\": \"filter:Requests\",",
+      "replace": "\"id\": \"sort:Requests\","
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "sitemap-actions"
+    ],
+    "exit": 0,
+    "verdict": "unverified"
+  }
+}

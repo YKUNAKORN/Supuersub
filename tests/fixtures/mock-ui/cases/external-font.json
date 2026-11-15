@@ -1,0 +1,18 @@
+{
+  "defect": "A web font from a CDN.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "<style>",
+      "replace": "<link rel=\"stylesheet\" href=\"https://fonts.example.com/css2?family=Inter\">\n<style>"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "external-resource"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

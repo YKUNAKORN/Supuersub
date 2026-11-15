@@ -1,0 +1,13 @@
+{
+  "defect": "--design against the DESIGN.md the :root block came from.",
+  "edits": [],
+  "args": [
+    "--design",
+    "{dir}/DESIGN.md"
+  ],
+  "expect": {
+    "checks": [],
+    "exit": 0,
+    "verdict": "safe"
+  }
+}

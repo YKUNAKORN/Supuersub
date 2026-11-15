@@ -1,0 +1,13 @@
+{
+  "defect": "power-apps checks cannot run without the profile.",
+  "edits": [],
+  "args": [
+    "--profile",
+    "{dir}/no-such-profile.md"
+  ],
+  "expect": {
+    "checks": [],
+    "exit": 0,
+    "verdict": "unproven"
+  }
+}

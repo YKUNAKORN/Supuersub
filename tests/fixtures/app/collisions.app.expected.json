@@ -1,0 +1,18 @@
+{
+  "description": "Four files linted as one app. The finding goes on the later occurrence in file-name order: b reuses two names from a, c defines scrA again, d reuses lblShared across its own two screens. Navigate() targets all resolve within the app.",
+  "args": ["--app-dir", "tests/fixtures/app/collisions"],
+  "expected_exit_code": 0,
+  "expected_files": {
+    "a-first.pa.yaml": {"expected_verdict_code": "safe", "expected_findings": []},
+    "b-second.pa.yaml": {"expected_verdict_code": "unverified", "expected_findings": [
+      {"layer": "L3", "check": "L3.duplicate-control-name-in-app"}
+    ]},
+    "c-screen-again.pa.yaml": {"expected_verdict_code": "unverified", "expected_findings": [
+      {"layer": "L3", "check": "L3.duplicate-screen-in-app"}
+    ]},
+    "d-two-screens.pa.yaml": {"expected_verdict_code": "unverified", "expected_findings": [
+      {"layer": "L3", "check": "L3.duplicate-control-name"},
+      {"layer": "L3", "check": "L3.duplicate-control-name-in-app"}
+    ]}
+  }
+}

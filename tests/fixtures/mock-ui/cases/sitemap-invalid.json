@@ -1,0 +1,18 @@
+{
+  "defect": "sitemap.json has a key the schema does not define.",
+  "edits": [
+    {
+      "file": "sitemap.json",
+      "find": "\"start\": \"scrHome\",",
+      "replace": "\"start\": \"scrHome\",\n  \"theme\": \"dark\","
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "sitemap-invalid"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

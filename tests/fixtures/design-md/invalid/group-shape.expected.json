@@ -1,0 +1,11 @@
+{
+  "description": "A component whose value is a string, not a mapping.",
+  "target": "web",
+  "expected_exit_code": 1,
+  "expected_verdict_code": "will_fail",
+  "expected_findings": [
+    {
+      "check": "group-shape"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "defect": "A state variant opened only from index.html is not unreachable.",
+  "edits": [
+    {
+      "file": "home-empty.html",
+      "create": "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\"><title>scrHomeEmpty</title>\n<style>\n  :root { --canvas-width: 1366px; --canvas-height: 768px; --color-on-surface: #1b1d22; }\n  body { width: var(--canvas-width); height: var(--canvas-height); color: var(--color-on-surface); }\n  .nav { position: absolute; left: 0px; top: 0px; width: 160px; height: 48px; }\n</style></head>\n<body data-screen=\"scrHomeEmpty\" data-title=\"scrHomeEmpty\">\n  <a class=\"nav nav-1\" href=\"home.html\" data-nav=\"scrHome\">Requests</a>\n</body></html>\n"
+    },
+    {
+      "file": "sitemap.json",
+      "find": "\"on\": \"Send\"\n        }\n      ]\n    }",
+      "replace": "\"on\": \"Send\"\n        }\n      ]\n    },\n    {\n      \"id\": \"scrHomeEmpty\",\n      \"file\": \"home-empty.html\",\n      \"title\": \"scrHomeEmpty\",\n      \"purpose\": \"Extra screen\",\n      \"kind\": \"state\",\n      \"variantOf\": \"scrHome\",\n      \"height\": 768,\n      \"nav\": [\n        {\n          \"label\": \"Requests\",\n          \"to\": \"scrHome\"\n        }\n      ],\n      \"data\": [],\n      \"actions\": []\n    }"
+    },
+    {
+      "file": "index.html",
+      "find": "<li><a href=\"new-request.html\" data-nav=\"scrNewRequest\">New request</a></li>",
+      "replace": "<li><a href=\"new-request.html\" data-nav=\"scrNewRequest\">New request</a></li>\n    <li><a href=\"home-empty.html\" data-nav=\"scrHomeEmpty\">Requests, empty</a></li>"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [],
+    "exit": 0,
+    "verdict": "safe"
+  }
+}

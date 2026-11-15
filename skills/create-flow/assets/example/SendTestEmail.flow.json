@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "name": "SendTestEmail",
+  "displayName": "Claude Import Test (Legacy)",
+  "description": "",
+  "connectors": ["shared_office365"],
+  "triggers": {
+    "manual": {
+      "type": "Request",
+      "kind": "Button",
+      "inputs": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "title": "Message",
+              "type": "string",
+              "x-ms-dynamically-added": true,
+              "description": "Type any message to include in the email",
+              "x-ms-content-hint": "TEXT"
+            },
+            "email": {
+              "title": "Send to",
+              "type": "string",
+              "format": "email",
+              "x-ms-dynamically-added": true,
+              "description": "Your own email address",
+              "x-ms-content-hint": "EMAIL"
+            }
+          },
+          "required": ["text", "email"]
+        }
+      }
+    }
+  },
+  "actions": {
+    "Get_Bangkok_time": {
+      "runAfter": {},
+      "type": "Compose",
+      "inputs": "@convertFromUtc(utcNow(), 'SE Asia Standard Time', 'dd/MM/yyyy HH:mm')"
+    },
+    "Build_message": {
+      "runAfter": { "Get_Bangkok_time": ["Succeeded"] },
+      "type": "Compose",
+      "inputs": "ข้อความที่พิมพ์: @{triggerBody()?['text']} | เวลา (กรุงเทพฯ): @{outputs('Get_Bangkok_time')}"
+    },
+    "Send_an_email_(V2)": {
+      "runAfter": { "Build_message": ["Succeeded"] },
+      "type": "OpenApiConnection",
+      "inputs": {
+        "host": {
+          "connectionName": "shared_office365",
+          "operationId": "SendEmailV2"
+        },
+        "parameters": {
+          "emailMessage/To": "@triggerBody()?['email']",
+          "emailMessage/Subject": "ทดสอบ import จาก Claude สำเร็จ",
+          "emailMessage/Body": "<p>@{outputs('Build_message')}</p>"
+        }
+      }
+    }
+  },
+  "placeholders": {},
+  "notes": "Reproduces the owner's reference package (assets/reference-package/). A button flow: the user types a message and an address, and receives the message with the Bangkok time."
+}

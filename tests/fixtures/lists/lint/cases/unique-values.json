@@ -1,0 +1,15 @@
+{
+  "description": "a unique column with a repeated value",
+  "edits": [
+    {
+      "file": "Sites.list.json",
+      "set": "rows/2/SiteCode",
+      "value": "N01"
+    }
+  ],
+  "checks": [
+    "unique-values"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

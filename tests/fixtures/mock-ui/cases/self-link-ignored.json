@@ -1,0 +1,10 @@
+{
+  "defect": "A link to the screen it sits on is chrome, not an edge.",
+  "edits": [],
+  "args": [],
+  "expect": {
+    "checks": [],
+    "exit": 0,
+    "verdict": "safe"
+  }
+}

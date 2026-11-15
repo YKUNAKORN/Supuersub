@@ -36,7 +36,10 @@ controls:
   by_type:
     Label:          {min: 4, max: 12}
     Classic/Button: {min: 7, max: 16}   # 4 nav rows + 4 tiles + 1 CTA = 9
-    GroupContainer: {min: 1, max: 6}    # sidebar + top bar
+    # sidebar + top bar, plus up to 4 nav icons and the avatar: .ico is a 24px CSS
+    # square with a 6px radius and GroupContainer is the only control with confirmed
+    # Radius*, so drawing each icon as one is the faithful reading, not padding.
+    GroupContainer: {min: 1, max: 8}
     Rectangle:      {min: 0, max: 10}
     Classic/Icon:   {min: 0, max: 10}
     Image:          {min: 0, max: 3}
@@ -57,7 +60,7 @@ catalog:
 reference:
   # Not model output. A hand-written screen that stands in for a good answer, so the
   # scorer itself can be exercised in CI without running a model. See docs/evals.md.
-  output: ../../../skills/power-app-yaml/assets/examples/example-app-shell.yaml
+  output: ../../../skills/create-app/assets/examples/example-app-shell.yaml
   known_deviations:
     - check: lint.verdict
       reason: >-

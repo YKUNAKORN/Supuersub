@@ -1,0 +1,7 @@
+{
+  "description": "the base lints clean when every evidence row is trusted",
+  "edits": [],
+  "checks": [],
+  "exit": 0,
+  "verdict": "safe"
+}

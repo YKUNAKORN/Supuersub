@@ -1,0 +1,54 @@
+{
+  "schema": "1.0",
+  "details": {
+    "displayName": "Claude Import Test (Legacy)",
+    "description": "",
+    "createdTime": "2026-11-09T07:29:55.6862280Z",
+    "packageTelemetryId": "33168822-a37b-49d6-a652-b8d772e4fb7d",
+    "creator": "N/A",
+    "sourceEnvironment": ""
+  },
+  "resources": {
+    "207d9c43-38dc-4226-acef-b322390965e2": {
+      "type": "Microsoft.Flow/flows",
+      "suggestedCreationType": "New",
+      "creationType": "Existing, New, Update",
+      "details": {
+        "displayName": "Claude Import Test (Legacy)"
+      },
+      "configurableBy": "User",
+      "hierarchy": "Root",
+      "dependsOn": [
+        "7b0cbf81-fbc8-4b3a-9abf-40cc84c73893",
+        "c3d59efa-cce0-4e99-bc7f-eda17b189491"
+      ]
+    },
+    "7b0cbf81-fbc8-4b3a-9abf-40cc84c73893": {
+      "id": "/providers/Microsoft.PowerApps/apis/shared_office365",
+      "name": "shared_office365",
+      "type": "Microsoft.PowerApps/apis",
+      "suggestedCreationType": "Existing",
+      "details": {
+        "displayName": "Office 365 Outlook",
+        "iconUri": "https://connectoricons-prod.azureedge.net/releases/v1.0.1464/1.0.1464.2404/office365/icon.png"
+      },
+      "configurableBy": "System",
+      "hierarchy": "Child",
+      "dependsOn": []
+    },
+    "c3d59efa-cce0-4e99-bc7f-eda17b189491": {
+      "type": "Microsoft.PowerApps/apis/connections",
+      "suggestedCreationType": "Existing",
+      "creationType": "Existing",
+      "details": {
+        "displayName": "Office 365 Outlook connection",
+        "iconUri": "https://connectoricons-prod.azureedge.net/releases/v1.0.1464/1.0.1464.2404/office365/icon.png"
+      },
+      "configurableBy": "User",
+      "hierarchy": "Child",
+      "dependsOn": [
+        "7b0cbf81-fbc8-4b3a-9abf-40cc84c73893"
+      ]
+    }
+  }
+}

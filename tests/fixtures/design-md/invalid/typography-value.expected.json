@@ -1,0 +1,11 @@
+{
+  "description": "fontWeight written as a keyword.",
+  "target": "web",
+  "expected_exit_code": 1,
+  "expected_verdict_code": "will_fail",
+  "expected_findings": [
+    {
+      "check": "typography-value"
+    }
+  ]
+}

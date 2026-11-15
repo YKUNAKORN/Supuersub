@@ -1,0 +1,6 @@
+{
+  "description": "mock-ui example page new-loan.html converted by following create-app's SKILL.md. Catalogued controls only; Navigate targets in other files are commented placeholders. Zero findings.",
+  "expected_exit_code": 0,
+  "expected_verdict_code": "safe",
+  "expected_findings": []
+}

@@ -1,0 +1,22 @@
+{
+  "description": "a column named like a built-in column",
+  "edits": [
+    {
+      "file": "Requests.list.json",
+      "set": "columns/4/name",
+      "value": "Created"
+    },
+    {
+      "file": "Requests.list.json",
+      "rename_key": [
+        "SubmittedAt",
+        "Created"
+      ]
+    }
+  ],
+  "checks": [
+    "name-reserved"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

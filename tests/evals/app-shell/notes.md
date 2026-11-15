@@ -31,7 +31,7 @@ Specifically:
 
 ## Reference output
 
-`skills/power-app-yaml/assets/examples/example-app-shell.yaml` — 25 controls. It
+`skills/create-app/assets/examples/example-app-shell.yaml` — 25 controls. It
 is **not model output**: it is a hand-written screen that predates the eval
 harness, used so the scorer can be exercised in CI without running a model.
 
