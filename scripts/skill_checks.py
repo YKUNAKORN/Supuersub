@@ -196,6 +196,104 @@ def check_plugin_layout(root: Path) -> list[Result]:
     return out
 
 
+# --- Cross-skill consistency (phase 07) ---------------------------------------------
+# The hand-off contract (shared/handoff.md) fixes one folder per skill under supersub/.
+LAYOUT_FOLDERS = ("mockup", "app", "lists", "flows")
+_LAYOUT_RE = re.compile(r"(?<![\w-])supersub/([A-Za-z0-9_.-]+)")
+_NOT_FOR_RE = re.compile(r"\b(not for|does not)\b", re.I)
+_HANDOFF_HEADING_RE = re.compile(r"^## Hand-off\b.*$", re.M)
+
+
+def _description(skill_dir: Path, yaml_mod) -> str:
+    fm = read_frontmatter(skill_dir / "SKILL.md", yaml_mod) if (
+        skill_dir / "SKILL.md").is_file() else None
+    desc = (fm or {}).get("description")
+    return desc if isinstance(desc, str) else ""
+
+
+def check_says_not_for(skill_dir: Path, others: list[str], yaml_mod) -> list[Result]:
+    """The description says what the skill is not for, and names a skill that is."""
+    folder = skill_dir.name
+    desc = _description(skill_dir, yaml_mod)
+    named = [o for o in others if o in desc]
+    return [(bool(_NOT_FOR_RE.search(desc)) and bool(named),
+             f"{folder}: description says what it is not for and names another skill",
+             f"needs 'Not for ...' or 'Does not ...' plus one of {others}; "
+             f"names {named or 'none'}")]
+
+
+def handoff_section(text: str) -> str | None:
+    """The text of the '## Hand-off' section of a SKILL.md, or None."""
+    m = _HANDOFF_HEADING_RE.search(text)
+    if not m:
+        return None
+    rest = text[m.end():]
+    nxt = re.search(r"^## ", rest, re.M)
+    return rest[:nxt.start()] if nxt else rest
+
+
+def check_names_next_step(skill_dir: Path, others: list[str]) -> list[Result]:
+    """SKILL.md has a '## Hand-off' section that links the contract and names a skill."""
+    folder = skill_dir.name
+    skill_md = skill_dir / "SKILL.md"
+    if not skill_md.is_file():
+        return []
+    section = handoff_section(skill_md.read_text(encoding="utf-8"))
+    out: list[Result] = [(section is not None, f"{folder}: SKILL.md has a '## Hand-off' section",
+                          "every skill ends the same way (shared/handoff.md)")]
+    if section is None:
+        return out
+    out.append(("references/shared/handoff.md" in section,
+                f"{folder}: the hand-off links references/shared/handoff.md",
+                "the contract every skill hands off by"))
+    named = [o for o in others if f"`{o}`" in section]
+    out.append((bool(named), f"{folder}: the hand-off names the next skill",
+                f"none of {others} appears in backticks in the section"))
+    return out
+
+
+def find_cross_skill_paths(skill_dir: Path, others: list[str]) -> list[tuple[str, str]]:
+    """(file, path) for every path into another skill's folder, with or without skills/."""
+    if not others:
+        return []
+    pat = re.compile(r"(?<![\w-])((?:%s)/(?:references|scripts|assets)/[\w.\-/]*)"
+                     % "|".join(re.escape(o) for o in others))
+    found: list[tuple[str, str]] = []
+    for f in _scanned_files(skill_dir):
+        try:
+            text = f.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        rel = f.relative_to(skill_dir).as_posix()
+        found += [(rel, h) for h in sorted({h.rstrip(".") for h in pat.findall(text)})]
+    return found
+
+
+def check_no_cross_skill_path(skill_dir: Path, others: list[str]) -> list[Result]:
+    folder = skill_dir.name
+    hits = find_cross_skill_paths(skill_dir, others)
+    return [(not hits, f"{folder}: no path points into another skill's folder",
+             "; ".join(f"{f}: {p}" for f, p in hits[:12])
+             + ". Name the other skill in words; its files are not in this sandbox.")]
+
+
+def check_layout_folders(skill_dir: Path) -> list[Result]:
+    """Every supersub/<folder> a skill mentions is one the hand-off contract defines."""
+    folder = skill_dir.name
+    bad: set[str] = set()
+    for f in _scanned_files(skill_dir):
+        try:
+            text = f.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        for name in _LAYOUT_RE.findall(text):
+            name = name.rstrip(".")
+            if name not in LAYOUT_FOLDERS:
+                bad.add(f"{f.relative_to(skill_dir).as_posix()}: supersub/{name}")
+    return [(not bad, f"{folder}: every supersub/<folder> it names is in the hand-off layout",
+             f"{sorted(bad)}; allowed: {list(LAYOUT_FOLDERS)}")]
+
+
 def skill_dirs(root: Path) -> list[Path]:
     base = root / "skills"
     return sorted(d for d in base.iterdir() if d.is_dir()) if base.is_dir() else []
@@ -205,9 +303,16 @@ def run_all(root: Path, yaml_mod) -> list[Result]:
     results: list[Result] = []
     dirs = skill_dirs(root)
     results.append((bool(dirs), "skills/ holds at least one skill", ""))
+    names = [d.name for d in dirs]
     for d in dirs:
+        others = [n for n in names if n != d.name]
         results += check_skill_identity(d, yaml_mod)
         results += check_self_contained(d)
         results += check_mentioned_files_exist(d)
+        if others:
+            results += check_says_not_for(d, others, yaml_mod)
+            results += check_names_next_step(d, others)
+            results += check_no_cross_skill_path(d, others)
+        results += check_layout_folders(d)
     results += check_plugin_layout(root)
     return results

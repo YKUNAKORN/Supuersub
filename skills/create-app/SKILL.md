@@ -2,13 +2,13 @@
 name: create-app
 description: >-
   Converts an HTML/CSS mockup (Google Stitch, v0, Figma export), a UI screenshot, or a
-  mock-ui folder (sitemap.json + screen HTML files) into Power Apps Canvas
-  source (.pa.yaml, schema v3.0), one file per screen, for "Paste code" in Power Apps
-  Studio. Use when someone shares an HTML mockup, UI screenshot, wireframe or design
-  export and wants a Power Apps screen, or asks to "convert this to pa.yaml", "make this
-  a Power Apps screen", or "turn this design into code I can paste into Power Apps" —
-  even without the term ".pa.yaml". Also to fix or debug a .pa.yaml that failed to
-  paste (PA1001 / PA2108), or to add or extend a screen in an existing app.
+  mock-ui folder into Power Apps Canvas source (.pa.yaml, schema v3.0), one file per
+  screen, for "Paste code" in Studio. Use when someone shares an HTML mockup, UI
+  screenshot, wireframe or design export and wants a Power Apps screen, or asks to
+  "convert this to pa.yaml", "make this a Power Apps screen", or "turn this design
+  into code I can paste into Power Apps", even without the term ".pa.yaml". Also to
+  fix a .pa.yaml that failed to paste (PA1001 / PA2108), or to add a screen to an
+  existing app. Not for drawing a mockup (mock-ui), lists or flows.
 ---
 
 # HTML / Image → Power Apps Canvas YAML
@@ -122,16 +122,17 @@ Example-file defaults, to override with the mockup's real values: font
 `=RGBA(65, 71, 84, 1)`; headings `=RGBA(24, 28, 35, 1)`; borders
 `=RGBA(193, 198, 215, 1)`. Read hover/pressed colors from the CSS, never a screenshot.
 
-## Hand off + read back
+## Hand-off
 
-- **Send the entire file**; isolated snippets go in separate, labeled blocks.
+[`handoff.md`](references/shared/handoff.md) is the contract; then read back.
+
+- **Send the entire file**; snippets in separate, labeled blocks.
 - **Classify the report first.** `PA1001`/`PA2108` block the whole paste (must fix);
-  `PA2105`/`PA2106` are version warnings Studio auto-substitutes — don't panic-fix.
+  `PA2105`/`PA2106` are version warnings Studio auto-substitutes: leave them.
 - **On a screenshot,** compare point-by-point (position, color, size, font, border,
-  radius) and name the differences; never say "looks close." Fix only what's broken.
+  radius) and name the differences, never "looks close." Fix only what's broken.
 - **Never read a property's absence from an export as "does not support."**
-- **Name the next skills:** `create-list` (lists the screens use), `create-flow`
-  (flows their actions call).
+- **Next:** `create-list` (lists the screens use), `create-flow` (flows they call).
 
 ## Pre-send checklist
 

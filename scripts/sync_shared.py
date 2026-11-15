@@ -32,6 +32,7 @@ MANIFEST: dict[str, list[str]] = {
     "mock-ui": ["handoff.md", "powerapps-profile.md"],
     "create-list": ["handoff.md"],
     "create-flow": ["handoff.md"],
+    "create-app": ["handoff.md"],
 }
 
 

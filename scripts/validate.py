@@ -972,6 +972,133 @@ if CF_LINT.is_file():
     check(not problems, "the reference package passes the builder's verification",
           "; ".join(problems))
 
+print("Cross-skill consistency")
+SKILL_NAMES = [d.name for d in skill_checks.skill_dirs(ROOT)]
+VERDICT_CODES = ("safe", "unverified", "will_fail", "unproven")
+# One verdict vocabulary: every linter can end in each of the four codes.
+for lint_py in sorted((ROOT / "skills").glob("*/scripts/*_lint.py")):
+    src = lint_py.read_text(encoding="utf-8")
+    missing = [c for c in VERDICT_CODES if f'"{c}"' not in src]
+    check(not missing, f"{lint_py.relative_to(ROOT).as_posix()} uses the four verdict codes",
+          f"missing {missing}; shared/handoff.md, 'Verdicts'")
+
+
+def verdict_codes(payload) -> list[str]:
+    found: list[str] = []
+    if isinstance(payload, dict):
+        for k, v in payload.items():
+            if k == "verdict_code" and isinstance(v, str):
+                found.append(v)
+            else:
+                found += verdict_codes(v)
+    elif isinstance(payload, list):
+        for v in payload:
+            found += verdict_codes(v)
+    return found
+
+
+# Every bundled example passes its own linter: no error, and every check ran.
+EXAMPLE_LINTS = [
+    ("create-app", ["scripts/pa_lint.py", *sorted(
+        p.relative_to(ROOT / "skills" / "create-app").as_posix()
+        for p in (ROOT / "skills" / "create-app" / "assets" / "examples").glob("*.yaml"))]),
+    ("design-md", ["scripts/design_lint.py", "assets/example/DESIGN.md"]),
+    ("mock-ui", ["scripts/mock_lint.py", "assets/example", "--design",
+                 "assets/example/DESIGN.md"]),
+    ("create-list", ["scripts/list_lint.py", "assets/example"]),
+    ("create-flow", ["scripts/flow_lint.py", "assets/example"]),
+]
+for skill, args in EXAMPLE_LINTS:
+    sdir = ROOT / "skills" / skill
+    proc = subprocess.run([sys.executable, str(sdir / args[0]), *args[1:], "--json"],
+                          capture_output=True, text=True, cwd=str(sdir))
+    try:
+        got = verdict_codes(json.loads(proc.stdout))
+    except json.JSONDecodeError:
+        got = []
+    check(bool(got) and all(c in ("safe", "unverified") for c in got),
+          f"{skill}: every bundled example passes its own linter", f"verdicts: {got}")
+
+# Identifier rules agree wherever they are written down (shared/handoff.md, "Names").
+_mu_src = (ROOT / "skills" / "mock-ui" / "scripts" / "mock_lint.py").read_text(encoding="utf-8")
+_cl_src = (ROOT / "skills" / "create-list" / "scripts" / "list_lint.py").read_text(encoding="utf-8")
+_sm_schema = json.loads((ROOT / "skills" / "mock-ui" / "assets" / "sitemap.schema.json")
+                        .read_text(encoding="utf-8"))
+_fl_schema = json.loads((ROOT / "skills" / "create-flow" / "assets" / "flow.schema.json")
+                        .read_text(encoding="utf-8"))
+
+
+def _regex(src: str, var: str) -> str | None:
+    m = re.search(rf'^{var} = re\.compile\(r"([^"]+)"\)', src, re.M)
+    return m.group(1) if m else None
+
+
+_name_mu, _name_cl = _regex(_mu_src, "NAME_RE"), _regex(_cl_src, "NAME_RE")
+check(_name_mu is not None and _name_mu == _name_cl
+      == _sm_schema["$defs"]["internalName"]["pattern"],
+      "list and column name rule is one rule (mock_lint, list_lint, sitemap schema)",
+      f"{_name_mu!r} / {_name_cl!r} / {_sm_schema['$defs']['internalName']['pattern']!r}")
+check(_regex(_mu_src, "SCREEN_RE") == _sm_schema["$defs"]["screenId"]["pattern"],
+      "screen id rule is one rule (mock_lint, sitemap schema)")
+_flow_pat = _fl_schema["properties"]["name"]["pattern"]
+check(all(bool(re.match(_flow_pat, n)) == bool(re.match(_name_mu or "$^", n))
+          for n in ("NotifyApprover", "A", "notify", "Notify_Approver", "Notify2")),
+      "flow names follow the same PascalCase rule as run-flow:<Name> objects",
+      f"flow.schema.json name pattern {_flow_pat!r}")
+
+# The trigger matrix: at least fifteen rows, English and Thai, one real owner each.
+tm = ROOT / "docs" / "trigger-matrix.md"
+check(tm.is_file(), "docs/trigger-matrix.md present")
+if tm.is_file():
+    rows = re.findall(r"^\| (\d+) \| (.+?) \| `?([a-z-]+)`? \|", tm.read_text(encoding="utf-8"),
+                      re.M)
+    owners = [o for _, _, o in rows]
+    check(len(rows) >= 15, "trigger matrix has at least fifteen messages", f"{len(rows)}")
+    check(all(o in SKILL_NAMES + ["none"] for o in owners),
+          "every trigger-matrix owner is a skill or 'none'",
+          f"{sorted(set(owners) - set(SKILL_NAMES) - {'none'})}")
+    check(set(SKILL_NAMES) <= set(owners), "every skill owns at least one message",
+          f"no row for {sorted(set(SKILL_NAMES) - set(owners))}")
+    thai = [m for _, m, _ in rows if re.search(r"[\u0e00-\u0e7f]", m)]
+    check(len(thai) >= 5, "trigger matrix mixes English and Thai (at least five Thai)",
+          f"{len(thai)} Thai rows")
+
+# The release test plan: every unverified item from phases 02-06 exactly once.
+rtp = ROOT / "docs" / "release-test-plan.md"
+check(rtp.is_file(), "docs/release-test-plan.md present")
+if rtp.is_file():
+    rtp_text = rtp.read_text(encoding="utf-8")
+    plan_text = (ROOT / "docs" / "test-plan.md").read_text(encoding="utf-8")
+    ids = sorted(set(re.findall(r"^\| ((?:B|U|M|P|F)\d+[a-z]?) \|", plan_text, re.M)))
+    ids += ["T1", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "K1", "K2", "K3",
+            "E0", "E1", "E2", "E3", "E4", "R0", "P1", "P2", "S1"]
+    for item in sorted(set(ids)):
+        n = len(re.findall(rf"^\| \[ \] \| {re.escape(item)} \|", rtp_text, re.M))
+        check(n == 1, f"release test plan has item {item} exactly once", f"found {n}")
+    ib = (ROOT / "skills" / "create-list" / "references" / "import-behavior.md").read_text(
+        encoding="utf-8")
+    unverified = re.findall(r"^\| `([a-z-]+)` \|[^|]*\| unverified \|", ib, re.M)
+    cf_catalog = yaml.safe_load((ROOT / "skills" / "create-flow" / "references" /
+                                 "connectors.yaml").read_text(encoding="utf-8"))
+    unverified += [k for k, v in cf_catalog.items()
+                   if isinstance(v, dict) and v.get("evidence") == "unverified"]
+    check(bool(unverified), "found the unverified evidence rows to look for")
+    for row in unverified:
+        n = rtp_text.count(f"`{row}`")
+        check(n == 1, f"release test plan names unverified row `{row}` exactly once",
+              f"found {n}")
+
+# The end-to-end scenario and the README's section per skill.
+for rel in ("tests/e2e/leave-request/DESIGN.md", "tests/e2e/leave-request/brief.md",
+            "docs/e2e-walkthrough.md", "docs/create-app.md", "scripts/package_plugin.py"):
+    check((ROOT / rel).is_file(), f"{rel} present")
+readme = (ROOT / "README.md").read_text(encoding="utf-8")
+for name in SKILL_NAMES:
+    check(f"### `{name}`" in readme, f"README.md has a section for {name}")
+check("## What it cannot do" in readme, "README.md says what the plugin cannot do")
+check("/dist/" in (ROOT / ".gitignore").read_text(encoding="utf-8"),
+      ".gitignore ignores dist/", "package_plugin.py writes there")
+
 print("Plugin metadata")
 plugin_json = ROOT / ".claude-plugin" / "plugin.json"
 market_json = ROOT / ".claude-plugin" / "marketplace.json"

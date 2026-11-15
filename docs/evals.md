@@ -21,6 +21,23 @@ important thing on this page.
 - [Adding a case](#adding-a-case)
 - [The self-check CI runs](#the-self-check-ci-runs)
 - [design-md: written briefs, scored by hand](#design-md-written-briefs-scored-by-hand)
+- [mock-ui](#mock-ui)
+- [create-list](#create-list)
+- [create-flow](#create-flow)
+- [The whole plugin](#the-whole-plugin)
+
+## Per skill, at a glance
+
+| Skill | Automated (CI) | Manual (a person, with the plugin installed) |
+|---|---|---|
+| `create-app` | linter fixtures; the scorer against bundled references; patterns and examples lint | convert a case's mockup, save it, score it with `run_eval.py`; paste in Studio |
+| `design-md` | linter fixtures; the example and template lint | three written briefs, linter plus a human read |
+| `mock-ui` | linter fixtures; the example lints clean; works with JavaScript off | open the pages in a browser and click through; judge the look |
+| `create-list` | linter fixtures; build compared with the owner's workbook; same spec, same bytes | import the files and record what the screen showed |
+| `create-flow` | linter fixtures; round trip against the owner's package; harvest scrub | import a built package and run it once |
+| all five | sandbox simulation; packaging; e2e scenario re-linted and rebuilt | trigger check in chat; the release test plan |
+
+The sections below say what each row means. No step in CI runs a model.
 
 ## What is automated and what is not
 
@@ -320,4 +337,61 @@ Each brief is scored by **the linter plus a human read**:
 As with `create-app`, CI does not run a model, so none of this is a measure of output
 quality until a person has done steps 1-4. The checklists say what a good result
 contains; they are not evidence that the skill produces it.
+
+## mock-ui
+
+There is no scorer for mockups: whether a page looks right is a human judgment.
+
+**Automated, in CI:**
+
+| What | Where |
+|---|---|
+| Every check id fires on its fixture (48 cases, each one defect on a clean base) | `tests/test_mock_lint.py`, `tests/fixtures/mock-ui/` |
+| The bundled example lints `CLEAN` for its declared target, with the token-drift check | `scripts/validate.py` |
+| The example works with JavaScript off: every control is a real link or form | `tests/test_mock_lint.py` |
+| `tokens_to_css.py` turns `DESIGN.md` into the `:root` block every page starts with | `tests/test_tokens_to_css.py` |
+| One example page converts to a `.pa.yaml` that lints `SAFE TO PASTE` | `tests/fixtures/mock-ui/converted/` (written by hand, one sample) |
+
+**Manual:** open `index.html` from disk in a browser, click through every screen, and
+compare with the `DESIGN.md`. Release test plan item `U1`.
+
+## create-list
+
+**Automated, in CI:**
+
+| What | Where |
+|---|---|
+| Every check id fires on its fixture (28 cases over a two-list base) | `tests/test_list_lint.py` |
+| The example builds to the shape of the owner's reference workbook | `tests/test_build_list.py`, `tests/fixtures/lists/9AM_Holidays.xlsx` |
+| Same spec, same bytes; CSV with and without the byte-order mark; refusal on errors | `tests/test_build_list.py` |
+| The evidence table and the schema enums agree with the type table | `scripts/validate.py` |
+
+**Manual:** everything the import screen does. The type probe and its results table are
+in [`test-plan.md`](test-plan.md#sharepoint-list-import-create-list). Only the owner's own
+import moves a row of `import-behavior.md` to `import-tested`.
+
+## create-flow
+
+**Automated, in CI:**
+
+| What | Where |
+|---|---|
+| Every check id fires on its case | `tests/test_flow_lint.py` |
+| The example rebuilds the owner's reference package: same entry names, same normalised bytes | `tests/test_build_flow_package.py` |
+| Harvesting the reference gives the seeded catalog; tenant values never survive | `tests/test_harvest_flow.py` |
+| Every catalog entry has an evidence level; the real connection id appears nowhere | `scripts/validate.py` |
+
+**Manual:** importing a package the builder made, and running it.
+[`test-plan.md`](test-plan.md#power-automate-import-create-flow), F2 onwards.
+
+## The whole plugin
+
+| What | Where | Automated |
+|---|---|---|
+| Each skill runs every script its `SKILL.md` names from a copy of its own folder alone (chat's sandbox), and from an empty project folder (Claude Code) | `tests/test_sandbox_simulation.py` | yes |
+| `dist/supersub.zip` has the right shape and `claude plugin validate` accepts it unpacked (when the CLI is on PATH) | `tests/test_package_plugin.py` | yes |
+| The leave request scenario: every step re-linted, binaries rebuilt byte for byte, names agree across skills | `tests/test_e2e_leave_request.py`, [`e2e-walkthrough.md`](e2e-walkthrough.md) | yes, on saved artifacts |
+| Descriptions say what each skill is not for; hand-offs link the contract and name the next skill | `scripts/skill_checks.py` | yes |
+| Which skill actually loads for a message | [`trigger-matrix.md`](trigger-matrix.md), release test plan `T1` | no |
+| Installing and running on each surface | [`release-test-plan.md`](release-test-plan.md) | no |
 

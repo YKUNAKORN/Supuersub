@@ -188,6 +188,73 @@ class TestPluginLayout(Base):
                       failed(skill_checks.check_plugin_layout(self.root)))
 
 
+HANDOFF_BODY = ("# Demo\n\n## Hand-off\n\n[`handoff.md`](references/shared/handoff.md) is the "
+                "contract. Next: **`other-skill`** reads this output.\n")
+
+
+class TestCrossSkill(Base):
+    """Phase 07: descriptions say what a skill is not for, hand-offs agree."""
+
+    def test_not_for_with_a_named_skill_passes(self):
+        skill = make_skill(self.root, description=GOOD_DESCRIPTION
+                           + " Not for flows: that is other-skill.")
+        self.assertEqual(failed(skill_checks.check_says_not_for(skill, ["other-skill"], yaml)),
+                         [])
+
+    def test_description_without_not_for_fails(self):
+        skill = make_skill(self.root, description=GOOD_DESCRIPTION + " Pairs with other-skill.")
+        self.assertEqual(len(failed(skill_checks.check_says_not_for(skill, ["other-skill"],
+                                                                     yaml))), 1)
+
+    def test_not_for_without_naming_a_skill_fails(self):
+        skill = make_skill(self.root, description=GOOD_DESCRIPTION + " Not for flows.")
+        self.assertEqual(len(failed(skill_checks.check_says_not_for(skill, ["other-skill"],
+                                                                     yaml))), 1)
+
+    def test_handoff_section_passes(self):
+        skill = make_skill(self.root, body=HANDOFF_BODY)
+        self.assertEqual(failed(skill_checks.check_names_next_step(skill, ["other-skill"])), [])
+
+    def test_missing_handoff_section_fails(self):
+        skill = make_skill(self.root, body="# Demo\n\n## Output\n\nNext: `other-skill`.\n")
+        self.assertIn("demo-skill: SKILL.md has a '## Hand-off' section",
+                      failed(skill_checks.check_names_next_step(skill, ["other-skill"])))
+
+    def test_handoff_that_names_no_skill_fails(self):
+        skill = make_skill(self.root, body=HANDOFF_BODY.replace("`other-skill`", "the next one"))
+        self.assertIn("demo-skill: the hand-off names the next skill",
+                      failed(skill_checks.check_names_next_step(skill, ["other-skill"])))
+
+    def test_next_skill_outside_the_section_does_not_count(self):
+        body = ("# Demo\n\nUse `other-skill` later.\n\n## Hand-off\n\n"
+                "[`handoff.md`](references/shared/handoff.md). Done.\n\n## Rules\n\nnone\n")
+        skill = make_skill(self.root, body=body)
+        self.assertIn("demo-skill: the hand-off names the next skill",
+                      failed(skill_checks.check_names_next_step(skill, ["other-skill"])))
+
+    def test_path_into_another_skill_fails_with_or_without_skills_prefix(self):
+        skill = make_skill(self.root, body="Read other-skill/references/naming.md first.\n")
+        write(skill / "references" / "x.md", "See other-skill/scripts/lint.py.\n")
+        hits = [p for _f, p in skill_checks.find_cross_skill_paths(skill, ["other-skill"])]
+        self.assertEqual(sorted(hits), ["other-skill/references/naming.md",
+                                        "other-skill/scripts/lint.py"])
+
+    def test_naming_another_skill_in_words_passes(self):
+        skill = make_skill(self.root, body="Hand the folder to `other-skill`.\n")
+        self.assertEqual(failed(skill_checks.check_no_cross_skill_path(skill, ["other-skill"])),
+                         [])
+
+    def test_layout_folder_outside_the_contract_fails(self):
+        skill = make_skill(self.root, body="Write supersub/mockups/index.html.\n")
+        self.assertEqual(len(failed(skill_checks.check_layout_folders(skill))), 1)
+
+    def test_layout_folders_in_the_contract_pass(self):
+        skill = make_skill(self.root, body=(
+            "Read supersub/mockup/sitemap.json, write supersub/app/, supersub/lists/ "
+            "and supersub/flows/.\n"))
+        self.assertEqual(failed(skill_checks.check_layout_folders(skill)), [])
+
+
 class TestThisRepository(unittest.TestCase):
     def test_every_check_passes_here(self):
         self.assertEqual(failed(skill_checks.run_all(ROOT, yaml)), [])

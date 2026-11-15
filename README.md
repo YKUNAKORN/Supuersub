@@ -2,409 +2,200 @@
 
 [![validate](https://github.com/YKUNAKORN/power-app-yaml/actions/workflows/validate.yml/badge.svg)](https://github.com/YKUNAKORN/power-app-yaml/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Claude skill](https://img.shields.io/badge/Claude-skill-8A2BE2)](skills/create-app/SKILL.md)
 
-A Claude **skill** that turns an HTML/CSS mockup or a UI screenshot into **Power Apps Canvas
-source code** (`.pa.yaml`, source schema v3.0) that pastes straight into Power Apps Studio via
-**"Paste code"** on a blank screen.
+**supersub** is a Claude plugin of five skills that take a Power Platform app from a
+design system to mockups, Power Apps Canvas screens, SharePoint lists and Power Automate
+flows. It installs in Claude chat (claude.ai, the desktop app, mobile), in Cowork and in
+Claude Code.
 
-It exists because `.pa.yaml` looks like ordinary YAML but isn't: the schema is narrow and
-version-pinned, and the control names don't follow web/HTML intuition (`Label` has no prefix but
-`Classic/Button` does; `Icon` and `Classic/Icon` are different controls). Guessing an unconfirmed
-control or property is the number-one cause of paste failures. This skill ships a catalog of what is
-**confirmed to work** — built from real Studio paste tests, not analogy — and a set of copy-paste
-templates so the model fills in blanks instead of inventing schema.
-
-## Who it's for
-
-- Makers turning a **Figma, v0, or Google Stitch export** into a Power Apps Canvas screen
-- Anyone with a **screenshot or wireframe** who wants paste-ready `.pa.yaml` instead of rebuilding by hand
-- Devs migrating an **HTML/CSS mockup to Power Fx** and hitting the `.pa.yaml` schema's quirks
-- People stuck on a **Power Apps "Paste code" error** (`PA1001` / `PA2108`) who need to know what actually broke
+It is for makers and developers who build internal apps on Power Apps, SharePoint and
+Power Automate and want Claude to produce files they can paste or import, not prose they
+have to retype. Every skill works from a catalog of what is known to work, checks its
+output with an offline linter that ends in a verdict, and labels anything it could not
+confirm instead of guessing.
 
 ## Table of contents
 
-- [Who it's for](#who-its-for)
-- [Why a skill for "just YAML"](#why-a-skill-for-just-yaml)
-- [Designed to run on a small model](#designed-to-run-on-a-small-model)
-- [How the skill spends its context](#how-the-skill-spends-its-context)
+- [The pipeline](#the-pipeline)
+- [The five skills](#the-five-skills)
 - [Install](#install)
-- [Use it](#use-it)
+- [What it cannot do](#what-it-cannot-do)
 - [Repository layout](#repository-layout)
-- [Verify before you paste](#verify-before-you-paste)
-- [Working with an app that already exists](#working-with-an-app-that-already-exists)
-- [The paste-test kit](#the-paste-test-kit)
-- [Keep the catalog honest](#keep-the-catalog-honest)
-- [Telling better output from worse](#telling-better-output-from-worse)
-- [What it can't do (honestly)](#what-it-cant-do-honestly)
 - [Contributing](#contributing)
 - [Attribution](#attribution)
 - [License](#license)
 
-## Why a skill for "just YAML"
+## The pipeline
 
-`.pa.yaml` is narrow, version-pinned, and full of naming quirks you cannot derive from web intuition:
+```
+design-md ──▶ mock-ui ──▶ create-app
+ DESIGN.md      │  mockup/*.html      app/*.pa.yaml
+                │  sitemap.json
+                ├──▶ create-list   lists/*.xlsx | *.csv   (data the screens need)
+                └──▶ create-flow   flows/*.zip            (actions the screens trigger)
+```
 
-- `Label` has **no** prefix, but `Classic/Button` has a `Classic/` prefix.
-- `Icon` and `Classic/Icon` are **different controls** with different capabilities.
-- Every property value must start with `=`, and commas inside `RGBA(...)` break flow-style YAML.
+Each skill also works alone. None assumes the previous one ran: hand it the file, paste
+it, or describe what you have. Files have fixed names (`DESIGN.md`,
+`supersub/mockup/sitemap.json`, `supersub/lists/<ListName>.list.json`, ...), so a later
+skill finds what an earlier one wrote. In chat there is no project folder: the same files
+come to you as downloads and go back as attachments.
 
-The method is: **use only what's confirmed, label every guess honestly, and let the user paste-test
-small pieces before trusting them.**
+Every linter ends in one of four verdicts: nothing to check, usable with items to check,
+will fail, or unproven (a check could not run). Every skill ends its hand-off the same
+way: what was built, what is unverified, what to test, and which skill comes next.
 
-## Designed to run on a small model
+## The five skills
 
-The instructions are an ordered workflow, lookup tables, fill-in templates, and a pre-send checklist
-rather than prose you have to reason through. You can run it on a lightweight/low-effort model and
-still get output that pastes cleanly, because the hard-won specifics (which control, which version,
-which properties) are looked up, not derived.
+### `design-md`: a design system
 
-## How the skill spends its context
+Interviews you (at most two rounds of questions), offers two or three directions if you
+have no strong view, and writes a `DESIGN.md`: tokens in YAML front matter and eleven
+sections of prose, in the format Google published for Stitch. For a design headed for
+Power Apps it keeps to what the canvas can reproduce and says what it cannot.
 
-`SKILL.md` is procedure only — workflow, control picker, templates, rules, checklist —
-and it is kept under 8 KB on purpose. Everything else is loaded on demand, cheapest
-first:
+> Set up a design system for our new HR intranet app. It will be a Power Apps app.
 
-| Read | Size | When |
-|---|---|---|
-| `references/controls.yaml` | ~10 KB | Always. The catalog of what works. |
-| `assets/patterns/*.pa.yaml` | 30–85 lines each | Always. Pick only the patterns the mockup needs. |
-| `references/layout-mapping.md` | ~26 KB | Whenever geometry has to be derived from HTML/CSS. |
-| `assets/examples/INDEX.md` | ~7 KB | To find a line range before opening an example. |
-| `assets/examples/*.yaml` | 3,234 lines total | Last resort, and as a slice, never whole. |
+### `mock-ui`: a clickable mockup
 
-The reason for the pattern library: `example-card-grid.yaml` is 1,732 lines, and the
-pattern actually worth learning from it lives in about 85 of them — the other 95% is the
-same card repeated 16 more times. Reading the catalog *and* the nearest example in full
-used to cost roughly 20k tokens before the first line of output. The patterns are
-extracted from those same example files (each one cites its source file, line range and
-evidence level), so they are not a second source of truth — they are the same evidence,
-addressable in 40 lines instead of 1,700.
+Takes a `DESIGN.md` and what the product must do, agrees a screen inventory with you,
+then writes one self-contained `.html` per screen with every button and link wired, an
+`index.html` screen map and a `sitemap.json`. Open `index.html` from disk and click
+through; it works with JavaScript off.
 
-`layout-mapping.md` exists because turning flex/grid/Tailwind into absolute
-`X`/`Y`/`Width`/`Height` is the step a model is most likely to fake. There is no
-confirmed flex, grid, gap or padding property in Power Apps canvas YAML, so the geometry
-has to be resolved into numbers by arithmetic, once, at authoring time.
+> Make a clickable mockup of the leave request screens from this DESIGN.md.
+
+### `create-app`: Power Apps Canvas screens
+
+Converts a mockup folder, an HTML/CSS export or a screenshot into `.pa.yaml` (source
+schema v3.0) for **Paste code** in Power Apps Studio, one file per screen, using only
+controls a real paste test confirmed. Also fixes a file that failed to paste and adds a
+screen to an existing app. Detail: [`docs/create-app.md`](docs/create-app.md).
+
+> Turn this HTML into a Power Apps screen.
+
+### `create-list`: SharePoint lists
+
+Designs the lists with you in a `lists.md` (columns, types, relationships, creation
+order), then builds an `.xlsx` or `.csv` per list for **New list > From Excel / From CSV**
+plus the settings the import cannot set. `.xlsx` output needs `openpyxl`.
+
+> What columns should my leave request list have? Build me the Excel file to import.
+
+### `create-flow`: Power Automate flows
+
+Plans the flows a system needs in a `flow.md` and builds nothing until you agree. Then it
+writes one `.zip` per flow for **My flows > Import > Import Package (Legacy)**, with the
+connections to pick and a post-import checklist. Connections are never embedded.
+
+> Email the approver whenever someone submits a leave request.
+
+A worked example through all five, with every file: [`docs/e2e-walkthrough.md`](docs/e2e-walkthrough.md).
+Which skill answers which request: [`docs/trigger-matrix.md`](docs/trigger-matrix.md).
 
 ## Install
 
-### As a Claude Code plugin (recommended)
+Full steps for both surfaces: [`docs/quickstart.md`](docs/quickstart.md).
+
+**Claude chat and Cowork.** Customize > Plugins > Add, then either **Add marketplace**
+with `YKUNAKORN/power-app-yaml`, or **Upload plugin** with `dist/supersub.zip` built by
+`python scripts/package_plugin.py`. Type `/` and pick `supersub:<skill>`, or just describe
+the task.
+
+**Claude Code.**
 
 ```bash
 /plugin marketplace add YKUNAKORN/power-app-yaml
 /plugin install supersub@supersub
 ```
 
-### As a plain skill folder
+Skills run as `/supersub:design-md`, `/supersub:mock-ui`, `/supersub:create-app`,
+`/supersub:create-list` and `/supersub:create-flow`. To try a clone without installing:
+`claude --plugin-dir .`.
 
-Copy **`skills/create-app/`** (the folder containing `SKILL.md`) into wherever your Claude setup
-loads skills from.
+The scripts need Python 3 with `pyyaml`; `jsonschema` and `openpyxl` are optional, and a
+linter that cannot run a check says **UNPROVEN** and names the install command rather
+than claiming the file is clean.
 
-Full walkthrough: [`docs/quickstart.md`](docs/quickstart.md).
+Upgrading from `power-app-yaml@power-app-yaml`: the plugin was renamed in 2.0.0; see the
+migration note in [`CHANGELOG.md`](CHANGELOG.md).
 
-## Use it
+## What it cannot do
 
-1. Give Claude an HTML mockup (Google Stitch / v0 / Figma export) or a screenshot and ask it to
-   "convert this to pa.yaml".
-2. Claude reads the catalog, picks the matching patterns, derives the coordinates, writes
-   the full `.pa.yaml`, **lints it offline** (`skills/create-app/scripts/pa_lint.py`), and hands it back with
-   the verdict and any unverified items spelled out.
-3. In Power Apps Studio, on a **blank screen**, use **Paste code** and paste the whole file.
-   If the hand-off came with isolated paste-test snippets, paste those on a scratch screen
-   first — a one-control file fails in a way you can attribute.
-4. If Studio reports an error or warning, paste it back. Which codes block a paste (`PA1001` /
-   `PA2108`), which are harmless version warnings (`PA2105` / `PA2106`), and what each of the
-   linter's four verdict lines means are covered in
-   [`docs/troubleshooting.md`](docs/troubleshooting.md).
+- **Nothing renders anything.** Colours, fonts and visual hierarchy are never checked by
+  a machine. A mockup or a screen can pass every check and still look wrong.
+- **The linters approximate the real tools.** `pa_lint.py` is not Power Apps Studio,
+  `list_lint.py` is not the SharePoint import screen, `flow_lint.py` is not the Power
+  Automate importer. Where they disagree, the real tool is right.
+- **Some CSS has no Power Apps equivalent**: box shadows, blur, transitions, hover on a
+  parent, one-sided borders, any font but Segoe UI. The skills say so and offer the
+  nearest substitute; they never fake a property. The list is `impossible_css` in
+  [`controls.yaml`](skills/create-app/references/controls.yaml).
+- **Data binding is unconfirmed.** Gallery, Form, DataTable, DatePicker and the modern
+  layout containers have never been paste-tested here. Screens show sample rows as static
+  controls; the paste-test kit is how that changes.
+- **The SharePoint import screen is mostly undocumented.** Which types its drop-down
+  offers, whether it insists on a Title column and how it reads a UTF-8 CSV are all
+  `unverified`; the linter warns every time a list depends on one.
+- **Only one flow shape is import-tested**: a button trigger, Compose and Office 365
+  Outlook *Send an email (V2)*. SharePoint, Approvals, Teams, conditions, loops and the
+  Power Apps trigger are unattempted; build such a flow once by hand, export it, and
+  harvest it. A package the builder generates has not been imported yet.
+- **No skill calls a Power Platform API**, creates a connection, or touches your tenant.
+  You paste and import; the skills produce files.
+- **Multi-screen paste order is untested.** Whether Studio keeps a pasted screen's name,
+  and whether a `Navigate()` to a screen that does not exist yet can be pasted, are open
+  questions in [`docs/test-plan.md`](docs/test-plan.md#multi-screen-paste).
 
-Full walkthrough with the lint step: [`docs/quickstart.md`](docs/quickstart.md).
-
-## Before the mockup: a design system (`design-md`)
-
-The plugin's second skill, [`skills/design-md/`](skills/design-md/SKILL.md), runs before
-any mockup exists. It interviews you (at most two rounds of questions), offers two or three
-directions when you have no strong view, and writes a `DESIGN.md`: tokens in YAML front
-matter and eleven sections of prose, in the format Google published for Stitch. It lints
-the file offline with `skills/design-md/scripts/design_lint.py`, which ends in a verdict
-like `pa_lint.py` does. Ask for a "design system", a "style guide" or a "DESIGN.md".
-For a design headed for Power Apps, say so: the skill then keeps to what the `create-app`
-catalog can reproduce and states plainly what it cannot.
-
-## Between the design and the app: a clickable mockup (`mock-ui`)
-
-The third skill, [`skills/mock-ui/`](skills/mock-ui/SKILL.md), takes a `DESIGN.md` and a
-description of what the product must do. It first agrees a screen inventory with you
-(every screen, its data, where each control leads), then writes one self-contained `.html`
-per screen with every button and link wired, an `index.html` screen map and a
-`sitemap.json`. Open `index.html` from disk and click through; it works with JavaScript
-off. `skills/mock-ui/scripts/mock_lint.py` checks the folder offline against the HTML
-contract `create-app` relies on (no dead controls, links that agree with the sitemap,
-nothing that needs the network, and under the `power-apps` target a fixed canvas and no
-effect the canvas cannot reproduce) and ends in a verdict. Ask for a "mockup", a
-"wireframe" or to "prototype the screens".
-
-Hand a `power-apps` mockup folder to `create-app` and it converts every screen: one
-`.pa.yaml` per screen under `supersub/app/`, `Navigate()` wired between them, control
-names unique across the app, and a `PASTE-ORDER.md`. Lint the set as one app:
-
-```bash
-python skills/create-app/scripts/pa_lint.py --app-dir supersub/app --sitemap supersub/mockup/sitemap.json
-```
-
-Whether a multi-screen paste works as `PASTE-ORDER.md` describes has not been tested in
-Studio yet; the open questions are in [`docs/test-plan.md`](docs/test-plan.md#multi-screen-paste).
-
-## The data behind the screens: SharePoint lists (`create-list`)
-
-The fourth skill, [`skills/create-list/`](skills/create-list/SKILL.md), designs the lists
-with you first (which lists, which columns, which type each, how they relate, the order
-to create them in) in a `lists.md`, then writes one `<ListName>.list.json` spec per list
-and builds an import file from it: an `.xlsx` holding one Excel table plus a `Setup`
-sheet, or a `.csv` with a `Setup.md`. You create the list with **New list > From Excel**
-(or **From CSV**) and then apply the settings the import cannot set: display names,
-required, indexed then unique, choices, defaults, lookups.
-
-`skills/create-list/scripts/list_lint.py` checks the specs offline and ends in a verdict;
-`build_list.py` builds the file and reopens it to verify it. Much of what the import
-screen does is undocumented (which types its drop-down offers, whether it insists on a
-Title column, how it reads a UTF-8 CSV), so every such behaviour is a row in
-[`references/import-behavior.md`](skills/create-list/references/import-behavior.md) with
-an evidence level, and the linter warns whenever a spec relies on an unverified one. The
-type probe and its results table are in
-[`docs/test-plan.md`](docs/test-plan.md#sharepoint-list-import-create-list). Ask to
-"design the list", which columns a list needs, or to import a list from Excel or CSV.
-`.xlsx` output needs `openpyxl`.
-
-## The actions behind the screens: Power Automate flows (`create-flow`)
-
-The fifth skill, [`skills/create-flow/`](skills/create-flow/SKILL.md), asks how your
-system works and writes a `flow.md`: how many flows it needs, what triggers each one,
-what each does, which connectors and lists it touches, and what calls it (a `run-flow:`
-action in a `mock-ui` mockup, a schedule, a list event). Nothing is built until you agree.
-Then, per flow, it writes a `<FlowName>.flow.json` spec and builds a `.zip` for import
-with **My flows > Import > Import Package (Legacy)**. Connections are never embedded: you
-pick one per connector at import.
-
-This is the riskiest skill in the plugin. A slightly wrong package fails on import with
-an unhelpful message, so it is built the way the control catalog was. A small catalog,
-[`references/connectors.yaml`](skills/create-flow/references/connectors.yaml), holds
-exactly what the owner's reference package contains (a button trigger, `Compose`, and
-Office 365 Outlook *Send an email (V2)*). It is all `import-tested`: the owner imported
-and ran that package on 2026-11-15. The one exception is the connection reference the
-builder generates in place of a real one, which stays `unverified` until a rebuilt
-package has been imported. `flow_lint.py` ends in a verdict and warns on every unverified step.
-`build_flow_package.py` writes the reference layout and reopens the zip to verify it.
-`harvest_flow.py` grows the catalog from flows you export from your own environment,
-with tenant values replaced by placeholders. SharePoint, Approvals, Teams, conditions,
-loops and the Power Apps trigger are still unattempted: build such a flow by hand once,
-export it, and harvest it. The import tests and the harvest procedure are in
-[`docs/test-plan.md`](docs/test-plan.md#power-automate-import-create-flow).
+What only the owner can verify before a release: [`docs/release-test-plan.md`](docs/release-test-plan.md).
 
 ## Repository layout
 
 ```
 <repo>/
-├── shared/                          # files several skills need; copied into each by scripts/sync_shared.py
-├── skills/design-md/                 # interview -> DESIGN.md design system; scripts/design_lint.py
-├── skills/mock-ui/                   # DESIGN.md + requirements -> linked HTML mockup; scripts/mock_lint.py, tokens_to_css.py
-├── skills/create-list/               # list design -> <ListName>.list.json -> .xlsx/.csv import file; scripts/list_lint.py, build_list.py
-├── skills/create-flow/               # flow.md -> <FlowName>.flow.json -> legacy import .zip; scripts/flow_lint.py, build_flow_package.py, harvest_flow.py
-├── skills/create-app/                # the skill itself
-│   ├── SKILL.md                      # workflow, control picker, templates, checklist
-│   ├── scripts/                      # run-time tools, shipped inside the skill
-│   │   ├── pa_lint.py                # offline .pa.yaml verifier (L0-L3) — run before handing a file over
-│   │   ├── app_inventory.py          # one-page summary of an existing app (.pa.yaml folder / .msapp)
-│   │   └── harvest_controls.py       # grow the catalog from real Studio exports (.pa.yaml / .msapp)
-│   ├── references/
-│   │   ├── harvesting.md             # how to grow the catalog from a Studio export
-│   │   ├── controls.yaml             # the catalog, machine-readable — source of truth
-│   │   ├── confirmed-controls.md     # the same catalog, human-readable
-│   │   ├── layout-mapping.md         # HTML/CSS geometry → absolute X/Y/Width/Height
-│   │   ├── extend-existing-app.md    # the branch for adding a screen to an app that exists
-│   │   ├── data-binding.md           # SharePoint / Gallery / Patch / forms — all UNVERIFIED
-│   │   ├── control-ids-candidate.yaml  # Microsoft's control-id enum, mirrored — all unverified
-│   │   └── schema-v3.pa.yaml         # Microsoft's official pa.yaml v3.0 schema (see NOTICE)
-│   └── assets/
-│       ├── patterns/                 # 13 small extracted snippets, all lint-clean
-│       ├── test-snippets/            # 12 one-control paste tests for UNVERIFIED controls
-│       └── examples/
-│           ├── INDEX.md              # per-example description, control counts, line ranges
-│           ├── example-app-shell.yaml    # sidebar + top bar + page shell, with Navigate()
-│           ├── example-form.yaml         # multi-section form: TextInput + DropDown in cards
-│           └── example-card-grid.yaml    # selectable card/checklist grid with a footer
-├── .claude-plugin/                   # plugin + marketplace manifests
-├── docs/                             # quickstart, troubleshooting, test plan, evals
-├── scripts/                          # maintainer tools; never run inside an installed skill
-│   ├── run_eval.py                   # score a produced .pa.yaml against an eval case
-│   ├── skill_checks.py               # portability checks applied to every skill
-│   └── validate.py                   # repo sanity checks (run before a PR)
-├── tests/
-│   ├── fixtures/                     # linter fixtures with .expected.json sidecars
-│   ├── apps/ten-screen-app/          # synthetic 171-control app, for app_inventory.py
-│   ├── evals/                        # 6 eval cases: mockup (file or mock-ui folder) + expectations.yaml + notes.md
-│   └── test_*.py                     # the unittest suite
-└── .github/                          # issue / PR templates, CI
+├── .claude-plugin/           plugin.json and marketplace.json
+├── skills/                   what ships: one folder per skill, everything it runs inside it
+│   ├── design-md/            scripts/design_lint.py
+│   ├── mock-ui/              scripts/tokens_to_css.py, mock_lint.py
+│   ├── create-app/           scripts/pa_lint.py, app_inventory.py, harvest_controls.py
+│   ├── create-list/          scripts/list_lint.py, build_list.py
+│   └── create-flow/          scripts/flow_lint.py, build_flow_package.py, harvest_flow.py
+├── shared/                   files several skills need; copied into each by scripts/sync_shared.py
+├── scripts/                  maintainer tools, never run inside an installed skill:
+│                             validate.py, skill_checks.py, sync_shared.py, run_eval.py,
+│                             package_plugin.py
+├── docs/                     quickstart, per-skill detail, test plans, evals, troubleshooting
+├── tests/                    unittest suite, fixtures, eval cases, the e2e scenario
+└── .github/                  issue and PR templates, CI
 ```
 
-The three example screens are **real, working** `.pa.yaml` files (generic sample content).
-`assets/patterns/` holds the reusable pieces extracted from them — start there, and drop
-to an example slice only when a pattern doesn't cover the case.
-
-## Verify before you paste
-
-`skills/create-app/scripts/pa_lint.py` is the step that stops the user acting as the compiler. It runs
-offline, in four layers, and ends in a verdict:
+Checks before a pull request:
 
 ```bash
-python skills/create-app/scripts/pa_lint.py myscreen.pa.yaml
+python scripts/validate.py
+python -m unittest discover tests
+python scripts/run_eval.py
 ```
-
-| Layer | Severity | Checks | Studio equivalent |
-|---|---|---|---|
-| **L0** | error | the file parses as YAML | a paste that silently does nothing |
-| **L1** | error | Microsoft's bundled v3.0 schema | `PA1001` — blocks the whole paste |
-| **L2** | warning | this repo's control catalog | `PA2108` — unknown control or property |
-| **L3** | warning | SKILL.md's own conventions | **nothing** |
-
-L3 is the layer with no Studio counterpart, and it is where the expensive failures
-live: a duplicate control name is silently renamed to `_1` on paste, so the names you
-wrote and the names in the app quietly diverge. Nothing errors. The app is just wrong.
-
-Four verdicts are possible — `SAFE TO PASTE`, `PASTES, BUT n UNVERIFIED ITEM(S)`,
-`WILL FAIL`, and `UNPROVEN` (which is what you get when `jsonschema` is not installed
-and the layer that catches `PA1001` never ran; reporting "safe" there would be a claim
-the run cannot back up). Each one, and what to do about it, is in
-[`docs/troubleshooting.md`](docs/troubleshooting.md#the-linters-verdict-lines).
-
-The linter is an approximation of Studio, built from the bundled schema and a catalog
-of paste-tested controls. Where the two disagree, Studio is right — and that
-disagreement is worth reporting, because it is how the catalog grows.
-
-## Working with an app that already exists
-
-Adding a screen to a real app fails in ways a blank canvas cannot: a control name that
-collides is silently renamed to `_1`, a `Navigate()` goes to a screen that was never
-there, and the palette gets hard-coded a second time next to the theme variables
-`App.OnStart` already defines. All three are silent — the paste succeeds and the app is
-subtly wrong.
-
-```bash
-python skills/create-app/scripts/app_inventory.py <Src-folder-or-.msapp>
-```
-
-About a page: screens in editor order, controls per screen with nesting depth, the
-control types **with the versions that app uses**, the `App.OnStart` variables with
-their literal values, the `DataSources:` entries, the components, and every name already
-taken. The export itself is tens of thousands of tokens of property values nobody is
-going to read, so the tool has a hard byte budget and drops to coarser detail rather
-than overflowing it; `--json` and `--names` are the unbudgeted escape hatches. The
-procedure that uses it is
-[`references/extend-existing-app.md`](skills/create-app/references/extend-existing-app.md).
-
-## The paste-test kit
-
-Gallery, Form, DataTable, Toggle, DatePicker, ComboBox, Slider, Timer, CheckBox,
-HtmlText and the modern layout containers are **not** in the catalog, and this repo has
-no evidence about any of them. Guessing is what the project exists to avoid, so instead
-[`assets/test-snippets/`](skills/create-app/assets/test-snippets/) holds one
-single-control file per control, each a complete `Screens:` wrapper with one property per
-line so a failure can be bisected by deleting lines. Results go in
-[`docs/test-plan.md`](docs/test-plan.md), and only a real Studio result puts a control in
-the catalog.
-
-The layout containers are the honest gap: Microsoft's own control-id enum lists
-`GroupContainer` and no `Container` / `HorizontalContainer` / `VerticalContainer`, while
-community guides use a bare `Container`. Rather than pick one, the kit ships both
-hypotheses with the unknown part marked as a placeholder, and says the cheapest test is
-to insert a container in Studio and read its own code back.
-
-## Keep the catalog honest
-
-Everything in `skills/create-app/references/confirmed-controls.md` was confirmed by pasting into a
-specific version of Power Apps Studio. Studio pins control versions, so a newer Studio may emit
-different version numbers (it will warn and auto-substitute). **When your own Studio confirms or
-corrects something, update your copy of the catalog** — and, ideally,
-[report it](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=control-report.yml) so
-everyone benefits. Anything not in the catalog is treated as unverified by design.
-
-**Grow the catalog from a real export.** If you can download your app's source — `pac canvas
-download -d <dir>`, or just unzip the `.msapp` — the `.pa.yaml` files under `src/` are Studio's own
-output, and `skills/create-app/scripts/harvest_controls.py` turns them into catalog entries:
-
-```bash
-python skills/create-app/scripts/harvest_controls.py ./myapp/src --report   # what's new, what's untested
-python skills/create-app/scripts/harvest_controls.py ./myapp/src --merge    # fold it in, then review the diff
-```
-
-One caveat governs all of it, and Microsoft documents it: *only properties that differ from the
-default values are serialized.* **A property missing from an export is not evidence that the
-control lacks it** — so the harvester only ever makes positive claims, and never writes a "does not
-support" list. Full walkthrough, both extraction routes, and the review checklist:
-[`references/harvesting.md`](skills/create-app/references/harvesting.md).
-
-## Telling better output from worse
-
-The linter proves a file will paste. It cannot tell you whether the screen is the one
-the mockup showed, and it cannot tell you whether an edit to `SKILL.md` helped or hurt.
-[`tests/evals/`](tests/evals/) and `scripts/run_eval.py` are the part that can.
-
-Six cases, each a small self-contained mockup, an `expectations.yaml` of
-mechanically checkable assertions, and a `notes.md` saying what the case is meant to
-stress: **app shell**, **multi-section form**, **card grid**, **mixed shell + form**,
-a deliberately hard one built entirely from effects listed under `impossible_css`
-— which has no right conversion, only a right disclosure — and **multi-screen-mock**,
-whose input is a three-screen `mock-ui` folder and whose output is one file per screen.
-
-```bash
-python scripts/run_eval.py out.pa.yaml --case tests/evals/app-shell
-```
-
-**The boundary is the important part.** This scores a `.pa.yaml` that already exists.
-Producing that file means running a model, and CI does not run a model — there is
-deliberately no API-key step in the scorer and none in the workflow, because a harness
-that quietly depended on a key would be green on every run where the key was missing.
-So the loop is manual and has three steps: ask Claude for a case's mockup, save the
-answer, run the scorer. The whole procedure, including what the harness *cannot* see,
-is in [`docs/evals.md`](docs/evals.md).
-
-What CI does run is the half that needs no model: `python scripts/run_eval.py` with no
-arguments scores the three bundled example screens against their matching cases. That
-proves the scorer works. It proves nothing about the skill — the examples were written
-by hand, not generated — and the tool says so on every run.
-
-## What it can't do (honestly)
-
-Some CSS effects have no verified Power Fx equivalent: box shadows, `backdrop-blur`, CSS
-transitions/animations, `group-hover`, true one-sided borders, and any non-`Segoe UI` font. The
-full list is `impossible_css` in
-[`controls.yaml`](skills/create-app/references/controls.yaml). The skill will tell you plainly
-and suggest the closest practical substitute (e.g. a thin `Rectangle` for a left border) rather than
-faking a property or silently dropping the requirement — and the `impossible-effects` eval case
-exists to check that it actually does.
-
-Beyond that: nothing here renders anything, so colours, fonts and visual hierarchy are
-never verified automatically; and the linter is an approximation of Studio, not Studio.
-Only a real paste test settles a control.
 
 ## Contributing
 
-The most valuable contribution is a real Studio test result. See
-[`CONTRIBUTING.md`](CONTRIBUTING.md), and please follow the
+The most valuable contribution is a real result: a Studio paste, a SharePoint import, a
+Power Automate import. See [`CONTRIBUTING.md`](CONTRIBUTING.md), and please follow the
 [Code of Conduct](CODE_OF_CONDUCT.md). Security issues: [`SECURITY.md`](SECURITY.md).
 
 ## Attribution
 
-`skills/create-app/references/schema-v3.pa.yaml` is a copy of Microsoft's official Power Apps
-`pa.yaml` **v3.0** schema, from
-[`microsoft/PowerApps-Tooling`](https://github.com/microsoft/PowerApps-Tooling) (MIT-licensed,
-© Microsoft Corporation). It is included unmodified for offline reference. See [`NOTICE`](NOTICE).
+- `skills/create-app/references/schema-v3.pa.yaml` is Microsoft's Power Apps `pa.yaml`
+  v3.0 schema from [`microsoft/PowerApps-Tooling`](https://github.com/microsoft/PowerApps-Tooling)
+  (MIT, © Microsoft Corporation), unmodified.
+- `skills/create-app/references/control-ids-candidate.yaml` mirrors the control-id list
+  from the same repository.
+- `design-md` describes the [DESIGN.md format](https://github.com/google-labs-code/design.md)
+  published by Google (Apache-2.0); no passage of the specification is copied.
 
-Further reading:
-
-- Microsoft Docs — [Power Apps YAML](https://learn.microsoft.com/power-apps/maker/canvas-apps/power-apps-yaml)
-- Schema source — [pa.schema.yaml](https://github.com/microsoft/PowerApps-Tooling/blob/master/schemas/pa-yaml/v3.0/pa.schema.yaml)
+Details and license texts: [`NOTICE`](NOTICE).
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE). The bundled Microsoft schema is covered separately; see
+MIT; see [`LICENSE`](LICENSE). Third-party material is covered separately; see
 [`NOTICE`](NOTICE).

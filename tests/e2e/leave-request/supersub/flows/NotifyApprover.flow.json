@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "name": "NotifyApprover",
+  "displayName": "Restday: แจ้งผู้อนุมัติ",
+  "description": "ส่งอีเมลแจ้งผู้อนุมัติเมื่อมีใบลาใหม่",
+  "connectors": ["shared_office365"],
+  "triggers": {
+    "manual": {
+      "type": "Request",
+      "kind": "Button",
+      "inputs": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "title": "ประเภทการลา",
+              "type": "string",
+              "x-ms-dynamically-added": true,
+              "description": "ลาพักร้อน ลาป่วย หรือ ลากิจ",
+              "x-ms-content-hint": "TEXT"
+            },
+            "text_1": {
+              "title": "ช่วงวันลา",
+              "type": "string",
+              "x-ms-dynamically-added": true,
+              "description": "วันเริ่มถึงวันสิ้นสุด เช่น 2026-12-21 ถึง 2026-12-25",
+              "x-ms-content-hint": "TEXT"
+            },
+            "text_2": {
+              "title": "เหตุผล",
+              "type": "string",
+              "x-ms-dynamically-added": true,
+              "description": "เหตุผลการลา",
+              "x-ms-content-hint": "TEXT"
+            },
+            "email": {
+              "title": "อีเมลผู้อนุมัติ",
+              "type": "string",
+              "format": "email",
+              "x-ms-dynamically-added": true,
+              "description": "ApproverEmail ของใบลา",
+              "x-ms-content-hint": "EMAIL"
+            }
+          },
+          "required": ["text", "text_1", "email"]
+        }
+      }
+    }
+  },
+  "actions": {
+    "Build_message": {
+      "runAfter": {},
+      "type": "Compose",
+      "inputs": "มีใบลาใหม่รออนุมัติ: @{triggerBody()?['text']} วันที่ @{triggerBody()?['text_1']} เหตุผล: @{triggerBody()?['text_2']}"
+    },
+    "Send_an_email_(V2)": {
+      "runAfter": { "Build_message": ["Succeeded"] },
+      "type": "OpenApiConnection",
+      "inputs": {
+        "host": {
+          "connectionName": "shared_office365",
+          "operationId": "SendEmailV2"
+        },
+        "parameters": {
+          "emailMessage/To": "@triggerBody()?['email']",
+          "emailMessage/Subject": "Restday: ใบลาใหม่รออนุมัติ",
+          "emailMessage/Body": "<p>@{outputs('Build_message')}</p><p>เปิด list ใบลาเพื่อเปลี่ยนสถานะเป็น อนุมัติ หรือ ไม่อนุมัติ</p>"
+        }
+      }
+    }
+  },
+  "placeholders": {},
+  "notes": "Button trigger for the first version: the Power Apps trigger is unattempted in the catalog, so the app's run-flow:NotifyApprover action stays a placeholder and the flow is run from Power Automate."
+}

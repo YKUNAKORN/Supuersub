@@ -1,4 +1,41 @@
-# Paste-test plan
+# Test plan
+
+What only a person with the real tools can settle, skill by skill. Every section says
+what is automated and what needs a hand. The release checklist,
+[`release-test-plan.md`](release-test-plan.md), points into this page; record results
+here, where the tables are.
+
+| Skill | Automated | Manual, in this page |
+|---|---|---|
+| `design-md` | linter and fixtures | [the three briefs](#design-md-the-three-briefs) |
+| `mock-ui` | linter, fixtures, JavaScript-off check | [a browser click-through](#mock-ui-a-browser-click-through) |
+| `create-app` | linter, scorer, patterns | [paste tests](#paste-test-plan-create-app), [multi-screen paste](#multi-screen-paste) |
+| `create-list` | linter, builder, reopen-and-verify | [the SharePoint import](#sharepoint-list-import-create-list) |
+| `create-flow` | linter, builder, round trip, harvester | [the Power Automate import](#power-automate-import-create-flow) |
+
+## design-md: the three briefs
+
+Automated: `tests/test_design_lint.py` (every check on its fixture), and the bundled
+example and template lint. Manual: give Claude each brief in
+[`tests/briefs/design-md/`](../tests/briefs/design-md/) and tick its checklist; the
+procedure is in [`evals.md`](evals.md#design-md-written-briefs-scored-by-hand).
+
+| # | Brief | Lint verdict | Checklist all ticked? | Date |
+|---|---|---|---|---|
+| B1 | `01-approval-tool-power-apps.md` | | | |
+| B2 | `02-marketing-site.md` | | | |
+| B3 | `03-data-dense-dashboard.md` | | | |
+
+## mock-ui: a browser click-through
+
+Automated: `tests/test_mock_lint.py` and the JavaScript-off check. Manual: nothing
+renders in CI.
+
+| # | Check | Answer | Browser | Date |
+|---|---|---|---|---|
+| U1 | Open `skills/mock-ui/assets/example/index.html` and `tests/e2e/leave-request/supersub/mockup/index.html` from disk. Every link and button goes where the sitemap says; Thai text is readable; nothing looks broken against its `DESIGN.md`. | | | |
+
+## Paste-test plan (create-app)
 
 Twelve controls are in the skill's blind spot: the conversion knows they exist and has
 no evidence about any of them. This page is the worksheet for closing that gap. Only

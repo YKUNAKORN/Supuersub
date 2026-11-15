@@ -1,0 +1,4 @@
+﻿LeaveType,StartDate,EndDate,Reason,ApproverEmail,Status
+ลาพักร้อน,2026-12-21,2026-12-25,เดินทางกับครอบครัว,manager@example.com,รออนุมัติ
+ลาป่วย,2026-11-03,2026-11-04,ไข้หวัด มีใบรับรองแพทย์,manager@example.com,อนุมัติ
+ลากิจ,2026-10-16,2026-10-16,ติดต่อราชการ,lead@example.com,ไม่อนุมัติ

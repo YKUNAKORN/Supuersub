@@ -3,11 +3,12 @@ name: create-flow
 description: >-
   Plans the Power Automate flows a system needs with the user in a flow.md (how many
   flows, what triggers each, what each does), then builds one .zip per approved flow
-  for import with My flows > Import > Import Package (Legacy), with the connections
-  to pick and a post-import checklist. Use when someone wants to "automate this
-  process", asks which flows they need, wants a Power Automate flow or an import
-  package, or has run-flow actions in a mock-ui mockup. Does not create lists or
-  screens: that is create-list and create-app.
+  for import with My flows > Import > Import Package (Legacy), with the connections to
+  pick and a post-import checklist. Use when someone wants to "automate this process",
+  asks which flows they need, wants a Power Automate flow, a notification or an
+  approval, or an import package, brings a package that failed to import, or has
+  run-flow actions in a mock-ui mockup. Does not create lists or screens: that is
+  create-list and create-app.
 ---
 
 # Power Automate flows: plan in flow.md, then build legacy import packages

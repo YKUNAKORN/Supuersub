@@ -7,9 +7,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Phase 06 of 2.0.0: the `create-flow` skill. Phase 05: the `create-list` skill. Phase 04: `create-app` takes a `mock-ui`
-mockup folder and writes one `.pa.yaml` per screen. Phase 03: the `mock-ui` skill, and the HTML contract between it
-and `create-app`.
+## [2.0.0] - 2026-11-15
+
+One skill became a plugin of five. `power-app-yaml` converted a mockup into Power Apps
+Canvas YAML; `supersub` takes a Power Platform app from a design system to mockups,
+screens, SharePoint lists and Power Automate flows, and installs in Claude chat, Cowork
+and Claude Code from one folder.
+
+**Why.** A canvas screen is rarely the first or the last thing an app needs. Before it
+comes a design and an agreed set of screens; after it come the list the screens read and
+the flow their buttons call. Each of those has the same failure mode the v1 skill was
+built against: a plausible file that the real tool rejects. So every new skill is built
+the v1 way: a catalog of what is known, generation by script rather than by hand, an
+offline linter that ends in a verdict, and an unverified label on anything no import or
+paste has settled.
+
+**What changed, in short.**
+
+- Plugin and marketplace renamed `power-app-yaml` -> `supersub`; the skill renamed
+  `create-app`. **Breaking**: see the migration note below.
+- Four new skills: `design-md` (phase 02), `mock-ui` (phase 03), `create-list`
+  (phase 05), `create-flow` (phase 06). `create-app` takes a `mock-ui` folder and writes
+  one file per screen (phase 04).
+- Every file a skill runs lives inside that skill, so it works when only the skill folder
+  reaches chat's sandbox (phase 01, proved by the sandbox simulation in phase 07).
+- One hand-off contract, one verdict vocabulary, one set of evidence levels across the
+  five skills (phase 07).
+
+The phase entries below give the detail. The migration note is at the end of phase 01.
+
+### Added (phase 07)
+- **Trigger matrix** `docs/trigger-matrix.md`: 23 realistic messages, English and Thai,
+  each with one owning skill and the near miss most likely to fire instead. Decided by
+  reading the descriptions, not by measuring; release test plan `T1` measures it.
+- **One contract.** `shared/handoff.md` now states the names every skill uses (screen
+  ids, files, list, column and flow names, `run-flow:` and `submit:` actions), the four
+  verdict codes (`safe`, `unverified`, `will_fail`, `unproven`), the evidence levels
+  (with `create-app`'s `studio-tested` / `studio-export` mapped onto them) and the
+  four-part hand-off (what was built, what is unverified, what to test, what comes next).
+  It is now also synced into `create-app`.
+- **Cross-skill checks** in `scripts/skill_checks.py`, each negative-tested in
+  `tests/test_skill_checks.py`: every description says what the skill is not for and
+  names the skill that is; every `SKILL.md` has a `## Hand-off` that links the contract
+  and names the next skill; no path points into another skill's folder; only the four
+  `supersub/` folders of the contract are named. In `scripts/validate.py`: every linter
+  uses the four verdict codes; every bundled example passes its own linter; the
+  identifier rules in `mock_lint.py`, `list_lint.py` and both schemas are one rule; the
+  trigger matrix has at least 15 rows with real owners and at least five in Thai; the
+  release test plan lists every open item exactly once.
+- **`scripts/package_plugin.py`** writes `dist/supersub.zip` for **Upload plugin**:
+  `.claude-plugin/plugin.json` at the root, `skills/`, `README.md`, `LICENSE`, `NOTICE`
+  (99 files, about 0.3 MB). Refuses on a top-level `bin/`, a failing skill check, or more
+  than 5,000 files or 200 MB; prints the count and size; reproducible bytes.
+  `marketplace.json` is left out: an uploaded plugin is not a marketplace.
+  `tests/test_package_plugin.py` checks the shape, the refusals, and, when the `claude`
+  CLI is on PATH, that `claude plugin validate` accepts the unpacked archive.
+- **Sandbox simulation** `tests/test_sandbox_simulation.py`: for each skill, copy only
+  `skills/<name>/` to an empty directory and run every script its `SKILL.md` names, with
+  the relative `scripts/...` path, against its bundled example; then the same from an
+  empty project directory with absolute paths. A script `SKILL.md` names without a
+  command fails the test.
+- **End-to-end scenario** `tests/e2e/leave-request/` (Restday: two screens, one list, one
+  flow, Thai text) through all five skills, with `docs/e2e-walkthrough.md` and
+  `tests/test_e2e_leave_request.py`, which re-lints every step, rebuilds the `.xlsx`,
+  `.csv` and `.zip` byte for byte, and checks that names agree across hand-offs.
+- **Docs**: `README.md` rewritten as the plugin's front page; the former `create-app`
+  body moved to `docs/create-app.md` with the old quickstart walkthrough;
+  `docs/quickstart.md` covers both surfaces and each skill; `docs/evals.md` and
+  `docs/test-plan.md` have a section per skill, automated and manual;
+  `docs/release-test-plan.md` is the owner's checklist.
+- `CONTRIBUTING.md`: how to report a SharePoint import and a Power Automate import;
+  issue templates `list-import-report.yml` and `flow-import-report.yml`.
+
+### Changed (phase 07)
+- `create-app` description ends "Not for drawing a mockup (mock-ui), lists or flows" (636
+  characters; "(sitemap.json + screen HTML files)" was cut to fit, no trigger dropped);
+  its hand-off heading is `## Hand-off` and links the contract. `SKILL.md` 8,191 bytes.
+- `create-flow` description also fires on a notification, an approval, or a package that
+  failed to import.
+- `plugin.json`: final description naming all five skills; keywords add `sharepoint`,
+  `microsoft-lists`, `prototype`, drop `claude-skill`.
+- `NOTICE`: adds the mirrored Microsoft control-id list, the one quoted Microsoft
+  sentence, PyPowerAutomate (cited, not copied), and the owner-supplied files.
 
 ### Added (phase 06)
 - **`create-flow` skill** (`skills/create-flow/`): plans the flows a system needs in
@@ -356,6 +435,26 @@ itself is also renamed, so remove and re-add it rather than relying on the autom
 migration. If you copied the skill folder by hand, replace `skills/power-app-yaml/`
 with `skills/create-app/`. Anything that called `scripts/pa_lint.py` from a clone now
 calls `skills/create-app/scripts/pa_lint.py`.
+
+### Known issues
+- **Nothing in 2.0.0 has been installed on claude.ai or from the marketplace yet.**
+  `claude plugin validate` passes on the repository and on the unpacked archive, and
+  `claude --plugin-dir .` lists the five skills as `supersub:<name>`, but upload, chat
+  sandbox and the marketplace route are owner checks (`docs/release-test-plan.md`,
+  section 1).
+- **Whether `jsonschema` and `openpyxl` exist in the chat sandbox is unknown.** Without
+  `jsonschema` the screen, list and flow linters say UNPROVEN; without `openpyxl`,
+  `create-list` falls back to CSV.
+- **The trigger matrix is reasoned, not measured.**
+- **The e2e scenario was written in the authoring session, not a fresh one.**
+- **SharePoint import behaviour** is mostly `unverified` (15 rows), and the owner's
+  reference workbook import is not yet recorded.
+- **A package the builder generated has not been imported** (F2); the generated
+  connection reference stays `unverified`.
+- **Multi-screen paste** (M1-M4) and the twelve one-control paste tests are untested in
+  Studio.
+- GitHub URLs still point at `YKUNAKORN/power-app-yaml` until the repository is renamed
+  (decision D2).
 
 ## [1.0.0] - 2026-09-11
 
