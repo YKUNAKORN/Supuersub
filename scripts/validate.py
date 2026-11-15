@@ -882,6 +882,96 @@ if CL_LINT.is_file():
               f"{rel} lints with no finding but unverified-behavior ({fmt})",
               f"{rep['verdict']}: {others}")
 
+print("create-flow")
+CF_DIR = ROOT / "skills" / "create-flow"
+CF_LINT = CF_DIR / "scripts" / "flow_lint.py"
+for rel in ("references/connectors.yaml", "references/package-format.md",
+            "references/flow-md-template.md", "references/import-and-fix.md",
+            "references/shared/handoff.md", "assets/flow.schema.json",
+            "assets/example/SendTestEmail.flow.json",
+            "assets/reference-package/manifest.json",
+            "assets/reference-package/Microsoft.Flow/flows/manifest.json",
+            "scripts/flow_lint.py", "scripts/build_flow_package.py",
+            "scripts/harvest_flow.py"):
+    check((CF_DIR / rel).is_file(), f"skills/create-flow/{rel} present")
+check((ROOT / "tests" / "fixtures" / "flows" / "reference-package.zip").is_file(),
+      "tests/fixtures/flows/reference-package.zip present",
+      "the owner's reference package the round-trip test compares with")
+# The owner's reference held a connection id from a real environment. The shipped and
+# test copies carry a dummy in its place; the real one must never come back.
+leaked = [p.relative_to(ROOT).as_posix()
+          for base in (ROOT / "skills", ROOT / "tests") if base.is_dir()
+          for p in base.rglob("*") if p.is_file() and b"a8e246ea" in p.read_bytes()]
+check(not leaked, "the reference's real connection id is in no shipped or test file",
+      f"found in: {leaked}")
+cf_skill = CF_DIR / "SKILL.md"
+if cf_skill.is_file():
+    cf_text = cf_skill.read_text(encoding="utf-8")
+    cf_desc = str((skill_checks.read_frontmatter(cf_skill, yaml) or {})
+                  .get("description") or "").lower()
+    # The phrases the skill has to fire on, and the neighbours it must name as the
+    # skills that do what it does not.
+    for phrase in ("power automate", "flow", "automate this process", "import package",
+                   "does not create lists or", "create-list", "create-app"):
+        check(phrase in cf_desc, f"create-flow description mentions {phrase!r}")
+    for needle, label in (("## The workflow", "the ordered workflow"),
+                          ("flow.md", "the plan-before-build step"),
+                          ("Build nothing until the user agrees", "the stop after flow.md"),
+                          ("flow_lint.py", "the lint step"),
+                          ("build_flow_package.py", "the build step"),
+                          ("VERIFIED", "the reopen-and-verify step"),
+                          ("WILL FAIL", "the never-hand-over rule"),
+                          ("harvest_flow.py", "the harvest offer"),
+                          ("unverified-step", "the unverified-step rule"),
+                          ("never embedded", "the connection rule"),
+                          ("create-app", "the create-app hand-off"),
+                          ("create-list", "the create-list hand-off")):
+        check(needle in cf_text, f"create-flow SKILL.md still contains {label}",
+              f"missing {needle!r}")
+if CF_LINT.is_file():
+    _spec = importlib.util.spec_from_file_location("flow_lint", CF_LINT)
+    cf_mod = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(cf_mod)
+    catalog, why = cf_mod.load_catalog()
+    check(catalog is not None, "references/connectors.yaml loads", why)
+    if catalog is not None:
+        entries = [("package", catalog.get("package")),
+                   ("package_connection_reference",
+                    catalog.get("package_connection_reference"))]
+        for api, c in catalog["connectors"].items():
+            entries.append((f"connector {api}", c))
+            for op, o in (c.get("operations") or {}).items():
+                entries.append((f"operation {api}/{op}", o))
+                entries += [(f"parameter {api}/{op} {k}", {"evidence": v, "source":
+                             o.get("source", "")})
+                            for k, v in (o.get("parameters") or {}).items()]
+            check(bool(c.get("display_name")), f"connector {api} has a display_name")
+        entries += [(f"trigger {k}", t) for k, t in catalog["triggers"].items()]
+        entries += [(f"action type {k}", a) for k, a in catalog["actions"].items()]
+        bad = [n for n, e in entries
+               if not isinstance(e, dict) or e.get("evidence") not in cf_mod.LEVELS]
+        check(not bad, "every catalog entry has a declared evidence level", f"bad: {bad}")
+        undated = [n for n, e in entries if isinstance(e, dict)
+                   and e.get("evidence") == "import-tested"
+                   and not re.search(r"\d{4}-\d{2}-\d{2}", str(e.get("source", "")))]
+        check(not undated, "every import-tested catalog entry cites a date",
+              f"undated: {undated}")
+        check(isinstance(catalog.get("unattempted"), dict),
+              "the catalog lists what is unattempted")
+    rep = cf_mod.lint_files([CF_DIR / "assets" / "example" / "SendTestEmail.flow.json"])
+    others = sorted({f["check"] for f in rep["findings"]} - {"unverified-step"})
+    check(rep["errors"] == 0 and not others,
+          "assets/example/SendTestEmail.flow.json lints with no finding but unverified-step",
+          f"{rep['verdict']}: {others}")
+    _spec = importlib.util.spec_from_file_location(
+        "build_flow_package", CF_DIR / "scripts" / "build_flow_package.py")
+    cf_build = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(cf_build)
+    problems = cf_build.verify_package(ROOT / "tests" / "fixtures" / "flows" /
+                                       "reference-package.zip")
+    check(not problems, "the reference package passes the builder's verification",
+          "; ".join(problems))
+
 print("Plugin metadata")
 plugin_json = ROOT / ".claude-plugin" / "plugin.json"
 market_json = ROOT / ".claude-plugin" / "marketplace.json"

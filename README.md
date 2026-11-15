@@ -175,6 +175,31 @@ type probe and its results table are in
 "design the list", which columns a list needs, or to import a list from Excel or CSV.
 `.xlsx` output needs `openpyxl`.
 
+## The actions behind the screens: Power Automate flows (`create-flow`)
+
+The fifth skill, [`skills/create-flow/`](skills/create-flow/SKILL.md), asks how your
+system works and writes a `flow.md`: how many flows it needs, what triggers each one,
+what each does, which connectors and lists it touches, and what calls it (a `run-flow:`
+action in a `mock-ui` mockup, a schedule, a list event). Nothing is built until you agree.
+Then, per flow, it writes a `<FlowName>.flow.json` spec and builds a `.zip` for import
+with **My flows > Import > Import Package (Legacy)**. Connections are never embedded: you
+pick one per connector at import.
+
+This is the riskiest skill in the plugin. A slightly wrong package fails on import with
+an unhelpful message, so it is built the way the control catalog was. A small catalog,
+[`references/connectors.yaml`](skills/create-flow/references/connectors.yaml), holds
+exactly what the owner's reference package contains (a button trigger, `Compose`, and
+Office 365 Outlook *Send an email (V2)*). It is all `import-tested`: the owner imported
+and ran that package on 2026-11-15. The one exception is the connection reference the
+builder generates in place of a real one, which stays `unverified` until a rebuilt
+package has been imported. `flow_lint.py` ends in a verdict and warns on every unverified step.
+`build_flow_package.py` writes the reference layout and reopens the zip to verify it.
+`harvest_flow.py` grows the catalog from flows you export from your own environment,
+with tenant values replaced by placeholders. SharePoint, Approvals, Teams, conditions,
+loops and the Power Apps trigger are still unattempted: build such a flow by hand once,
+export it, and harvest it. The import tests and the harvest procedure are in
+[`docs/test-plan.md`](docs/test-plan.md#power-automate-import-create-flow).
+
 ## Repository layout
 
 ```
@@ -183,6 +208,7 @@ type probe and its results table are in
 ├── skills/design-md/                 # interview -> DESIGN.md design system; scripts/design_lint.py
 ├── skills/mock-ui/                   # DESIGN.md + requirements -> linked HTML mockup; scripts/mock_lint.py, tokens_to_css.py
 ├── skills/create-list/               # list design -> <ListName>.list.json -> .xlsx/.csv import file; scripts/list_lint.py, build_list.py
+├── skills/create-flow/               # flow.md -> <FlowName>.flow.json -> legacy import .zip; scripts/flow_lint.py, build_flow_package.py, harvest_flow.py
 ├── skills/create-app/                # the skill itself
 │   ├── SKILL.md                      # workflow, control picker, templates, checklist
 │   ├── scripts/                      # run-time tools, shipped inside the skill

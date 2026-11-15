@@ -7,9 +7,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Phase 05 of 2.0.0: the `create-list` skill. Phase 04: `create-app` takes a `mock-ui`
+Phase 06 of 2.0.0: the `create-flow` skill. Phase 05: the `create-list` skill. Phase 04: `create-app` takes a `mock-ui`
 mockup folder and writes one `.pa.yaml` per screen. Phase 03: the `mock-ui` skill, and the HTML contract between it
 and `create-app`.
+
+### Added (phase 06)
+- **`create-flow` skill** (`skills/create-flow/`): plans the flows a system needs in
+  `flow.md` (inventory with trigger, connectors, lists, caller and a status of
+  `package`, `package with unverified steps` or `build by hand`, then each flow in full
+  and why the count is that number), stops for agreement, then writes one
+  `<FlowName>.flow.json` per flow (schema `assets/flow.schema.json`) and builds
+  `<FlowName>_LegacyPackage.zip` for **My flows > Import > Import Package (Legacy)**.
+  Tenant values are `{{Placeholders}}`, connections are chosen at import, one flow per
+  package.
+- **`references/connectors.yaml`**, the catalog: the package layout, connector
+  `shared_office365` with `SendEmailV2` and its three parameter keys, the
+  `Request/Button` trigger with `TEXT` and `EMAIL` inputs, and action types `Compose`
+  and `OpenApiConnection`, all `import-tested`: the owner reported on 2026-11-15 that
+  the reference package imported and ran. A separate `package_connection_reference`
+  entry, `unverified`, covers the one thing the builder writes differently: a generated
+  connection name in place of a real one. The linter warns about it in every flow that
+  uses a connector. Connectors,
+  triggers and actions not yet seen are listed under `unattempted`.
+- **`scripts/build_flow_package.py`**: lints first and refuses on errors; generates every
+  GUID, both manifests, both maps and `definition.json`; writes the reference layout
+  (five deflated entries, no directory entries, no wrapping folder, ASCII-escaped
+  two-space JSON, LF, no trailing newline); reopens the zip and prints `VERIFIED` only
+  when the layout, encodings and cross-file ids agree; prints the connections to select,
+  the post-import checklist and the unverified list. `--set` fills a placeholder into the
+  zip only; `--seed` and `--created-time` make output reproducible; `--verify` checks
+  any package.
+- **`scripts/flow_lint.py`**: stable check ids (`spec-invalid`, `name-duplicate`,
+  `action-key-invalid`, `action-key-duplicate`, `run-after-unknown`, `run-after-cycle`,
+  `connector-undeclared`, `host-invalid`, `catalog-missing`, `connection-embedded`,
+  `expression-unbalanced`, `expression-reference`, `placeholder-undeclared`,
+  `sensitive-value`; warnings `unverified-step`, `placeholder-unresolved`,
+  `placeholder-unused`, `connector-unused`, `guid-literal`) and a verdict: safe to
+  import, should import with n items to check, will fail, or unproven (without PyYAML or
+  jsonschema).
+- **`scripts/harvest_flow.py`**: reads an exported legacy package (zip or folder) and
+  writes catalog entries at `export`: connector identity and icon, operation parameter
+  keys with a scrubbed example, trigger shapes and input hints, and action types. Literal
+  values become named placeholders; addresses, URLs and GUIDs inside expressions are
+  replaced; connection names, action names and input texts are never copied. A final
+  guard refuses output with anything tenant-like left. `--report` prints a coverage diff.
+- **References**: `package-format.md` (every field with its evidence: sample, doc,
+  corroborated by PyPowerAutomate, or unverified), `flow-md-template.md`,
+  `import-and-fix.md` (role, cookies, the **Create in Dataverse solutions** stop, the
+  import steps, the post-import checklist, known and suspected failure causes).
+- **Reference package**: unpacked in `assets/reference-package/` and zipped as
+  `tests/fixtures/flows/reference-package.zip`, with the original's connection id
+  replaced by a dummy. `validate.py` fails if the original id reappears anywhere under
+  `skills/` or `tests/`.
+- **Example** `assets/example/SendTestEmail.flow.json` rebuilds the reference.
+- Tests: `tests/test_flow_lint.py` (31 cases on the example, every check id covered,
+  plus the real catalog), `tests/test_build_flow_package.py` (round trip: the same entry
+  names in the same order and the same normalised bytes in all five files; archive
+  shape; determinism; refusal; placeholders; verification of a wrapped or inconsistent
+  zip) and `tests/test_harvest_flow.py` (the reference harvests to the seeded catalog; a
+  synthetic export full of tenant values comes out clean).
+- `docs/test-plan.md` section "Power Automate import": F1 (did the reference import),
+  F2 (the round-trip package), F3 and on (one package per unverified item), and the
+  harvest procedure.
+- `scripts/sync_shared.py` copies `handoff.md` into `create-flow`; README section and
+  layout line.
+
+### Evidence (phase 06)
+- The owner reported on 2026-11-15 that `ClaudeImportTest_LegacyPackage.zip` imported
+  into their own tenant and ran (test plan F1). Not reported: whether the Thai text
+  arrived readable, or how the connection was selected. A package rebuilt by the builder
+  has not been imported yet (F2).
 
 ### Added (phase 05)
 - **`create-list` skill** (`skills/create-list/`): designs SharePoint lists with the user

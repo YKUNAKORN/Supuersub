@@ -197,6 +197,90 @@ What each answer changes:
 - **P7 yes**: the post-import "check the choices" step stays (order and default still
   need it), but can say the choices arrive from the data.
 
+## Power Automate import (`create-flow`)
+
+`create-flow` builds `.zip` packages for **My flows > Import > Import Package
+(Legacy)**. The entries in
+[`connectors.yaml`](../skills/create-flow/references/connectors.yaml) are copied from
+your reference package (`ClaudeImportTest_LegacyPackage.zip`). After F1 they are
+`import-tested`, except `package_connection_reference`: the builder generates a
+connection name where the reference held a real one, and F2 settles that. This section
+moves further entries to `import-tested` and grows the catalog.
+
+Environment kind (default, developer, ...), never a tenant or environment name:
+
+```
+Environment kind:  ______________   Create in Dataverse solutions on?  yes / no   Date: __________
+```
+
+### F1: did the reference package import?
+
+The answer settles more than any other row. Write it down even if it was months ago.
+
+| # | Package | Imported? (exact message if not) | Connection selected at import? | Ran once? E-mail arrived, Thai readable? | Date |
+|---|---|---|---|---|---|
+| F1 | your original `ClaudeImportTest_LegacyPackage.zip` | Yes (owner's report) | not reported | Ran (owner's report); Thai not reported | reported 2026-11-15 |
+
+### F2: the round-trip package
+
+Build the example. It is the reference rebuilt by the skill: fresh GUIDs, and a
+generated connection name in place of the original one.
+
+```bash
+python skills/create-flow/scripts/build_flow_package.py skills/create-flow/assets/example/SendTestEmail.flow.json --out flow-test
+```
+
+Import `flow-test/SendTestEmail_LegacyPackage.zip` as **Create as new**, select your
+Office 365 Outlook connection, open the flow, turn it on, run it with your own address,
+then delete the flow.
+
+| # | Question | Catalog entries it settles | Answer |
+|---|---|---|---|
+| F2a | Did the upload show the package details, with one flow row and one connection row under Related resources? | `package_connection_reference` | |
+| F2b | Did the import succeed? If not, the exact message | `package_connection_reference` | |
+| F2c | After import, did *Send an email (V2)* show your connection, or ask for one? (Tests the generated `connectionReferences`) | `package_connection_reference` | |
+| F2d | Did the run succeed and the e-mail arrive with readable Thai? | confirms F1 for a built package; Thai readability was not reported in F1 | |
+
+If F2b fails on connections, rebuild with the alternative in
+[`package-format.md`](../skills/create-flow/references/package-format.md)
+(`connectionReferences` `source` `Invoker`, or empty), one change at a time, and record
+each attempt as F2b-1, F2b-2.
+
+### F3 and on: one package per unverified item you care about
+
+For each item, write the smallest spec that uses it (the example plus one step), build
+it, import it, run it once:
+
+| # | Item (catalog entry) | Spec | Imported? | Ran? | Exact message if not | Date |
+|---|---|---|---|---|---|---|
+| F3 | | | | | | |
+| F4 | | | | | | |
+
+What each answer changes: an item that imported **and** ran becomes `import-tested` in
+`connectors.yaml` with `source:` naming this row and the date. One that imported but did
+not run keeps its level, with a note. One that did not import keeps its level, and the
+exact message goes into
+[`import-and-fix.md`](../skills/create-flow/references/import-and-fix.md).
+
+### Harvest procedure: growing the catalog
+
+Everything under `unattempted` (SharePoint, Approvals, Teams, Word, conditions, loops,
+variables, the Power Apps trigger) becomes usable this way:
+
+1. Build one flow by hand in Power Automate that uses the steps you need. Run it once.
+2. **My flows** > the flow > **Export** > **Package (.zip)**. Download it. Keep it out
+   of the repository.
+3. `python skills/create-flow/scripts/harvest_flow.py <export>.zip --report` shows what
+   is new, what would rise to `export`, and what the catalog holds that this export does
+   not use (not evidence of anything).
+4. `python skills/create-flow/scripts/harvest_flow.py <export>.zip --out fragment.yaml`
+   writes the entries at `export`, with every literal value replaced by a placeholder.
+   The script refuses to write if anything tenant-like is left. **Read the fragment
+   anyway.** Then copy the entries into `connectors.yaml` and remove them from
+   `unattempted`.
+5. `python scripts/validate.py && python -m unittest discover tests`, then commit
+   `connectors.yaml` only, never the export.
+
 ## Feeding a result back into the catalog
 
 A result becomes durable only when it lands in
