@@ -1,0 +1,17 @@
+{
+  "defect": "No sitemap.json.",
+  "edits": [
+    {
+      "file": "sitemap.json",
+      "delete": true
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "sitemap-missing"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "defect": "Under --target web, rem lengths and shadows are fine.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "\n</style>",
+      "replace": "\n  .card { padding: 1rem; box-shadow: 0px 1px 2px var(--color-border); }\n</style>"
+    }
+  ],
+  "args": [
+    "--target",
+    "web"
+  ],
+  "expect": {
+    "checks": [],
+    "exit": 0,
+    "verdict": "safe"
+  }
+}

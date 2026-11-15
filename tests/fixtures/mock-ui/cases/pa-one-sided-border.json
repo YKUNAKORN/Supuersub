@@ -1,0 +1,18 @@
+{
+  "defect": "A left border: the profile's substitute is a thin block.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "\n</style>",
+      "replace": "\n  .card { border-left: 4px solid var(--color-primary); }\n</style>"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "pa-effect"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

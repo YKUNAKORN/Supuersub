@@ -1,0 +1,23 @@
+{
+  "defect": "A button with neither data-nav nor data-action.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "<button class=\"btn btn-filter\" type=\"button\" data-action=\"filter:Requests\">Filter</button>",
+      "replace": "<button class=\"btn btn-filter\" type=\"button\">Filter</button>"
+    },
+    {
+      "file": "sitemap.json",
+      "find": "\"actions\": [\n        {\n          \"id\": \"filter:Requests\",\n          \"on\": \"Filter\"\n        }\n      ]",
+      "replace": "\"actions\": []"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "dead-control"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

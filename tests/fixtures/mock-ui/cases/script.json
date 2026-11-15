@@ -1,0 +1,18 @@
+{
+  "defect": "A <script> element.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "</body>",
+      "replace": "<script>document.title = 'x';</script>\n</body>"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "script"
+    ],
+    "exit": 0,
+    "verdict": "unverified"
+  }
+}

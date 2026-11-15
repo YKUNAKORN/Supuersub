@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Phase 03 of 2.0.0: the `mock-ui` skill, and the HTML contract between it and
+`create-app`.
+
+### Added (phase 03)
+- **Skill `mock-ui`** (`skills/mock-ui/`). Takes a `DESIGN.md` (or, if the user declines
+  `design-md`, a short style brief recorded in the output) plus the requirements, agrees a
+  screen inventory with the user before any HTML, then writes one self-contained `.html`
+  per screen, an `index.html` screen map and a `sitemap.json`. Every link and button
+  either navigates (`data-nav` on a real `href` or form `action`, so the prototype works
+  from disk with JavaScript off) or names its action (`data-action="verb:Object"`,
+  several space-separated). Targets `web` and `power-apps` (fixed 1366 × 768 canvas, px
+  geometry, effects the profile rules out only on elements marked
+  `data-unsupported="<profile id>"`). Dialogs and state variants (empty, error) are
+  screen files of their own with `kind` in the sitemap.
+- **`references/html-contract.md`**: the interface `create-app` converts from, each rule
+  paired with the linter check id that enforces it. **`references/screen-patterns.md`**:
+  app shell, list, detail, form, dashboard, dialog, empty and error states, with the
+  px arithmetic for the power-apps canvas.
+- **`scripts/tokens_to_css.py`**: `DESIGN.md` front matter -> the one `:root` block every
+  page starts with (`--color-*`, `--font-<level>-*`, `--radius-*`, `--space-*`,
+  `--<component>-*` as `var()` chains, `--canvas-*`). Under `power-apps` every length
+  becomes px (rem, em, unit-less line height). PyYAML.
+- **`scripts/mock_lint.py`**: offline checker for a mockup folder, standard library
+  only (`--design` also needs PyYAML), 15 error and 18 warning checks with stable ids,
+  `--target`, `--design`, `--json`, `--strict`, ending in a verdict like `pa_lint.py`.
+  It validates `sitemap.json` against `assets/sitemap.schema.json` with a small built-in
+  validator for the schema keywords it uses; a test checks it agrees with `jsonschema`.
+- **Assets**: `page.template.html`, `index.template.html`, `sitemap.schema.json`, and an
+  original three-screen example (Kitroom, an equipment-loan tool, `power-apps` target)
+  with its own `DESIGN.md`, lint-clean under `mock_lint.py --strict --design` and
+  `design_lint.py --target power-apps`.
+- Tests: `tests/test_mock_lint.py` (48 fixture cases under `tests/fixtures/mock-ui/`,
+  each one defect applied to a clean two-screen base; every documented check id and
+  every verdict is exercised; the example must lint clean for its declared target and
+  work with JavaScript off; both scripts run from outside the repo by absolute path) and
+  `tests/test_tokens_to_css.py`.
+- `tests/fixtures/mock-ui/converted/scrNewLoan.pa.yaml`: the example's `new-loan.html`
+  converted by following `create-app`'s SKILL.md. `pa_lint.py`: SAFE TO PASTE. One
+  sample, written by hand, not proof that every mockup converts.
+
+### Changed (phase 03)
+- `scripts/sync_shared.py` also copies `handoff.md` and `powerapps-profile.md` into
+  `skills/mock-ui/references/shared/`.
+- `scripts/validate.py` checks the mock-ui files and description triggers, requires the
+  bundled example to lint clean for the target its `sitemap.json` declares (with the
+  token-drift check), and lints the example's `DESIGN.md` with `design_lint.py`.
+- README: a section on `mock-ui` and its line in the repository layout.
+
 Phase 02 of 2.0.0: the `design-md` skill, and a `shared/` folder for files more than
 one skill needs.
 

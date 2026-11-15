@@ -1,0 +1,18 @@
+{
+  "defect": "A font stack that does not start with Segoe UI.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "\n</style>",
+      "replace": "\n  .card { font-family: Georgia, serif; }\n</style>"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "pa-effect"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

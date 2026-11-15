@@ -1,0 +1,19 @@
+{
+  "defect": "A data-field that is not PascalCase.",
+  "edits": [
+    {
+      "file": "new-request.html",
+      "find": "name=\"Title\" type=\"text\" data-field=\"Title\"",
+      "replace": "name=\"Title\" type=\"text\" data-field=\"request_title\""
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "data-name",
+      "sitemap-data"
+    ],
+    "exit": 0,
+    "verdict": "unverified"
+  }
+}

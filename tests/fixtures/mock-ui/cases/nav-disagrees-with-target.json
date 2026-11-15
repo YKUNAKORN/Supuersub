@@ -1,0 +1,18 @@
+{
+  "defect": "data-nav names one screen, the href opens another.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "<a class=\"btn btn-new\" href=\"new-request.html\" data-nav=\"scrNewRequest\">New request</a>",
+      "replace": "<a class=\"btn btn-new\" href=\"new-request.html\" data-nav=\"scrHome\">New request</a>"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "nav-mismatch"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

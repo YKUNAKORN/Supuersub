@@ -1,0 +1,18 @@
+{
+  "defect": "A field with no <label for>.",
+  "edits": [
+    {
+      "file": "new-request.html",
+      "find": "<label class=\"lbl lbl-title\" for=\"req-title\">Title</label>",
+      "replace": "<span class=\"lbl lbl-title\">Title</span>"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "label-missing"
+    ],
+    "exit": 0,
+    "verdict": "unverified"
+  }
+}

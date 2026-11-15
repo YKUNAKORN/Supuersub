@@ -1,0 +1,18 @@
+{
+  "defect": "power-apps body without an explicit width.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "body { position: relative; width: var(--canvas-width); height: var(--canvas-height);",
+      "replace": "body { position: relative; height: var(--canvas-height);"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "canvas-size"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

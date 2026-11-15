@@ -733,6 +733,66 @@ briefs = sorted((ROOT / "tests" / "briefs" / "design-md").glob("*.md"))
 check(len(briefs) >= 3, "tests/briefs/design-md/ holds at least three briefs",
       f"found {len(briefs)}")
 
+print("mock-ui")
+MU_DIR = ROOT / "skills" / "mock-ui"
+MU_LINT = MU_DIR / "scripts" / "mock_lint.py"
+MU_EXAMPLE = MU_DIR / "assets" / "example"
+for rel in ("references/html-contract.md", "references/screen-patterns.md",
+            "references/shared/handoff.md", "references/shared/powerapps-profile.md",
+            "assets/page.template.html", "assets/index.template.html",
+            "assets/sitemap.schema.json", "assets/example/index.html",
+            "assets/example/sitemap.json", "scripts/tokens_to_css.py",
+            "scripts/mock_lint.py"):
+    check((MU_DIR / rel).is_file(), f"skills/mock-ui/{rel} present")
+mu_skill = MU_DIR / "SKILL.md"
+if mu_skill.is_file():
+    mu_text = mu_skill.read_text(encoding="utf-8")
+    mu_fm = skill_checks.read_frontmatter(mu_skill, yaml) or {}
+    mu_desc = str(mu_fm.get("description") or "").lower()
+    # The phrases the skill has to fire on, and the two neighbours it must hand off to
+    # rather than imitate.
+    for phrase in ("mockup", "wireframe", "prototype the screens",
+                   "html pages from this design", "design-md", "create-app"):
+        check(phrase in mu_desc, f"mock-ui description mentions {phrase!r}")
+    for needle, label in (("## The workflow", "the ordered workflow"),
+                          ("Screen inventory", "the inventory-before-HTML step"),
+                          ("tokens_to_css.py", "the token step"),
+                          ("mock_lint.py", "the lint step"),
+                          ("html-contract.md", "a pointer to the contract"),
+                          ("screen-patterns.md", "a pointer to the patterns"),
+                          ("every screen in full", "the no-abbreviation rule"),
+                          ("create-list", "the create-list hand-off"),
+                          ("create-flow", "the create-flow hand-off")):
+        check(needle in mu_text, f"mock-ui SKILL.md still contains {label}",
+              f"missing {needle!r}")
+if MU_LINT.is_file() and (MU_EXAMPLE / "sitemap.json").is_file():
+    # The bundled example must lint clean for the target its own sitemap declares, with
+    # the drift check against the DESIGN.md it was generated from.
+    mu_map = json.loads((MU_EXAMPLE / "sitemap.json").read_text(encoding="utf-8"))
+    mu_args = [sys.executable, str(MU_LINT), str(MU_EXAMPLE), "--json", "--strict"]
+    if mu_map.get("design"):
+        mu_args += ["--design", str(MU_EXAMPLE / mu_map["design"])]
+    proc = subprocess.run(mu_args, capture_output=True, text=True, cwd=str(ROOT))
+    try:
+        mu_report = json.loads(proc.stdout)["report"]
+    except (json.JSONDecodeError, KeyError):
+        mu_report = {"verdict_code": None, "verdict": proc.stderr.strip()[:200],
+                     "findings": [], "target": None}
+    check(proc.returncode == 0 and mu_report["verdict_code"] == "safe",
+          f"assets/example/ lints clean for its declared target "
+          f"({mu_map.get('target')})",
+          f"{mu_report['verdict']}: "
+          + ", ".join(sorted({f['check'] for f in mu_report['findings']})))
+    check(mu_report.get("target") == mu_map.get("target"),
+          "mock_lint.py read the target from the example's sitemap.json")
+    if mu_map.get("design") and DM_LINT.is_file():
+        code, report = dm_lint(MU_EXAMPLE / mu_map["design"], "--target",
+                               mu_map.get("target", "web"),
+                               "--profile", str(ROOT / "shared" / "powerapps-profile.md"))
+        check(report["errors"] == 0 and not report["findings"],
+              "the example's DESIGN.md lints clean with design-md's linter",
+              f"{report['verdict']}")
+
 print("Plugin metadata")
 plugin_json = ROOT / ".claude-plugin" / "plugin.json"
 market_json = ROOT / ".claude-plugin" / "marketplace.json"

@@ -1,0 +1,18 @@
+{
+  "defect": "sitemap.json drops a link the HTML has.",
+  "edits": [
+    {
+      "file": "sitemap.json",
+      "find": "\"nav\": [\n        {\n          \"label\": \"New request\",\n          \"to\": \"scrNewRequest\"\n        }\n      ],",
+      "replace": "\"nav\": [],"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "sitemap-nav"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

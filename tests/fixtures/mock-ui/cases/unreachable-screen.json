@@ -1,0 +1,27 @@
+{
+  "defect": "A screen nothing links to.",
+  "edits": [
+    {
+      "file": "orphan.html",
+      "create": "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\"><title>scrOrphan</title>\n<style>\n  :root { --canvas-width: 1366px; --canvas-height: 768px; --color-on-surface: #1b1d22; }\n  body { width: var(--canvas-width); height: var(--canvas-height); color: var(--color-on-surface); }\n  .nav { position: absolute; left: 0px; top: 0px; width: 160px; height: 48px; }\n</style></head>\n<body data-screen=\"scrOrphan\" data-title=\"scrOrphan\">\n  <a class=\"nav nav-1\" href=\"home.html\" data-nav=\"scrHome\">Requests</a>\n</body></html>\n"
+    },
+    {
+      "file": "sitemap.json",
+      "find": "\"on\": \"Send\"\n        }\n      ]\n    }",
+      "replace": "\"on\": \"Send\"\n        }\n      ]\n    },\n    {\n      \"id\": \"scrOrphan\",\n      \"file\": \"orphan.html\",\n      \"title\": \"scrOrphan\",\n      \"purpose\": \"Extra screen\",\n      \"height\": 768,\n      \"nav\": [\n        {\n          \"label\": \"Requests\",\n          \"to\": \"scrHome\"\n        }\n      ],\n      \"data\": [],\n      \"actions\": []\n    }"
+    },
+    {
+      "file": "index.html",
+      "find": "<li><a href=\"new-request.html\" data-nav=\"scrNewRequest\">New request</a></li>",
+      "replace": "<li><a href=\"new-request.html\" data-nav=\"scrNewRequest\">New request</a></li>\n    <li><a href=\"orphan.html\" data-nav=\"scrOrphan\">Orphan</a></li>"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "unreachable"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

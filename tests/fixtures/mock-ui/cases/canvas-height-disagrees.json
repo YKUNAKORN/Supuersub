@@ -1,0 +1,19 @@
+{
+  "defect": "body height differs from the sitemap's screen height.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "height: var(--canvas-height);\n         overflow",
+      "replace": "height: 800px;\n         overflow"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "canvas-size",
+      "scroll-flag"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

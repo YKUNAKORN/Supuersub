@@ -1,0 +1,18 @@
+{
+  "defect": "A transition in a style attribute on an unmarked element.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "<section class=\"card\">",
+      "replace": "<section class=\"card\" style=\"transition: opacity 200ms;\">"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "pa-effect"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

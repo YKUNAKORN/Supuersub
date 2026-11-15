@@ -1,0 +1,19 @@
+{
+  "defect": "data-action that is not verb:Object.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "data-action=\"filter:Requests\"",
+      "replace": "data-action=\"Filter requests\""
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "action-format",
+      "sitemap-actions"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

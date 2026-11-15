@@ -1,0 +1,18 @@
+{
+  "defect": "A second <style> element.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "</head>",
+      "replace": "<style>.extra { width: 1px; }</style>\n</head>"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "style-blocks"
+    ],
+    "exit": 0,
+    "verdict": "unverified"
+  }
+}

@@ -130,12 +130,26 @@ like `pa_lint.py` does. Ask for a "design system", a "style guide" or a "DESIGN.
 For a design headed for Power Apps, say so: the skill then keeps to what the `create-app`
 catalog can reproduce and states plainly what it cannot.
 
+## Between the design and the app: a clickable mockup (`mock-ui`)
+
+The third skill, [`skills/mock-ui/`](skills/mock-ui/SKILL.md), takes a `DESIGN.md` and a
+description of what the product must do. It first agrees a screen inventory with you
+(every screen, its data, where each control leads), then writes one self-contained `.html`
+per screen with every button and link wired, an `index.html` screen map and a
+`sitemap.json`. Open `index.html` from disk and click through; it works with JavaScript
+off. `skills/mock-ui/scripts/mock_lint.py` checks the folder offline against the HTML
+contract `create-app` relies on (no dead controls, links that agree with the sitemap,
+nothing that needs the network, and under the `power-apps` target a fixed canvas and no
+effect the canvas cannot reproduce) and ends in a verdict. Ask for a "mockup", a
+"wireframe" or to "prototype the screens".
+
 ## Repository layout
 
 ```
 <repo>/
 ├── shared/                          # files several skills need; copied into each by scripts/sync_shared.py
 ├── skills/design-md/                 # interview -> DESIGN.md design system; scripts/design_lint.py
+├── skills/mock-ui/                   # DESIGN.md + requirements -> linked HTML mockup; scripts/mock_lint.py, tokens_to_css.py
 ├── skills/create-app/                # the skill itself
 │   ├── SKILL.md                      # workflow, control picker, templates, checklist
 │   ├── scripts/                      # run-time tools, shipped inside the skill

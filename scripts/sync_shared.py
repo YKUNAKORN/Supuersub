@@ -29,6 +29,7 @@ SKILLS = ROOT / "skills"
 # a skill that is not listed gets no references/shared/ folder at all.
 MANIFEST: dict[str, list[str]] = {
     "design-md": ["handoff.md", "powerapps-profile.md"],
+    "mock-ui": ["handoff.md", "powerapps-profile.md"],
 }
 
 

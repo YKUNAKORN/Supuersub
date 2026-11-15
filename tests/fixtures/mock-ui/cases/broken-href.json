@@ -1,0 +1,18 @@
+{
+  "defect": "A link to a file that does not exist (typo in the file name).",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "<a class=\"btn btn-new\" href=\"new-request.html\" data-nav=\"scrNewRequest\">New request</a>",
+      "replace": "<a class=\"btn btn-new\" href=\"new-requst.html\" data-nav=\"scrNewRequest\">New request</a>"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "broken-link"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

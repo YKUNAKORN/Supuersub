@@ -1,0 +1,18 @@
+{
+  "defect": "sitemap.json calls a file by another screen id.",
+  "edits": [
+    {
+      "file": "sitemap.json",
+      "find": "\"id\": \"scrNewRequest\"",
+      "replace": "\"id\": \"scrNewReq\""
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "sitemap-screens"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

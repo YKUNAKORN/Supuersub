@@ -1,0 +1,18 @@
+{
+  "defect": "var() of a token the :root block does not define.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "  .card { position: absolute; left: 24px; top: 72px; width: 600px; height: 200px;",
+      "replace": "  .card { position: absolute; left: 24px; top: 72px; width: 600px; height: 200px; color: var(--color-nope);"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "var-undefined"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

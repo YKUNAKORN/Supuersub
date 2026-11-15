@@ -1,0 +1,23 @@
+{
+  "defect": "A tall screen not flagged as scrolling.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "height: var(--canvas-height);\n         overflow",
+      "replace": "height: 904px;\n         overflow"
+    },
+    {
+      "file": "sitemap.json",
+      "find": "\"purpose\": \"List of requests\",\n      \"height\": 768,",
+      "replace": "\"purpose\": \"List of requests\",\n      \"height\": 904,"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "scroll-flag"
+    ],
+    "exit": 0,
+    "verdict": "unverified"
+  }
+}
