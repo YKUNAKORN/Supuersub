@@ -24,12 +24,22 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 RUNNER = ROOT / "scripts" / "run_eval.py"
 EVALS = ROOT / "tests" / "evals"
-EXAMPLES = ROOT / "skills" / "power-app-yaml" / "assets" / "examples"
+EXAMPLES = ROOT / "skills" / "create-app" / "assets" / "examples"
 
 REQUIRED_CASES = {
     "app-shell", "multi-section-form", "card-grid",
-    "shell-with-form", "impossible-effects",
+    "shell-with-form", "impossible-effects", "multi-screen-mock",
 }
+MULTI = EVALS / "multi-screen-mock"
+MOCK_UI_EXAMPLE = ROOT / "skills" / "mock-ui" / "assets" / "example"
+
+
+def mockup_inputs(directory: Path) -> list[Path]:
+    """mockup.html, or every .html of a mock-ui folder (supersub/mockup/)."""
+    folder = directory / "supersub" / "mockup"
+    if (folder / "sitemap.json").is_file():
+        return sorted(folder.glob("*.html"))
+    return [directory / "mockup.html"]
 
 
 def run(*args: str):
@@ -74,7 +84,7 @@ class TempOutput:
 class CaseFixtureTests(unittest.TestCase):
     """The cases themselves, before anything is scored against them."""
 
-    def test_the_five_required_cases_exist(self):
+    def test_the_required_cases_exist(self):
         found = {d.name for d in EVALS.iterdir()
                  if (d / "expectations.yaml").is_file()}
         self.assertTrue(REQUIRED_CASES <= found,
@@ -85,9 +95,13 @@ class CaseFixtureTests(unittest.TestCase):
             if not directory.is_dir():
                 continue
             with self.subTest(case=directory.name):
-                for name in ("mockup.html", "expectations.yaml", "notes.md"):
+                for name in ("expectations.yaml", "notes.md"):
                     self.assertTrue((directory / name).is_file(),
                                     f"{directory.name}/{name} is missing")
+                inputs = mockup_inputs(directory)
+                self.assertTrue(inputs and all(p.is_file() for p in inputs),
+                                f"{directory.name} has no mockup.html and no "
+                                "supersub/mockup/ folder with a sitemap.json")
 
     def test_mockups_are_self_contained(self):
         """A case that needs the network scores differently on a machine without it."""
@@ -97,22 +111,36 @@ class CaseFixtureTests(unittest.TestCase):
         at_import = re.compile(r"@import\s+(?:url\()?['\"]?(?:https?:)?//",
                                re.IGNORECASE)
         for directory in sorted(EVALS.iterdir()):
-            mockup = directory / "mockup.html"
-            if not mockup.is_file():
+            if not directory.is_dir():
                 continue
-            with self.subTest(case=directory.name):
-                text = mockup.read_text(encoding="utf-8")
-                self.assertIsNone(external.search(text),
-                                  "mockup pulls an external asset")
-                self.assertIsNone(at_import.search(text),
-                                  "mockup @imports a remote stylesheet")
+            for mockup in mockup_inputs(directory):
+                if not mockup.is_file():
+                    continue
+                with self.subTest(case=directory.name, file=mockup.name):
+                    text = mockup.read_text(encoding="utf-8")
+                    self.assertIsNone(external.search(text),
+                                      "mockup pulls an external asset")
+                    self.assertIsNone(at_import.search(text),
+                                      "mockup @imports a remote stylesheet")
+
+    def test_the_multi_screen_mockup_is_the_mock_ui_example(self):
+        """The case copies skills/mock-ui/assets/example/ so it is self-contained.
+        A copy that drifts would score a mockup nobody ships."""
+        copy = MULTI / "supersub" / "mockup"
+        shipped = sorted(p.name for p in MOCK_UI_EXAMPLE.iterdir() if p.is_file())
+        self.assertEqual(sorted(p.name for p in copy.iterdir() if p.is_file()), shipped)
+        for name in shipped:
+            with self.subTest(file=name):
+                self.assertEqual((copy / name).read_bytes(),
+                                 (MOCK_UI_EXAMPLE / name).read_bytes(),
+                                 f"re-copy {name} from skills/mock-ui/assets/example/")
 
     def test_the_hard_case_uses_only_catalogued_impossible_effects(self):
         """impossible-effects must assert ids that controls.yaml actually lists --
         otherwise the case is testing an effect this repo has no position on."""
         import yaml
         catalog = yaml.safe_load(
-            (ROOT / "skills" / "power-app-yaml" / "references" / "controls.yaml")
+            (ROOT / "skills" / "create-app" / "references" / "controls.yaml")
             .read_text(encoding="utf-8-sig"))
         known = {e["id"] for e in catalog.get("impossible_css") or []}
         spec = yaml.safe_load(
@@ -134,7 +162,8 @@ class SelfCheckTests(unittest.TestCase):
         code, payload, stderr = run()
         self.assertIn(code, (0, 1), f"crashed (exit {code}): {stderr}")
         scored = {r["case"] for r in payload["results"]}
-        self.assertEqual(scored, {"app-shell", "multi-section-form", "card-grid"})
+        self.assertEqual(scored, {"app-shell", "multi-section-form", "card-grid",
+                                  "multi-screen-mock"})
 
     def test_the_self_check_passes(self):
         code, payload, _ = run()
@@ -281,6 +310,52 @@ class NegativeScoringTests(unittest.TestCase):
         with TempOutput(commented) as path:
             _, payload, _ = run(str(path), "--case", str(EVALS / "shell-with-form"))
         self.assertEqual(rows_of(payload)["navigation.targets-resolve"], "PASS")
+
+    def test_a_sitemap_screen_resolves_but_an_unknown_one_does_not(self):
+        """multi-screen-mock names the mock-ui sitemap: a Navigate() to another
+        screen of the app resolves without a comment, and the lint verdict agrees."""
+        to_sitemap = """
+            Screens:
+              scrLoanList:
+                Properties:
+                  Fill: =RGBA(244, 244, 246, 1)
+                Children:
+                  - btnLoanListGo:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        Text: ="Go"
+                        OnSelect: =Navigate(scrLoanDetail, ScreenTransition.None)
+                        X: =0
+                        Y: =0
+                        Width: =200
+                        Height: =40
+        """
+        with TempOutput(to_sitemap) as path:
+            _, payload, _ = run(str(path), "--case", str(MULTI))
+        rows = rows_of(payload)
+        self.assertEqual(rows["navigation.targets-resolve"], "PASS")
+        self.assertEqual(rows["lint.warnings"], "PASS")
+
+        with TempOutput(to_sitemap.replace("scrLoanDetail", "scrNowhere")) as path:
+            _, payload, _ = run(str(path), "--case", str(MULTI))
+        rows = rows_of(payload)
+        self.assertEqual(rows["navigation.targets-resolve"], "FAIL")
+        self.assertEqual(rows["lint.warnings"], "FAIL")
+
+        # The same file against a case without a sitemap is still dangling there.
+        with TempOutput(to_sitemap) as path:
+            _, payload, _ = run(str(path), "--case", str(EVALS / "shell-with-form"))
+        self.assertEqual(rows_of(payload)["navigation.targets-resolve"], "FAIL")
+
+    def test_every_reference_screen_passes_the_multi_screen_case(self):
+        """Only scrLoanDetail is the CI reference; the other two must pass too."""
+        for path in sorted((MULTI / "supersub" / "app").glob("*.pa.yaml")):
+            with self.subTest(file=path.name):
+                code, payload, _ = run(str(path), "--case", str(MULTI))
+                self.assertEqual(code, 0)
+                bad = [r for r in payload["results"][0]["rows"]
+                       if r["result"] in ("FAIL", "XPASS")]
+                self.assertEqual(bad, [])
 
     def test_a_forbidden_control_type_fails(self):
         with TempOutput("""
@@ -446,6 +521,23 @@ class CliTests(unittest.TestCase):
                 capture_output=True, text=True, cwd=str(ROOT))
         self.assertEqual(proc.returncode, 2)
         self.assertIn("reason", proc.stderr.lower())
+
+    def test_a_case_with_an_unreadable_sitemap_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            case = Path(tmp) / "broken"
+            case.mkdir()
+            (case / "expectations.yaml").write_text(textwrap.dedent("""
+                case: broken
+                navigation:
+                  sitemap: no-such-sitemap.json
+            """).lstrip(), encoding="utf-8")
+            proc = subprocess.run(
+                [sys.executable, str(RUNNER), str(EXAMPLES / "example-form.yaml"),
+                 "--case", str(case)],
+                capture_output=True, text=True, cwd=str(ROOT))
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("sitemap", proc.stderr)
+        self.assertNotIn("Traceback", proc.stderr)
 
     def test_text_output_states_the_reference_is_not_model_generated(self):
         """The single most misreadable thing about this harness. If the disclaimer

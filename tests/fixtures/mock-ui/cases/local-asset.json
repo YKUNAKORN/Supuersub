@@ -1,0 +1,22 @@
+{
+  "defect": "An <img> that loads a separate local file.",
+  "edits": [
+    {
+      "file": "logo.svg",
+      "create": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\"></svg>\n"
+    },
+    {
+      "file": "home.html",
+      "find": "<button class=\"btn btn-filter\" type=\"button\" data-action=\"filter:Requests\">Filter</button>",
+      "replace": "<button class=\"btn btn-filter\" type=\"button\" data-action=\"filter:Requests\">Filter</button>\n  <img src=\"logo.svg\" alt=\"Logo\">"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "local-asset"
+    ],
+    "exit": 0,
+    "verdict": "unverified"
+  }
+}

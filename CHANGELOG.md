@@ -7,6 +7,480 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (phase 08)
+
+- `scripts/privacy_check.py`, run by `scripts/validate.py`: fails on e-mail addresses
+  outside `example.com`, `example.org` and `contoso.*`, tenant hosts other than
+  `contoso`, and absolute home paths; and, when a local untracked `.private-terms.txt`
+  exists, on any listed term in a tracked file or file name (reporting file and line,
+  never the term). Documented in `CONTRIBUTING.md`; tests in `tests/test_privacy_check.py`.
+
+### Changed (phase 08)
+
+- The reference workbook is now `tests/fixtures/lists/reference-holidays.xlsx`.
+- The seventeen document titles in `example-card-grid.yaml`, the `tile-grid-cell` pattern,
+  the `layout-mapping.md` samples and the card-grid eval mockup are neutral office
+  documents. No line counts changed.
+- The sample action data source in the data-binding reference, the ten-screen test app and its inventory test is now named `CreatePdf`.
+
+### Fixed (phase 08)
+
+- `list_lint.py` and `flow_lint.py` no longer crash on `jsonschema` older than 4.0: they
+  use `Draft202012Validator` when present, else `Draft7Validator` (the bundled schemas use
+  no 2020-12-only keyword; if one is added, the run reports UNPROVEN). `pa_lint.py` treats
+  a `jsonschema` older than 3.0 as missing.
+- `tests/test_package_plugin.py` skips the `claude plugin validate` test when that
+  subcommand cannot run, not only when `claude` is absent.
+
+## [2.0.0] - 2026-11-15
+
+One skill became a plugin of five. `power-app-yaml` converted a mockup into Power Apps
+Canvas YAML; `supersub` takes a Power Platform app from a design system to mockups,
+screens, SharePoint lists and Power Automate flows, and installs in Claude chat, Cowork
+and Claude Code from one folder.
+
+**Why.** A canvas screen is rarely the first or the last thing an app needs. Before it
+comes a design and an agreed set of screens; after it come the list the screens read and
+the flow their buttons call. Each of those has the same failure mode the v1 skill was
+built against: a plausible file that the real tool rejects. So every new skill is built
+the v1 way: a catalog of what is known, generation by script rather than by hand, an
+offline linter that ends in a verdict, and an unverified label on anything no import or
+paste has settled.
+
+**What changed, in short.**
+
+- Plugin and marketplace renamed `power-app-yaml` -> `supersub`; the skill renamed
+  `create-app`. **Breaking**: see the migration note below.
+- Four new skills: `design-md` (phase 02), `mock-ui` (phase 03), `create-list`
+  (phase 05), `create-flow` (phase 06). `create-app` takes a `mock-ui` folder and writes
+  one file per screen (phase 04).
+- Every file a skill runs lives inside that skill, so it works when only the skill folder
+  reaches chat's sandbox (phase 01, proved by the sandbox simulation in phase 07).
+- One hand-off contract, one verdict vocabulary, one set of evidence levels across the
+  five skills (phase 07).
+
+The phase entries below give the detail. The migration note is at the end of phase 01.
+
+### Added (phase 07)
+- **Trigger matrix** `docs/trigger-matrix.md`: 23 realistic messages, English and Thai,
+  each with one owning skill and the near miss most likely to fire instead. Decided by
+  reading the descriptions, not by measuring; release test plan `T1` measures it.
+- **One contract.** `shared/handoff.md` now states the names every skill uses (screen
+  ids, files, list, column and flow names, `run-flow:` and `submit:` actions), the four
+  verdict codes (`safe`, `unverified`, `will_fail`, `unproven`), the evidence levels
+  (with `create-app`'s `studio-tested` / `studio-export` mapped onto them) and the
+  four-part hand-off (what was built, what is unverified, what to test, what comes next).
+  It is now also synced into `create-app`.
+- **Cross-skill checks** in `scripts/skill_checks.py`, each negative-tested in
+  `tests/test_skill_checks.py`: every description says what the skill is not for and
+  names the skill that is; every `SKILL.md` has a `## Hand-off` that links the contract
+  and names the next skill; no path points into another skill's folder; only the four
+  `supersub/` folders of the contract are named. In `scripts/validate.py`: every linter
+  uses the four verdict codes; every bundled example passes its own linter; the
+  identifier rules in `mock_lint.py`, `list_lint.py` and both schemas are one rule; the
+  trigger matrix has at least 15 rows with real owners and at least five in Thai; the
+  release test plan lists every open item exactly once.
+- **`scripts/package_plugin.py`** writes `dist/supersub.zip` for **Upload plugin**:
+  `.claude-plugin/plugin.json` at the root, `skills/`, `README.md`, `LICENSE`, `NOTICE`
+  (99 files, about 0.3 MB). Refuses on a top-level `bin/`, a failing skill check, or more
+  than 5,000 files or 200 MB; prints the count and size; reproducible bytes.
+  `marketplace.json` is left out: an uploaded plugin is not a marketplace.
+  `tests/test_package_plugin.py` checks the shape, the refusals, and, when the `claude`
+  CLI is on PATH, that `claude plugin validate` accepts the unpacked archive.
+- **Sandbox simulation** `tests/test_sandbox_simulation.py`: for each skill, copy only
+  `skills/<name>/` to an empty directory and run every script its `SKILL.md` names, with
+  the relative `scripts/...` path, against its bundled example; then the same from an
+  empty project directory with absolute paths. A script `SKILL.md` names without a
+  command fails the test.
+- **End-to-end scenario** `tests/e2e/leave-request/` (Restday: two screens, one list, one
+  flow, Thai text) through all five skills, with `docs/e2e-walkthrough.md` and
+  `tests/test_e2e_leave_request.py`, which re-lints every step, rebuilds the `.xlsx`,
+  `.csv` and `.zip` byte for byte, and checks that names agree across hand-offs.
+- **Docs**: `README.md` rewritten as the plugin's front page; the former `create-app`
+  body moved to `docs/create-app.md` with the old quickstart walkthrough;
+  `docs/quickstart.md` covers both surfaces and each skill; `docs/evals.md` and
+  `docs/test-plan.md` have a section per skill, automated and manual;
+  `docs/release-test-plan.md` is the owner's checklist.
+- `CONTRIBUTING.md`: how to report a SharePoint import and a Power Automate import;
+  issue templates `list-import-report.yml` and `flow-import-report.yml`.
+
+### Changed (phase 07)
+- `create-app` description ends "Not for drawing a mockup (mock-ui), lists or flows" (636
+  characters; "(sitemap.json + screen HTML files)" was cut to fit, no trigger dropped);
+  its hand-off heading is `## Hand-off` and links the contract. `SKILL.md` 8,191 bytes.
+- `create-flow` description also fires on a notification, an approval, or a package that
+  failed to import.
+- `plugin.json`: final description naming all five skills; keywords add `sharepoint`,
+  `microsoft-lists`, `prototype`, drop `claude-skill`.
+- `NOTICE`: adds the mirrored Microsoft control-id list, the one quoted Microsoft
+  sentence, PyPowerAutomate (cited, not copied), and the owner-supplied files.
+
+### Added (phase 06)
+- **`create-flow` skill** (`skills/create-flow/`): plans the flows a system needs in
+  `flow.md` (inventory with trigger, connectors, lists, caller and a status of
+  `package`, `package with unverified steps` or `build by hand`, then each flow in full
+  and why the count is that number), stops for agreement, then writes one
+  `<FlowName>.flow.json` per flow (schema `assets/flow.schema.json`) and builds
+  `<FlowName>_LegacyPackage.zip` for **My flows > Import > Import Package (Legacy)**.
+  Tenant values are `{{Placeholders}}`, connections are chosen at import, one flow per
+  package.
+- **`references/connectors.yaml`**, the catalog: the package layout, connector
+  `shared_office365` with `SendEmailV2` and its three parameter keys, the
+  `Request/Button` trigger with `TEXT` and `EMAIL` inputs, and action types `Compose`
+  and `OpenApiConnection`, all `import-tested`: the owner reported on 2026-11-15 that
+  the reference package imported and ran. A separate `package_connection_reference`
+  entry, `unverified`, covers the one thing the builder writes differently: a generated
+  connection name in place of a real one. The linter warns about it in every flow that
+  uses a connector. Connectors,
+  triggers and actions not yet seen are listed under `unattempted`.
+- **`scripts/build_flow_package.py`**: lints first and refuses on errors; generates every
+  GUID, both manifests, both maps and `definition.json`; writes the reference layout
+  (five deflated entries, no directory entries, no wrapping folder, ASCII-escaped
+  two-space JSON, LF, no trailing newline); reopens the zip and prints `VERIFIED` only
+  when the layout, encodings and cross-file ids agree; prints the connections to select,
+  the post-import checklist and the unverified list. `--set` fills a placeholder into the
+  zip only; `--seed` and `--created-time` make output reproducible; `--verify` checks
+  any package.
+- **`scripts/flow_lint.py`**: stable check ids (`spec-invalid`, `name-duplicate`,
+  `action-key-invalid`, `action-key-duplicate`, `run-after-unknown`, `run-after-cycle`,
+  `connector-undeclared`, `host-invalid`, `catalog-missing`, `connection-embedded`,
+  `expression-unbalanced`, `expression-reference`, `placeholder-undeclared`,
+  `sensitive-value`; warnings `unverified-step`, `placeholder-unresolved`,
+  `placeholder-unused`, `connector-unused`, `guid-literal`) and a verdict: safe to
+  import, should import with n items to check, will fail, or unproven (without PyYAML or
+  jsonschema).
+- **`scripts/harvest_flow.py`**: reads an exported legacy package (zip or folder) and
+  writes catalog entries at `export`: connector identity and icon, operation parameter
+  keys with a scrubbed example, trigger shapes and input hints, and action types. Literal
+  values become named placeholders; addresses, URLs and GUIDs inside expressions are
+  replaced; connection names, action names and input texts are never copied. A final
+  guard refuses output with anything tenant-like left. `--report` prints a coverage diff.
+- **References**: `package-format.md` (every field with its evidence: sample, doc,
+  corroborated by PyPowerAutomate, or unverified), `flow-md-template.md`,
+  `import-and-fix.md` (role, cookies, the **Create in Dataverse solutions** stop, the
+  import steps, the post-import checklist, known and suspected failure causes).
+- **Reference package**: unpacked in `assets/reference-package/` and zipped as
+  `tests/fixtures/flows/reference-package.zip`, with the original's connection id
+  replaced by a dummy. `validate.py` fails if the original id reappears anywhere under
+  `skills/` or `tests/`.
+- **Example** `assets/example/SendTestEmail.flow.json` rebuilds the reference.
+- Tests: `tests/test_flow_lint.py` (31 cases on the example, every check id covered,
+  plus the real catalog), `tests/test_build_flow_package.py` (round trip: the same entry
+  names in the same order and the same normalised bytes in all five files; archive
+  shape; determinism; refusal; placeholders; verification of a wrapped or inconsistent
+  zip) and `tests/test_harvest_flow.py` (the reference harvests to the seeded catalog; a
+  synthetic export full of tenant values comes out clean).
+- `docs/test-plan.md` section "Power Automate import": F1 (did the reference import),
+  F2 (the round-trip package), F3 and on (one package per unverified item), and the
+  harvest procedure.
+- `scripts/sync_shared.py` copies `handoff.md` into `create-flow`; README section and
+  layout line.
+
+### Evidence (phase 06)
+- The owner reported on 2026-11-15 that `ClaudeImportTest_LegacyPackage.zip` imported
+  into their own tenant and ran (test plan F1). Not reported: whether the Thai text
+  arrived readable, or how the connection was selected. A package rebuilt by the builder
+  has not been imported yet (F2).
+
+### Added (phase 05)
+- **`create-list` skill** (`skills/create-list/`): designs SharePoint lists with the user
+  in `lists.md` (columns, types, relationships, creation order), gets agreement, then
+  writes one `<ListName>.list.json` per list (schema `assets/list.schema.json`) and builds
+  the import file for **New list > From Excel / From CSV**. Every column keeps
+  `importType` (what to pick in the import drop-down, or `skip`), `finalType` (what the
+  design needs) and the post-import steps between them apart.
+- **`scripts/build_list.py`**: spec to `.xlsx` (a data sheet named after the list with one
+  Excel table, `TableStyleMedium2`, frozen header, real dates with `yyyy-mm-dd`, real
+  numbers; a `Setup` sheet with the type to choose, the settings after import and notes,
+  in the user's language) or `.csv` plus `<ListName>.Setup.md`. Lints first and refuses
+  on errors, reopens the file and prints `VERIFIED` only when the table, headers and
+  typed cells match. Same spec, same bytes. Without `openpyxl` it says
+  `pip install openpyxl` or `--format csv`.
+- **`scripts/list_lint.py`**: stable check ids (`spec-invalid`, `name-invalid`,
+  `name-duplicate`, `name-reserved`, `import-type`, `choices-missing`, `lookup-target`,
+  `unique-not-indexed`, `unique-values`, `row-value`, `row-unknown-column`, `row-count`,
+  `rows-too-few`; warnings `unverified-behavior`, `title-column`, `column-sparse`,
+  `required-empty`, `personal-data`), the creation order (lookup targets first), and a
+  verdict in the `pa_lint.py` style. `UNPROVEN` without `jsonschema`.
+- **`references/import-behavior.md`**: the evidence table the linter reads. Eight rows
+  are `doc` (Microsoft's "Create a list based on a spreadsheet", read 2026-11-15); the
+  rest, including which types the drop-down offers, the Title mapping, the empty table,
+  CSV encoding and values, choices from data and internal names, are `unverified`.
+  `references/column-types.md` (the type table, also read by the scripts) and
+  `references/naming.md`.
+- **CSV encoding: UTF-8 with a byte-order mark, CRLF**, recorded as an unverified
+  choice; `--csv-encoding utf-8` writes it without the mark so both can be tried.
+- **Type probe** `assets/type-probe.list.json` and `docs/test-plan.md` section
+  "SharePoint list import": four files to import, a per-column table of proposed and
+  offered types, and questions P3–P8 (Title, empty table, Thai in CSV with and without
+  the mark, choices, internal names).
+- **Example** `assets/example/Holidays.list.json`, which builds to the owner's reference
+  workbook shape; the reference is kept as `tests/fixtures/lists/reference-holidays.xlsx`.
+- Tests: `tests/test_list_lint.py` (28 fixture cases over a two-list base, every check id
+  covered, plus the real evidence table) and `tests/test_build_list.py` (structural
+  comparison with the reference, determinism, CSV, refusal, missing `openpyxl`).
+
+### Changed (phase 05)
+- CI and `CONTRIBUTING.md` install `openpyxl`; the `.xlsx` tests skip with a message
+  without it.
+- `scripts/sync_shared.py` copies `handoff.md` into `create-list`; `scripts/validate.py`
+  checks the skill's files, description triggers, evidence table, that the schema enums
+  equal the type table, and that the example and probe lint with no finding other than
+  `unverified-behavior`.
+- `README.md`: a section on `create-list` and its place in the layout.
+
+### Not changed (phase 05)
+- Nothing is recorded as `import-tested`: whether the reference workbook imported as
+  intended has not been reported yet.
+
+### Added (phase 04)
+- **`create-app` pipeline branch**, `references/from-mock-ui.md`: read `sitemap.json`
+  first (a `web` target is refused with the reason and two ways on), convert the screens
+  one at a time with the existing steps, repeat the shared chrome with per-screen names,
+  turn every `data-nav` into a real `Navigate()`, render `data-repeat`/`data-source`
+  content as static controls with the binding named in a comment (no `Gallery` or
+  `Form` while they are unattempted), give each `data-action` a placeholder `OnSelect`
+  that names it, apply the catalog's substitute for `data-unsupported`, offer theme
+  `Set()` formulas as text only, and write `PASTE-ORDER.md`.
+- **`pa_lint.py --app-dir DIR`** (or `--one-app` with files): lints the screen files of
+  one app together. New L3 checks `L3.duplicate-control-name-in-app` (a control name on
+  two screens: Studio renames the second with `_1`) and `L3.duplicate-screen-in-app`
+  (a screen id defined twice). A screen in another file of the app is a valid
+  `Navigate()` target.
+- **`pa_lint.py --sitemap PATH` and `--known-screens a,b`**: their screen ids are valid
+  `Navigate()` targets. The JSON report gains `app_checked` and `known_screens`.
+- **Eval case `multi-screen-mock`**: the `mock-ui` Kitroom example (a copy kept
+  identical by a test) and three converted screens with `PASTE-ORDER.md`. The screens
+  were written in the Phase 04 working session by following the skill, not in a fresh
+  model session. They lint `SAFE TO PASTE` as one app with the sitemap.
+- **`run_eval.py`: `navigation.sitemap`** in a case's expectations. The sitemap's screens
+  count as existing targets, for the navigation row and the lint verdict.
+- Fixtures `tests/fixtures/app/clean/` and `tests/fixtures/app/collisions/`, each screen
+  file with its single-file sidecar and each folder with a `<case>.app.expected.json`.
+- `docs/test-plan.md`, section "Multi-screen paste": four questions for Studio (does a
+  pasted screen keep its name; can a screen that navigates to a missing screen be
+  pasted; does the error clear; any `_1` after all three).
+
+### Changed (phase 04)
+- `create-app` `SKILL.md`: a third branch pointing to `from-mock-ui.md`; rule 7 accepts a
+  target in the sitemap or the app; the hand-off names `create-list` and `create-flow`;
+  the description names a mock-ui folder as input (650 characters, no trigger dropped).
+  The pre-send checklist now points at rules 1–7 instead of repeating them, to stay
+  inside the 8,192-byte budget (8,184).
+- Cross-file checks run only when the files are declared one app (`--app-dir` or
+  `--one-app`). Files passed together without the flag are linted as before: the
+  bundled patterns all use one placeholder screen name, and comparing them would be
+  wrong.
+- `validate.py` and `tests/test_run_eval.py`: a case's input may be a
+  `supersub/mockup/` folder with a `sitemap.json` instead of `mockup.html`;
+  `multi-screen-mock` is a required case (six in all).
+- Docs: `docs/evals.md` (the case, and why it is scored one file at a time),
+  `docs/troubleshooting.md`, `README.md`, `references/extend-existing-app.md`.
+
+### Evidence (phase 04)
+- Before/after eval, one blind subagent run per case and skill version (a sample of
+  one each). `app-shell`: 20 pass / 2 fail before and after, the same two rows
+  (`controls.by_type:GroupContainer` 7 > 6, and `navigation.count` 0: both runs wrote
+  `OnSelect: =false` with a comment rather than a commented `Navigate()` placeholder).
+  `impossible-effects`: 29 / 29 before and after. No row changed between versions.
+- Both `app-shell` failures were followed up:
+  - `navigation.count`: rule 7 said "keep the placeholder" without showing one, and
+    "never invent a screen name" pushed both runs to `=false`. Rule 7 now shows the
+    placeholder the skill's own examples and docs use, a commented `Navigate()` named
+    after the link, and says never `=false`.
+  - `GroupContainer` 7 > 6: the range was derived from the reference, which draws
+    glyph icons. The mockup's `.ico` is a rounded CSS square, and `GroupContainer` is
+    the only control with confirmed `Radius*`, so the range is now 1–8, with the
+    derivation in a comment.
+  - A blind re-run with the fixed skill: 22 / 22 on `app-shell`, with 4 placeholder
+    `Navigate()` calls. One run.
+
+### Not changed (phase 04)
+- No catalog entry, no check id, message or exit code. Every v1 fixture and eval
+  self-check passes with its expected file untouched. No `App:` or `DataSources:` block
+  is emitted.
+
+### Added (phase 03)
+- **Skill `mock-ui`** (`skills/mock-ui/`). Takes a `DESIGN.md` (or, if the user declines
+  `design-md`, a short style brief recorded in the output) plus the requirements, agrees a
+  screen inventory with the user before any HTML, then writes one self-contained `.html`
+  per screen, an `index.html` screen map and a `sitemap.json`. Every link and button
+  either navigates (`data-nav` on a real `href` or form `action`, so the prototype works
+  from disk with JavaScript off) or names its action (`data-action="verb:Object"`,
+  several space-separated). Targets `web` and `power-apps` (fixed 1366 × 768 canvas, px
+  geometry, effects the profile rules out only on elements marked
+  `data-unsupported="<profile id>"`). Dialogs and state variants (empty, error) are
+  screen files of their own with `kind` in the sitemap.
+- **`references/html-contract.md`**: the interface `create-app` converts from, each rule
+  paired with the linter check id that enforces it. **`references/screen-patterns.md`**:
+  app shell, list, detail, form, dashboard, dialog, empty and error states, with the
+  px arithmetic for the power-apps canvas.
+- **`scripts/tokens_to_css.py`**: `DESIGN.md` front matter -> the one `:root` block every
+  page starts with (`--color-*`, `--font-<level>-*`, `--radius-*`, `--space-*`,
+  `--<component>-*` as `var()` chains, `--canvas-*`). Under `power-apps` every length
+  becomes px (rem, em, unit-less line height). PyYAML.
+- **`scripts/mock_lint.py`**: offline checker for a mockup folder, standard library
+  only (`--design` also needs PyYAML), 15 error and 18 warning checks with stable ids,
+  `--target`, `--design`, `--json`, `--strict`, ending in a verdict like `pa_lint.py`.
+  It validates `sitemap.json` against `assets/sitemap.schema.json` with a small built-in
+  validator for the schema keywords it uses; a test checks it agrees with `jsonschema`.
+- **Assets**: `page.template.html`, `index.template.html`, `sitemap.schema.json`, and an
+  original three-screen example (Kitroom, an equipment-loan tool, `power-apps` target)
+  with its own `DESIGN.md`, lint-clean under `mock_lint.py --strict --design` and
+  `design_lint.py --target power-apps`.
+- Tests: `tests/test_mock_lint.py` (48 fixture cases under `tests/fixtures/mock-ui/`,
+  each one defect applied to a clean two-screen base; every documented check id and
+  every verdict is exercised; the example must lint clean for its declared target and
+  work with JavaScript off; both scripts run from outside the repo by absolute path) and
+  `tests/test_tokens_to_css.py`.
+- `tests/fixtures/mock-ui/converted/scrNewLoan.pa.yaml`: the example's `new-loan.html`
+  converted by following `create-app`'s SKILL.md. `pa_lint.py`: SAFE TO PASTE. One
+  sample, written by hand, not proof that every mockup converts.
+
+### Changed (phase 03)
+- `scripts/sync_shared.py` also copies `handoff.md` and `powerapps-profile.md` into
+  `skills/mock-ui/references/shared/`.
+- `scripts/validate.py` checks the mock-ui files and description triggers, requires the
+  bundled example to lint clean for the target its `sitemap.json` declares (with the
+  token-drift check), and lints the example's `DESIGN.md` with `design_lint.py`.
+- README: a section on `mock-ui` and its line in the repository layout.
+
+Phase 02 of 2.0.0: the `design-md` skill, and a `shared/` folder for files more than
+one skill needs.
+
+### Added (phase 02)
+- **Skill `design-md`** (`skills/design-md/`). Interviews the user (at most two rounds),
+  offers two or three directions when they have no strong view, and writes a
+  `DESIGN.md` in Google's Stitch format as the VoltAgent collection practises it: all
+  tokens in YAML front matter (`version`, `name`, `description`, `colors`,
+  `typography`, `rounded`, `spacing`, `components`) and eleven `##` sections, the
+  spec's eight followed by Responsive Behavior, Iteration Guide and Known Gaps. Two
+  targets: `web`, and `power-apps`, which keeps the design inside what `create-app` can
+  reproduce and declares each ruled-out effect with its substitute. References:
+  `format.md` (own condensed description of the spec, with the lint rules),
+  `section-guide.md`, `interview.md`. Assets: a lint-clean template with all eleven
+  sections and an original example for an invented brand (Mossgate Commons).
+- **`skills/design-md/scripts/design_lint.py`**: offline linter, standard library plus
+  PyYAML, 18 error checks and 13 warning checks with stable ids, `--target power-apps`,
+  `--json`, `--strict`, ending in a verdict like `pa_lint.py`. It is stricter than
+  Google's CLI 0.4.0 where the spec says "error" and the CLI does not check (duplicate
+  `##` headings, `version`, missing `fontWeight`, unit-less `fontSize`) and it reads the
+  prose, which the CLI never does. Every difference is tabled in `format.md` §7.
+- **`shared/`** with `handoff.md` (the hand-off contract, written for a skill to read)
+  and `powerapps-profile.md` (derived from `create-app`'s `controls.yaml`: confirmed
+  controls and properties, `unattempted_controls`, every `impossible_css` entry; each
+  statement names its catalog key). **`scripts/sync_shared.py`** copies them into
+  `skills/<skill>/references/shared/` from a manifest; `--check` fails on a missing,
+  edited or stray copy.
+- Tests: `tests/test_design_lint.py` (25 fixtures under `tests/fixtures/design-md/`,
+  every error check covered by an invalid fixture, every documented check exercised)
+  and `tests/test_sync_shared.py` (fails when a catalog `impossible_css` id, confirmed
+  control or property is missing from the profile).
+- Three written briefs under `tests/briefs/design-md/`, scored by the linter plus a
+  human read, as `docs/evals.md` now states. They are not automated.
+
+### Changed (phase 02)
+- `scripts/validate.py` runs `sync_shared.py --check`, lints the bundled example (must
+  have zero findings) and the template (no errors, all eleven sections), and fails if a
+  collection `DESIGN.md` is found in `skills/` or `tests/`.
+- `scripts/skill_checks.py`: a skill may not point at the repository's `shared/`
+  folder; it reads its synced copy instead.
+- `NOTICE` records the Apache-2.0 DESIGN.md specification the new skill describes.
+  Nothing from it is copied.
+
+Phase 01 of 2.0.0: rename the plugin to `supersub`, rename the skill to `create-app`,
+and move everything the skill runs into the skill's own folder. The conversion
+behaviour is unchanged: the linter prints the same verdicts and `run_eval.py` prints
+the same table as in 1.0.0.
+
+### Changed -- BREAKING
+- **Plugin renamed `power-app-yaml` -> `supersub`**, marketplace renamed the same way,
+  version set to `2.0.0`. A plugin's `name` is its install identifier, so every
+  existing install of `power-app-yaml@power-app-yaml` stops resolving. `supersub` will
+  hold five skills; this phase ships the first.
+- **Skill renamed `power-app-yaml` -> `create-app`** (`skills/create-app/`, frontmatter
+  `name: create-app`). In Claude Code it runs as `/supersub:create-app`. Every trigger
+  phrase in the description is kept.
+- `.claude-plugin/marketplace.json`: top-level `description` added; `metadata`
+  (`description`, `pluginRoot: "."`) removed, because `pluginRoot` only affects bare
+  source names and has no effect next to `"source": "."`. A `renames` map
+  (`"power-app-yaml": "supersub"`) records the rename as Claude Code's documented
+  migration path for a renamed plugin entry.
+
+### Moved
+- `scripts/pa_lint.py`, `scripts/app_inventory.py`, `scripts/harvest_controls.py` ->
+  `skills/create-app/scripts/`, and `docs/harvesting.md` ->
+  `skills/create-app/references/harvesting.md`. **Why:** `SKILL.md` told Claude to run
+  `scripts/pa_lint.py` and linked to `../../README.md` and `../../docs/harvesting.md`.
+  Those paths exist only in a clone of this repository. Installed as a plugin the
+  working directory is the user's project, and in chat only the skill's own folder is
+  copied into the sandbox, so the lint step -- which the whole method depends on --
+  could not be relied on outside this repo. The scripts now find their data through
+  their own location (`Path(__file__).resolve().parent.parent`), so they work from any
+  directory. `scripts/run_eval.py` and `scripts/validate.py` stay at the repo root:
+  they are maintainer tools and never run inside an installed skill.
+
+### Changed
+- `SKILL.md` calls scripts as `python3 ${CLAUDE_SKILL_DIR}/scripts/<file>.py` and says
+  that every path is relative to the skill folder. The `README.md` rationale link is
+  gone and the harvesting link points at `references/harvesting.md`. Still under the
+  8,192-byte budget (8,178).
+- `references/*`, `assets/test-snippets/README.md` and the snippet `# Record` headers no
+  longer point outside the skill (`docs/test-plan.md`, `CONTRIBUTING.md`,
+  `scripts/validate.py`, `../../../docs/...`); they name those things in words instead.
+  Comments only -- no catalog entry, pattern or snippet body changed.
+- `scripts/validate.py` runs a new set of checks over **every** folder under
+  `skills/` (in `scripts/skill_checks.py`): folder name equals frontmatter `name` and is
+  kebab-case and at most 64 characters; description 40-650 characters; `SKILL.md` at
+  most 8,192 bytes; no path in `SKILL.md`, `references/**` or `assets/**/*.md` leaves the
+  skill; every `scripts/` and `references/` file `SKILL.md` names exists in the skill.
+  Plus plugin-level checks: no top-level `bin/`, no root `CLAUDE.md`, `plugin.json` name
+  is `supersub` and matches the marketplace entry. Tests: `tests/test_skill_checks.py`.
+- The CHANGELOG check accepts a version that is newer than every released section and
+  whose entries are still under `[Unreleased]`.
+- README, CONTRIBUTING, docs, issue template, `LICENSE`, `NOTICE` and `SECURITY.md`:
+  names, paths and install commands updated. GitHub URLs are unchanged until the
+  repository itself is renamed.
+- `.gitignore`: ignores the owner's `dev-prompts/`, local Claude Code state, the
+  validator's scratch directories, root-level plugin packages (`*.zip`, `*.plugin`,
+  `dist/`), tool caches and `.env` files.
+
+### Migration from `power-app-yaml@power-app-yaml`
+In Claude Code:
+
+```bash
+/plugin uninstall power-app-yaml@power-app-yaml
+/plugin marketplace remove power-app-yaml
+/plugin marketplace add YKUNAKORN/power-app-yaml
+/plugin install supersub@supersub
+```
+
+The `renames` entry only maps the plugin name inside one marketplace; the marketplace
+itself is also renamed, so remove and re-add it rather than relying on the automatic
+migration. If you copied the skill folder by hand, replace `skills/power-app-yaml/`
+with `skills/create-app/`. Anything that called `scripts/pa_lint.py` from a clone now
+calls `skills/create-app/scripts/pa_lint.py`.
+
+### Known issues
+- **Nothing in 2.0.0 has been installed on claude.ai or from the marketplace yet.**
+  `claude plugin validate` passes on the repository and on the unpacked archive, and
+  `claude --plugin-dir .` lists the five skills as `supersub:<name>`, but upload, chat
+  sandbox and the marketplace route are owner checks (`docs/release-test-plan.md`,
+  section 1).
+- **Whether `jsonschema` and `openpyxl` exist in the chat sandbox is unknown.** Without
+  `jsonschema` the screen, list and flow linters say UNPROVEN; without `openpyxl`,
+  `create-list` falls back to CSV.
+- **The trigger matrix is reasoned, not measured.**
+- **The e2e scenario was written in the authoring session, not a fresh one.**
+- **SharePoint import behaviour** is mostly `unverified` (15 rows), and the owner's
+  reference workbook import is not yet recorded.
+- **A package the builder generated has not been imported** (F2); the generated
+  connection reference stays `unverified`.
+- **Multi-screen paste** (M1-M4) and the twelve one-control paste tests are untested in
+  Studio.
+- GitHub URLs still point at `YKUNAKORN/power-app-yaml` until the repository is renamed
+  (decision D2).
+
 ## [1.0.0] - 2026-09-11
 
 Phase 5: make it possible to tell whether a change to the skill made output better or

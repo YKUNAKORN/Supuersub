@@ -1,0 +1,41 @@
+<!doctype html>
+<!-- Screen map for the {{PRODUCT}} mockup. Not a screen: it has no data-screen.
+     One entry per screen, in flow order, starting with sitemap.json's "start".
+     State variants (kind "state") follow the screen they vary. -->
+<html lang="{{LANG}}">
+<head>
+<meta charset="utf-8">
+<title>{{PRODUCT}} - screen map</title>
+<style>
+  /* Paste the colour, body-md and radius lines of the :root block here. */
+  {{ROOT_BLOCK}}
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--color-surface); color: var(--color-on-surface); padding: 32px;
+         font-family: var(--font-body-md-family); font-size: var(--font-body-md-size);
+         line-height: var(--font-body-md-line-height); }
+  .meta { margin-top: 8px; color: var(--color-text-muted); }
+  ol { margin-top: 24px; list-style: none; max-width: 720px; }
+  .screen { background: var(--color-surface-raised); border: 1px solid var(--color-border);
+            border-radius: var(--radius-md); padding: 16px 24px; margin-bottom: 16px; }
+  .screen-link { color: var(--color-primary); }
+  .screen-id, .screen-purpose { color: var(--color-text-muted); }
+</style>
+</head>
+<body>
+  <h1>{{PRODUCT}}: screen map</h1>
+  <p class="meta">Target <b>{{TARGET}}</b>, canvas {{CANVAS_WIDTH}} &times; {{CANVAS_HEIGHT}}.
+    Design: {{DESIGN_SOURCE}}.
+    <!-- With no DESIGN.md: "No DESIGN.md: built from this style brief: ..." --></p>
+  <p class="meta">Open this file in a browser and click through. Every screen works from
+    disk with JavaScript off.</p>
+  <ol>
+    <li class="screen">
+      <a class="screen-link" href="{{FILE}}" data-nav="{{SCREEN_ID}}">{{SCREEN_TITLE}}</a>
+      <code class="screen-id">{{SCREEN_ID}}</code>
+      <p class="screen-purpose">{{PURPOSE}}</p>
+    </li>
+  </ol>
+  <p class="meta">Lists this mockup implies: {{LISTS}}. Flows it implies: {{FLOWS}}.</p>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "defect": "The same shadow, scoped to a marked element: allowed.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "\n</style>",
+      "replace": "\n  .card[data-unsupported~=\"box-shadow\"] { box-shadow: 0px 1px 2px var(--color-border); }\n</style>"
+    },
+    {
+      "file": "home.html",
+      "find": "<section class=\"card\">",
+      "replace": "<section class=\"card\" data-unsupported=\"box-shadow\">"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [],
+    "exit": 0,
+    "verdict": "safe"
+  }
+}

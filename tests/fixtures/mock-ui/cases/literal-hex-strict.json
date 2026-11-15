@@ -1,0 +1,20 @@
+{
+  "defect": "The same, with --strict: warnings exit 2.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "  .card { position: absolute; left: 24px; top: 72px; width: 600px; height: 200px;",
+      "replace": "  .card { position: absolute; left: 24px; top: 72px; width: 600px; height: 200px; color: #ff0000;"
+    }
+  ],
+  "args": [
+    "--strict"
+  ],
+  "expect": {
+    "checks": [
+      "literal-hex"
+    ],
+    "exit": 2,
+    "verdict": "unverified"
+  }
+}

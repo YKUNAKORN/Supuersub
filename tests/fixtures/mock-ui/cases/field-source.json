@@ -1,0 +1,18 @@
+{
+  "defect": "A data-field outside any data-source or data-repeat.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "<button class=\"btn btn-filter\" type=\"button\" data-action=\"filter:Requests\">Filter</button>",
+      "replace": "<button class=\"btn btn-filter\" type=\"button\" data-action=\"filter:Requests\">Filter</button>\n  <span class=\"count\" data-field=\"Total\">2</span>"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "field-source"
+    ],
+    "exit": 0,
+    "verdict": "unverified"
+  }
+}

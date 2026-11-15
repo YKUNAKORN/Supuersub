@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "target": "power-apps",
+  "canvas": {
+    "width": 1366,
+    "height": 768
+  },
+  "design": "../../DESIGN.md",
+  "start": "scrLeaveList",
+  "screens": [
+    {
+      "id": "scrLeaveList",
+      "file": "leave-list.html",
+      "title": "ใบลาของฉัน",
+      "purpose": "Start screen: the signed-in user's leave requests with their status, and a way to file a new one",
+      "height": 768,
+      "scrolls": false,
+      "nav": [
+        {
+          "label": "ยื่นใบลา",
+          "to": "scrNewLeave"
+        }
+      ],
+      "data": [
+        {
+          "source": "LeaveRequests",
+          "mode": "read",
+          "fields": [
+            "LeaveType",
+            "StartDate",
+            "EndDate",
+            "Reason",
+            "Status"
+          ]
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "scrNewLeave",
+      "file": "new-leave.html",
+      "title": "ยื่นใบลา",
+      "purpose": "File a request: leave type, start and end date, reason, and the approver's e-mail",
+      "height": 768,
+      "scrolls": false,
+      "nav": [
+        {
+          "label": "ใบลาของฉัน",
+          "to": "scrLeaveList"
+        },
+        {
+          "label": "ยกเลิก",
+          "to": "scrLeaveList"
+        },
+        {
+          "label": "ส่งใบลา",
+          "to": "scrLeaveList"
+        }
+      ],
+      "data": [
+        {
+          "source": "LeaveRequests",
+          "mode": "create",
+          "fields": [
+            "LeaveType",
+            "ApproverEmail",
+            "StartDate",
+            "EndDate",
+            "Reason"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "id": "submit:LeaveRequests",
+          "on": "ส่งใบลา"
+        },
+        {
+          "id": "run-flow:NotifyApprover",
+          "on": "ส่งใบลา"
+        }
+      ]
+    }
+  ]
+}

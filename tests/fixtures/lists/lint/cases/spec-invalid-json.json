@@ -1,0 +1,15 @@
+{
+  "description": "the file is not JSON",
+  "edits": [
+    {
+      "file": "Sites.list.json",
+      "write": "{not json"
+    }
+  ],
+  "checks": [
+    "spec-invalid",
+    "lookup-target"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

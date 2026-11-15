@@ -1,0 +1,20 @@
+{
+  "description": "Under power-apps: shadow, blur, a non-Segoe font and letter spacing.",
+  "target": "power-apps",
+  "expected_exit_code": 0,
+  "expected_verdict_code": "unverified",
+  "expected_findings": [
+    {
+      "check": "pa-effect"
+    },
+    {
+      "check": "pa-effect"
+    },
+    {
+      "check": "pa-effect"
+    },
+    {
+      "check": "pa-unverified"
+    }
+  ]
+}

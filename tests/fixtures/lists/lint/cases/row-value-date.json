@@ -1,0 +1,15 @@
+{
+  "description": "a date not in YYYY-MM-DD",
+  "edits": [
+    {
+      "file": "Requests.list.json",
+      "set": "rows/0/NeededBy",
+      "value": "15/01/2026"
+    }
+  ],
+  "checks": [
+    "row-value"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

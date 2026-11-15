@@ -1,0 +1,38 @@
+{
+  "defect": "data-screen is not scr + PascalCase, renamed consistently everywhere.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "scrHome",
+      "replace": "scrhome",
+      "all": true
+    },
+    {
+      "file": "new-request.html",
+      "find": "scrHome",
+      "replace": "scrhome",
+      "all": true
+    },
+    {
+      "file": "index.html",
+      "find": "scrHome",
+      "replace": "scrhome",
+      "all": true
+    },
+    {
+      "file": "sitemap.json",
+      "find": "scrHome",
+      "replace": "scrhome",
+      "all": true
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "screen-id",
+      "sitemap-invalid"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

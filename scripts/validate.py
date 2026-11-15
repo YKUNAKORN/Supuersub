@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
-"""Repository sanity checks for the power-app-yaml skill.
+"""Repository sanity checks for the supersub plugin and its skills.
 
 Run locally before opening a PR:
 
     python scripts/validate.py
 
 Exits non-zero if anything fails. Requires PyYAML (`pip install pyyaml`).
+
+The checks that apply to every skill under skills/ live in scripts/skill_checks.py;
+everything below them is specific to the create-app skill.
 """
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
 import subprocess
@@ -17,7 +21,12 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SKILL_DIR = ROOT / "skills" / "power-app-yaml"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import privacy_check  # noqa: E402
+import skill_checks  # noqa: E402  (needs the sys.path line above)
+
+SKILL_DIR = ROOT / "skills" / "create-app"
+SKILL_SCRIPTS = SKILL_DIR / "scripts"
 
 # --- Budgets -----------------------------------------------------------------
 # SKILL.md is loaded into context on every single invocation, so its size is a
@@ -50,11 +59,12 @@ SNIPPET_MIN = 12
 # app stops fitting on a page, it has stopped doing its job.
 INVENTORY_MAX_BYTES = 2048
 # Eval cases. Five archetypes, each covering a layout shape the others do not --
-# plus the hard one, which covers the honesty path rather than a layout at all.
-EVAL_CASES_MIN = 5
+# plus the hard one, which covers the honesty path rather than a layout at all --
+# and the mock-ui pipeline: a mockup folder in, one file per screen out.
+EVAL_CASES_MIN = 6
 REQUIRED_EVAL_CASES = {
     "app-shell", "multi-section-form", "card-grid",
-    "shell-with-form", "impossible-effects",
+    "shell-with-form", "impossible-effects", "multi-screen-mock",
 }
 # A case asserting one or two of these is not measuring enough to tell a good
 # conversion from a bad one.
@@ -87,8 +97,12 @@ def load_yaml():
 
 yaml = load_yaml()
 
-print("Layout")
-check(SKILL_DIR.is_dir(), "skills/power-app-yaml/ exists")
+print("Every skill (portability rules)")
+for ok, label, detail in skill_checks.run_all(ROOT, yaml):
+    check(ok, label, detail)
+
+print("Layout (create-app)")
+check(SKILL_DIR.is_dir(), "skills/create-app/ exists")
 skill_md = SKILL_DIR / "SKILL.md"
 check(skill_md.is_file(), "SKILL.md present")
 schema = SKILL_DIR / "references" / "schema-v3.pa.yaml"
@@ -106,7 +120,7 @@ check((SKILL_DIR / "assets" / "patterns").is_dir(),
 check((SKILL_DIR / "assets" / "examples" / "INDEX.md").is_file(),
       "assets/examples/INDEX.md present",
       "the line-range index that lets a slice be read instead of a whole example")
-check((ROOT / "scripts" / "pa_lint.py").is_file(), "scripts/pa_lint.py present")
+check((SKILL_SCRIPTS / "pa_lint.py").is_file(), "skills/create-app/scripts/pa_lint.py present")
 check((SKILL_DIR / "references" / "extend-existing-app.md").is_file(),
       "extend-existing-app.md present",
       "the procedure SKILL.md branches to when the app already exists")
@@ -116,16 +130,21 @@ check((SKILL_DIR / "assets" / "test-snippets").is_dir(),
       "assets/test-snippets/ present", "the one-control paste-test kit")
 check((ROOT / "docs" / "test-plan.md").is_file(), "docs/test-plan.md present",
       "the results table the paste-test kit reports into")
-check((ROOT / "scripts" / "app_inventory.py").is_file(),
-      "scripts/app_inventory.py present",
+check((SKILL_SCRIPTS / "app_inventory.py").is_file(),
+      "skills/create-app/scripts/app_inventory.py present",
       "the one-page summariser for an app that already exists")
 check((ROOT / "tests" / "apps" / "ten-screen-app").is_dir(),
       "tests/apps/ten-screen-app/ present",
       "the synthetic fixture the inventory byte budget is measured against")
-check((ROOT / "scripts" / "harvest_controls.py").is_file(),
-      "scripts/harvest_controls.py present",
-      "the Studio-export harvester documented in docs/harvesting.md")
-check((ROOT / "docs" / "harvesting.md").is_file(), "docs/harvesting.md present")
+check((SKILL_SCRIPTS / "harvest_controls.py").is_file(),
+      "skills/create-app/scripts/harvest_controls.py present",
+      "the Studio-export harvester documented in references/harvesting.md")
+check((SKILL_DIR / "references" / "harvesting.md").is_file(),
+      "references/harvesting.md present", "SKILL.md step 8 sends the reader there")
+for moved in ("pa_lint.py", "app_inventory.py", "harvest_controls.py"):
+    check(not (ROOT / "scripts" / moved).exists(),
+          f"no stale scripts/{moved} at the repo root",
+          "run-time scripts live inside the skill so an installed plugin can reach them")
 check((SKILL_DIR / "references" / "control-ids-candidate.yaml").is_file(),
       "control-ids-candidate.yaml present",
       "the mirrored Microsoft control-id enum pa_lint.py reads for wording")
@@ -146,8 +165,8 @@ if skill_md.is_file():
             check(False, "frontmatter parses as YAML", str(e))
         check(isinstance(fm.get("name"), str) and fm.get("name").strip() != "",
               "frontmatter has non-empty 'name'")
-        check(fm.get("name") == "power-app-yaml",
-              "frontmatter name is 'power-app-yaml'", f"got {fm.get('name')!r}")
+        check(fm.get("name") == "create-app",
+              "frontmatter name is 'create-app'", f"got {fm.get('name')!r}")
         desc = fm.get("description")
         check(isinstance(desc, str) and len(desc.strip()) >= DESCRIPTION_MIN_CHARS,
               "frontmatter has a substantive 'description'")
@@ -228,7 +247,7 @@ if isinstance(catalog, dict):
 
     # A harvest merge adds a control entry but deliberately does not edit the
     # hand-curated "not yet attempted" list; this is the check that catches the
-    # leftover. See docs/harvesting.md.
+    # leftover. See skills/create-app/references/harvesting.md.
     catalogued_bases = {str(t).split("@", 1)[0].rsplit("/", 1)[-1] for t in yaml_types}
     overlap = sorted(catalogued_bases & set(catalog.get("unattempted_controls") or []))
     check(not overlap,
@@ -283,7 +302,7 @@ if isinstance(candidates, dict):
               "provenance is the only thing that makes this file re-checkable")
 
 print("Linter accepts the bundled examples")
-lint = ROOT / "scripts" / "pa_lint.py"
+lint = SKILL_SCRIPTS / "pa_lint.py"
 if lint.is_file() and examples:
     proc = subprocess.run(
         [sys.executable, str(lint), *[str(p) for p in examples], "--quiet"],
@@ -462,7 +481,7 @@ if data_binding.is_file():
             tmp.rmdir()
 
 print("app_inventory.py stays inside its page budget")
-inventory = ROOT / "scripts" / "app_inventory.py"
+inventory = SKILL_SCRIPTS / "app_inventory.py"
 fixture = ROOT / "tests" / "apps" / "ten-screen-app"
 if inventory.is_file() and fixture.is_dir():
     proc = subprocess.run([sys.executable, str(inventory), str(fixture)],
@@ -572,24 +591,38 @@ check(len(case_dirs) >= EVAL_CASES_MIN,
       f"at least {EVAL_CASES_MIN} eval cases exist", f"found {len(case_dirs)}")
 missing_required = REQUIRED_EVAL_CASES - {d.name for d in case_dirs}
 check(not missing_required,
-      "the five archetypes all have a case",
+      "every required case (five archetypes + the mock-ui pipeline) exists",
       f"missing: {sorted(missing_required)}. Each one covers a layout shape the "
       "others do not, and the hard case covers the honesty path.")
 
 for case_dir in case_dirs:
     name = case_dir.name
-    for filename in ("mockup.html", "expectations.yaml", "notes.md"):
+    # The input is one mockup.html, or (for the mock-ui pipeline) a mockup folder
+    # with sitemap.json and one .html per screen, in the project layout.
+    mock_folder = case_dir / "supersub" / "mockup"
+    folder_case = (mock_folder / "sitemap.json").is_file()
+    required = ("expectations.yaml", "notes.md")
+    if not folder_case:
+        required = ("mockup.html",) + required
+    for filename in required:
         check((case_dir / filename).is_file(), f"{name}/{filename} present",
-              "a case is a mockup, its assertions, and a written reason to exist")
+              "a case is a mockup (mockup.html, or supersub/mockup/ with a "
+              "sitemap.json), its assertions, and a written reason to exist")
 
-    mockup = case_dir / "mockup.html"
-    if mockup.is_file():
+    inputs = ([case_dir / "mockup.html"] if not folder_case
+              else sorted(mock_folder.glob("*.html")))
+    if folder_case:
+        check(len(inputs) >= 2, f"{name}/supersub/mockup/ holds screen files",
+              "a mockup folder needs index.html and at least one screen file")
+    for mockup in inputs:
+        if not mockup.is_file():
+            continue
         html = mockup.read_text(encoding="utf-8")
         # A case that needs the network scores differently on a machine without it.
         external = re.search(r"""(?:src|href)\s*=\s*["'](?:https?:)?//""", html, re.I)
         imported = re.search(r"""@import\s+(?:url\()?['"]?(?:https?:)?//""", html, re.I)
         check(external is None and imported is None,
-              f"{name}/mockup.html is self-contained",
+              f"{name}/{mockup.relative_to(case_dir).as_posix()} is self-contained",
               "it pulls an external asset; a fixture that needs the network is not "
               "a fixture")
 
@@ -669,6 +702,404 @@ if case_dirs:
               "the one thing a reader must not get wrong is that the scored half "
               "and the generated half are different halves")
 
+print("Shared files (scripts/sync_shared.py --check)")
+proc = subprocess.run([sys.executable, str(ROOT / "scripts" / "sync_shared.py"), "--check"],
+                      capture_output=True, text=True, cwd=str(ROOT))
+check(proc.returncode == 0, "every skill's references/shared/ copy matches shared/",
+      proc.stdout.strip().splitlines()[-1] if proc.stdout.strip() else proc.stderr.strip())
+
+print("design-md")
+DM_DIR = ROOT / "skills" / "design-md"
+DM_LINT = DM_DIR / "scripts" / "design_lint.py"
+for rel in ("references/format.md", "references/section-guide.md",
+            "references/interview.md", "references/shared/handoff.md",
+            "references/shared/powerapps-profile.md", "assets/DESIGN.template.md",
+            "assets/example/DESIGN.md", "scripts/design_lint.py"):
+    check((DM_DIR / rel).is_file(), f"skills/design-md/{rel} present")
+
+
+def dm_lint(path: Path, *extra: str):
+    proc = subprocess.run([sys.executable, str(DM_LINT), str(path), "--json", *extra],
+                          capture_output=True, text=True, cwd=str(ROOT))
+    try:
+        return proc.returncode, json.loads(proc.stdout)["files"][0]
+    except (json.JSONDecodeError, KeyError, IndexError):
+        return proc.returncode, {"findings": [], "errors": -1,
+                                 "verdict": proc.stderr.strip()[:200]}
+
+
+if DM_LINT.is_file():
+    code, report = dm_lint(DM_DIR / "assets" / "example" / "DESIGN.md")
+    check(code == 0 and report["errors"] == 0 and not report["findings"],
+          "assets/example/DESIGN.md lints clean (no errors, no warnings)",
+          f"{report['verdict']}: "
+          + ", ".join(sorted({f['check'] for f in report['findings']})))
+    code, report = dm_lint(DM_DIR / "assets" / "DESIGN.template.md")
+    check(report["errors"] == 0, "assets/DESIGN.template.md lints without errors",
+          report["verdict"])
+    check(not any(f["check"] == "section-missing" for f in report["findings"]),
+          "assets/DESIGN.template.md has all eleven sections")
+# The owner's reference DESIGN.md analyses a real company's brand: it must never ship
+# inside a skill or the test suite.
+leaked = [p.relative_to(ROOT).as_posix()
+          for base in (ROOT / "skills", ROOT / "tests") if base.is_dir()
+          for p in base.rglob("*") if p.is_file() and "apple" in p.name.lower()]
+check(not leaked, "no collection DESIGN.md is bundled in skills/ or tests/",
+      f"found: {leaked}")
+briefs = sorted((ROOT / "tests" / "briefs" / "design-md").glob("*.md"))
+check(len(briefs) >= 3, "tests/briefs/design-md/ holds at least three briefs",
+      f"found {len(briefs)}")
+
+print("mock-ui")
+MU_DIR = ROOT / "skills" / "mock-ui"
+MU_LINT = MU_DIR / "scripts" / "mock_lint.py"
+MU_EXAMPLE = MU_DIR / "assets" / "example"
+for rel in ("references/html-contract.md", "references/screen-patterns.md",
+            "references/shared/handoff.md", "references/shared/powerapps-profile.md",
+            "assets/page.template.html", "assets/index.template.html",
+            "assets/sitemap.schema.json", "assets/example/index.html",
+            "assets/example/sitemap.json", "scripts/tokens_to_css.py",
+            "scripts/mock_lint.py"):
+    check((MU_DIR / rel).is_file(), f"skills/mock-ui/{rel} present")
+mu_skill = MU_DIR / "SKILL.md"
+if mu_skill.is_file():
+    mu_text = mu_skill.read_text(encoding="utf-8")
+    mu_fm = skill_checks.read_frontmatter(mu_skill, yaml) or {}
+    mu_desc = str(mu_fm.get("description") or "").lower()
+    # The phrases the skill has to fire on, and the two neighbours it must hand off to
+    # rather than imitate.
+    for phrase in ("mockup", "wireframe", "prototype the screens",
+                   "html pages from this design", "design-md", "create-app"):
+        check(phrase in mu_desc, f"mock-ui description mentions {phrase!r}")
+    for needle, label in (("## The workflow", "the ordered workflow"),
+                          ("Screen inventory", "the inventory-before-HTML step"),
+                          ("tokens_to_css.py", "the token step"),
+                          ("mock_lint.py", "the lint step"),
+                          ("html-contract.md", "a pointer to the contract"),
+                          ("screen-patterns.md", "a pointer to the patterns"),
+                          ("every screen in full", "the no-abbreviation rule"),
+                          ("create-list", "the create-list hand-off"),
+                          ("create-flow", "the create-flow hand-off")):
+        check(needle in mu_text, f"mock-ui SKILL.md still contains {label}",
+              f"missing {needle!r}")
+if MU_LINT.is_file() and (MU_EXAMPLE / "sitemap.json").is_file():
+    # The bundled example must lint clean for the target its own sitemap declares, with
+    # the drift check against the DESIGN.md it was generated from.
+    mu_map = json.loads((MU_EXAMPLE / "sitemap.json").read_text(encoding="utf-8"))
+    mu_args = [sys.executable, str(MU_LINT), str(MU_EXAMPLE), "--json", "--strict"]
+    if mu_map.get("design"):
+        mu_args += ["--design", str(MU_EXAMPLE / mu_map["design"])]
+    proc = subprocess.run(mu_args, capture_output=True, text=True, cwd=str(ROOT))
+    try:
+        mu_report = json.loads(proc.stdout)["report"]
+    except (json.JSONDecodeError, KeyError):
+        mu_report = {"verdict_code": None, "verdict": proc.stderr.strip()[:200],
+                     "findings": [], "target": None}
+    check(proc.returncode == 0 and mu_report["verdict_code"] == "safe",
+          f"assets/example/ lints clean for its declared target "
+          f"({mu_map.get('target')})",
+          f"{mu_report['verdict']}: "
+          + ", ".join(sorted({f['check'] for f in mu_report['findings']})))
+    check(mu_report.get("target") == mu_map.get("target"),
+          "mock_lint.py read the target from the example's sitemap.json")
+    if mu_map.get("design") and DM_LINT.is_file():
+        code, report = dm_lint(MU_EXAMPLE / mu_map["design"], "--target",
+                               mu_map.get("target", "web"),
+                               "--profile", str(ROOT / "shared" / "powerapps-profile.md"))
+        check(report["errors"] == 0 and not report["findings"],
+              "the example's DESIGN.md lints clean with design-md's linter",
+              f"{report['verdict']}")
+
+print("create-list")
+CL_DIR = ROOT / "skills" / "create-list"
+CL_LINT = CL_DIR / "scripts" / "list_lint.py"
+for rel in ("references/import-behavior.md", "references/column-types.md",
+            "references/naming.md", "references/shared/handoff.md",
+            "assets/list.schema.json", "assets/type-probe.list.json",
+            "assets/example/Holidays.list.json", "scripts/list_lint.py",
+            "scripts/build_list.py"):
+    check((CL_DIR / rel).is_file(), f"skills/create-list/{rel} present")
+check((ROOT / "tests" / "fixtures" / "lists" / "reference-holidays.xlsx").is_file(),
+      "tests/fixtures/lists/reference-holidays.xlsx present",
+      "the owner's reference workbook the build is compared with")
+cl_skill = CL_DIR / "SKILL.md"
+if cl_skill.is_file():
+    cl_text = cl_skill.read_text(encoding="utf-8")
+    cl_desc = str((skill_checks.read_frontmatter(cl_skill, yaml) or {})
+                  .get("description") or "").lower()
+    # The phrases the skill has to fire on, and the two neighbours it must name as the
+    # skills that do what it does not.
+    for phrase in ("sharepoint list", "design the list", "which columns", "from excel",
+                   "csv", "not for building flows", "create-flow", "create-app"):
+        check(phrase in cl_desc, f"create-list description mentions {phrase!r}")
+    for needle, label in (("## The workflow", "the ordered workflow"),
+                          ("lists.md", "the design-before-build step"),
+                          ("list_lint.py", "the lint step"),
+                          ("build_list.py", "the build step"),
+                          ("VERIFIED", "the reopen-and-verify step"),
+                          ("import-behavior.md", "a pointer to the evidence table"),
+                          ("column-types.md", "a pointer to the type table"),
+                          ("naming.md", "a pointer to the naming rule"),
+                          ("unverified-behavior", "the unverified-assumption rule"),
+                          ("create-app", "the create-app hand-off"),
+                          ("create-flow", "the create-flow hand-off")):
+        check(needle in cl_text, f"create-list SKILL.md still contains {label}",
+              f"missing {needle!r}")
+if CL_LINT.is_file():
+    _spec = importlib.util.spec_from_file_location("list_lint", CL_LINT)
+    cl_mod = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(cl_mod)
+    evidence = cl_mod.load_evidence()
+    types = cl_mod.load_types()
+    bad_levels = sorted(k for k, v in evidence.items() if v["level"] not in cl_mod.LEVELS)
+    check(evidence and not bad_levels, "every evidence row has a declared level",
+          f"bad: {bad_levels}")
+    undated = sorted(k for k, v in evidence.items()
+                     if v["level"] == "import-tested" and not re.match(r"\d{4}-\d{2}-\d{2}",
+                                                                      v["date"]))
+    check(not undated, "every import-tested row carries a date", f"undated: {undated}")
+    # The six open questions of the phase brief. Each must stay a row of its own, so
+    # that settling one is an edit to one row.
+    for row_id in ("offer-person", "offer-hyperlink", "title-mapping", "empty-table",
+                   "csv-encoding", "choice-from-data", "internal-name"):
+        check(row_id in evidence, f"evidence table has row {row_id!r}")
+    imports = sorted({i for t in types.values() for i in t["imports"]} - {"skip"})
+    no_row = [i for i in imports if f"offer-{i}" not in evidence]
+    check(types and not no_row, "every importType has an offer-<type> evidence row",
+          f"missing: {no_row}")
+    cl_schema = json.loads((CL_DIR / "assets" / "list.schema.json").read_text(encoding="utf-8"))
+    col_props = cl_schema["$defs"]["column"]["properties"]
+    check(sorted(col_props["finalType"]["enum"]) == sorted(types),
+          "list.schema.json finalType enum equals the type table")
+    check(sorted(col_props["importType"]["enum"]) == sorted(imports + ["skip"]),
+          "list.schema.json importType enum equals the type table")
+    for rel, fmt in (("assets/example/Holidays.list.json", "xlsx"),
+                     ("assets/example/Holidays.list.json", "csv"),
+                     ("assets/type-probe.list.json", "xlsx"),
+                     ("assets/type-probe.list.json", "csv")):
+        rep = cl_mod.lint_files([CL_DIR / rel], fmt)
+        others = sorted({f["check"] for f in rep["findings"]} - {"unverified-behavior"})
+        check(rep["errors"] == 0 and not others,
+              f"{rel} lints with no finding but unverified-behavior ({fmt})",
+              f"{rep['verdict']}: {others}")
+
+print("create-flow")
+CF_DIR = ROOT / "skills" / "create-flow"
+CF_LINT = CF_DIR / "scripts" / "flow_lint.py"
+for rel in ("references/connectors.yaml", "references/package-format.md",
+            "references/flow-md-template.md", "references/import-and-fix.md",
+            "references/shared/handoff.md", "assets/flow.schema.json",
+            "assets/example/SendTestEmail.flow.json",
+            "assets/reference-package/manifest.json",
+            "assets/reference-package/Microsoft.Flow/flows/manifest.json",
+            "scripts/flow_lint.py", "scripts/build_flow_package.py",
+            "scripts/harvest_flow.py"):
+    check((CF_DIR / rel).is_file(), f"skills/create-flow/{rel} present")
+check((ROOT / "tests" / "fixtures" / "flows" / "reference-package.zip").is_file(),
+      "tests/fixtures/flows/reference-package.zip present",
+      "the owner's reference package the round-trip test compares with")
+# The owner's reference held a connection id from a real environment. The shipped and
+# test copies carry a dummy in its place; the real one must never come back.
+leaked = [p.relative_to(ROOT).as_posix()
+          for base in (ROOT / "skills", ROOT / "tests") if base.is_dir()
+          for p in base.rglob("*") if p.is_file() and b"a8e246ea" in p.read_bytes()]
+check(not leaked, "the reference's real connection id is in no shipped or test file",
+      f"found in: {leaked}")
+cf_skill = CF_DIR / "SKILL.md"
+if cf_skill.is_file():
+    cf_text = cf_skill.read_text(encoding="utf-8")
+    cf_desc = str((skill_checks.read_frontmatter(cf_skill, yaml) or {})
+                  .get("description") or "").lower()
+    # The phrases the skill has to fire on, and the neighbours it must name as the
+    # skills that do what it does not.
+    for phrase in ("power automate", "flow", "automate this process", "import package",
+                   "does not create lists or", "create-list", "create-app"):
+        check(phrase in cf_desc, f"create-flow description mentions {phrase!r}")
+    for needle, label in (("## The workflow", "the ordered workflow"),
+                          ("flow.md", "the plan-before-build step"),
+                          ("Build nothing until the user agrees", "the stop after flow.md"),
+                          ("flow_lint.py", "the lint step"),
+                          ("build_flow_package.py", "the build step"),
+                          ("VERIFIED", "the reopen-and-verify step"),
+                          ("WILL FAIL", "the never-hand-over rule"),
+                          ("harvest_flow.py", "the harvest offer"),
+                          ("unverified-step", "the unverified-step rule"),
+                          ("never embedded", "the connection rule"),
+                          ("create-app", "the create-app hand-off"),
+                          ("create-list", "the create-list hand-off")):
+        check(needle in cf_text, f"create-flow SKILL.md still contains {label}",
+              f"missing {needle!r}")
+if CF_LINT.is_file():
+    _spec = importlib.util.spec_from_file_location("flow_lint", CF_LINT)
+    cf_mod = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(cf_mod)
+    catalog, why = cf_mod.load_catalog()
+    check(catalog is not None, "references/connectors.yaml loads", why)
+    if catalog is not None:
+        entries = [("package", catalog.get("package")),
+                   ("package_connection_reference",
+                    catalog.get("package_connection_reference"))]
+        for api, c in catalog["connectors"].items():
+            entries.append((f"connector {api}", c))
+            for op, o in (c.get("operations") or {}).items():
+                entries.append((f"operation {api}/{op}", o))
+                entries += [(f"parameter {api}/{op} {k}", {"evidence": v, "source":
+                             o.get("source", "")})
+                            for k, v in (o.get("parameters") or {}).items()]
+            check(bool(c.get("display_name")), f"connector {api} has a display_name")
+        entries += [(f"trigger {k}", t) for k, t in catalog["triggers"].items()]
+        entries += [(f"action type {k}", a) for k, a in catalog["actions"].items()]
+        bad = [n for n, e in entries
+               if not isinstance(e, dict) or e.get("evidence") not in cf_mod.LEVELS]
+        check(not bad, "every catalog entry has a declared evidence level", f"bad: {bad}")
+        undated = [n for n, e in entries if isinstance(e, dict)
+                   and e.get("evidence") == "import-tested"
+                   and not re.search(r"\d{4}-\d{2}-\d{2}", str(e.get("source", "")))]
+        check(not undated, "every import-tested catalog entry cites a date",
+              f"undated: {undated}")
+        check(isinstance(catalog.get("unattempted"), dict),
+              "the catalog lists what is unattempted")
+    rep = cf_mod.lint_files([CF_DIR / "assets" / "example" / "SendTestEmail.flow.json"])
+    others = sorted({f["check"] for f in rep["findings"]} - {"unverified-step"})
+    check(rep["errors"] == 0 and not others,
+          "assets/example/SendTestEmail.flow.json lints with no finding but unverified-step",
+          f"{rep['verdict']}: {others}")
+    _spec = importlib.util.spec_from_file_location(
+        "build_flow_package", CF_DIR / "scripts" / "build_flow_package.py")
+    cf_build = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(cf_build)
+    problems = cf_build.verify_package(ROOT / "tests" / "fixtures" / "flows" /
+                                       "reference-package.zip")
+    check(not problems, "the reference package passes the builder's verification",
+          "; ".join(problems))
+
+print("Cross-skill consistency")
+SKILL_NAMES = [d.name for d in skill_checks.skill_dirs(ROOT)]
+VERDICT_CODES = ("safe", "unverified", "will_fail", "unproven")
+# One verdict vocabulary: every linter can end in each of the four codes.
+for lint_py in sorted((ROOT / "skills").glob("*/scripts/*_lint.py")):
+    src = lint_py.read_text(encoding="utf-8")
+    missing = [c for c in VERDICT_CODES if f'"{c}"' not in src]
+    check(not missing, f"{lint_py.relative_to(ROOT).as_posix()} uses the four verdict codes",
+          f"missing {missing}; shared/handoff.md, 'Verdicts'")
+
+
+def verdict_codes(payload) -> list[str]:
+    found: list[str] = []
+    if isinstance(payload, dict):
+        for k, v in payload.items():
+            if k == "verdict_code" and isinstance(v, str):
+                found.append(v)
+            else:
+                found += verdict_codes(v)
+    elif isinstance(payload, list):
+        for v in payload:
+            found += verdict_codes(v)
+    return found
+
+
+# Every bundled example passes its own linter: no error, and every check ran.
+EXAMPLE_LINTS = [
+    ("create-app", ["scripts/pa_lint.py", *sorted(
+        p.relative_to(ROOT / "skills" / "create-app").as_posix()
+        for p in (ROOT / "skills" / "create-app" / "assets" / "examples").glob("*.yaml"))]),
+    ("design-md", ["scripts/design_lint.py", "assets/example/DESIGN.md"]),
+    ("mock-ui", ["scripts/mock_lint.py", "assets/example", "--design",
+                 "assets/example/DESIGN.md"]),
+    ("create-list", ["scripts/list_lint.py", "assets/example"]),
+    ("create-flow", ["scripts/flow_lint.py", "assets/example"]),
+]
+for skill, args in EXAMPLE_LINTS:
+    sdir = ROOT / "skills" / skill
+    proc = subprocess.run([sys.executable, str(sdir / args[0]), *args[1:], "--json"],
+                          capture_output=True, text=True, cwd=str(sdir))
+    try:
+        got = verdict_codes(json.loads(proc.stdout))
+    except json.JSONDecodeError:
+        got = []
+    check(bool(got) and all(c in ("safe", "unverified") for c in got),
+          f"{skill}: every bundled example passes its own linter", f"verdicts: {got}")
+
+# Identifier rules agree wherever they are written down (shared/handoff.md, "Names").
+_mu_src = (ROOT / "skills" / "mock-ui" / "scripts" / "mock_lint.py").read_text(encoding="utf-8")
+_cl_src = (ROOT / "skills" / "create-list" / "scripts" / "list_lint.py").read_text(encoding="utf-8")
+_sm_schema = json.loads((ROOT / "skills" / "mock-ui" / "assets" / "sitemap.schema.json")
+                        .read_text(encoding="utf-8"))
+_fl_schema = json.loads((ROOT / "skills" / "create-flow" / "assets" / "flow.schema.json")
+                        .read_text(encoding="utf-8"))
+
+
+def _regex(src: str, var: str) -> str | None:
+    m = re.search(rf'^{var} = re\.compile\(r"([^"]+)"\)', src, re.M)
+    return m.group(1) if m else None
+
+
+_name_mu, _name_cl = _regex(_mu_src, "NAME_RE"), _regex(_cl_src, "NAME_RE")
+check(_name_mu is not None and _name_mu == _name_cl
+      == _sm_schema["$defs"]["internalName"]["pattern"],
+      "list and column name rule is one rule (mock_lint, list_lint, sitemap schema)",
+      f"{_name_mu!r} / {_name_cl!r} / {_sm_schema['$defs']['internalName']['pattern']!r}")
+check(_regex(_mu_src, "SCREEN_RE") == _sm_schema["$defs"]["screenId"]["pattern"],
+      "screen id rule is one rule (mock_lint, sitemap schema)")
+_flow_pat = _fl_schema["properties"]["name"]["pattern"]
+check(all(bool(re.match(_flow_pat, n)) == bool(re.match(_name_mu or "$^", n))
+          for n in ("NotifyApprover", "A", "notify", "Notify_Approver", "Notify2")),
+      "flow names follow the same PascalCase rule as run-flow:<Name> objects",
+      f"flow.schema.json name pattern {_flow_pat!r}")
+
+# The trigger matrix: at least fifteen rows, English and Thai, one real owner each.
+tm = ROOT / "docs" / "trigger-matrix.md"
+check(tm.is_file(), "docs/trigger-matrix.md present")
+if tm.is_file():
+    rows = re.findall(r"^\| (\d+) \| (.+?) \| `?([a-z-]+)`? \|", tm.read_text(encoding="utf-8"),
+                      re.M)
+    owners = [o for _, _, o in rows]
+    check(len(rows) >= 15, "trigger matrix has at least fifteen messages", f"{len(rows)}")
+    check(all(o in SKILL_NAMES + ["none"] for o in owners),
+          "every trigger-matrix owner is a skill or 'none'",
+          f"{sorted(set(owners) - set(SKILL_NAMES) - {'none'})}")
+    check(set(SKILL_NAMES) <= set(owners), "every skill owns at least one message",
+          f"no row for {sorted(set(SKILL_NAMES) - set(owners))}")
+    thai = [m for _, m, _ in rows if re.search(r"[\u0e00-\u0e7f]", m)]
+    check(len(thai) >= 5, "trigger matrix mixes English and Thai (at least five Thai)",
+          f"{len(thai)} Thai rows")
+
+# The release test plan: every unverified item from phases 02-06 exactly once.
+rtp = ROOT / "docs" / "release-test-plan.md"
+check(rtp.is_file(), "docs/release-test-plan.md present")
+if rtp.is_file():
+    rtp_text = rtp.read_text(encoding="utf-8")
+    plan_text = (ROOT / "docs" / "test-plan.md").read_text(encoding="utf-8")
+    ids = sorted(set(re.findall(r"^\| ((?:B|U|M|P|F)\d+[a-z]?) \|", plan_text, re.M)))
+    ids += ["T1", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "K1", "K2", "K3",
+            "E0", "E1", "E2", "E3", "E4", "R0", "P1", "P2", "S1"]
+    for item in sorted(set(ids)):
+        n = len(re.findall(rf"^\| \[ \] \| {re.escape(item)} \|", rtp_text, re.M))
+        check(n == 1, f"release test plan has item {item} exactly once", f"found {n}")
+    ib = (ROOT / "skills" / "create-list" / "references" / "import-behavior.md").read_text(
+        encoding="utf-8")
+    unverified = re.findall(r"^\| `([a-z-]+)` \|[^|]*\| unverified \|", ib, re.M)
+    cf_catalog = yaml.safe_load((ROOT / "skills" / "create-flow" / "references" /
+                                 "connectors.yaml").read_text(encoding="utf-8"))
+    unverified += [k for k, v in cf_catalog.items()
+                   if isinstance(v, dict) and v.get("evidence") == "unverified"]
+    check(bool(unverified), "found the unverified evidence rows to look for")
+    for row in unverified:
+        n = rtp_text.count(f"`{row}`")
+        check(n == 1, f"release test plan names unverified row `{row}` exactly once",
+              f"found {n}")
+
+# The end-to-end scenario and the README's section per skill.
+for rel in ("tests/e2e/leave-request/DESIGN.md", "tests/e2e/leave-request/brief.md",
+            "docs/e2e-walkthrough.md", "docs/create-app.md", "scripts/package_plugin.py"):
+    check((ROOT / rel).is_file(), f"{rel} present")
+readme = (ROOT / "README.md").read_text(encoding="utf-8")
+for name in SKILL_NAMES:
+    check(f"### `{name}`" in readme, f"README.md has a section for {name}")
+check("## What it cannot do" in readme, "README.md says what the plugin cannot do")
+check("/dist/" in (ROOT / ".gitignore").read_text(encoding="utf-8"),
+      ".gitignore ignores dist/", "package_plugin.py writes there")
+
 print("Plugin metadata")
 plugin_json = ROOT / ".claude-plugin" / "plugin.json"
 market_json = ROOT / ".claude-plugin" / "marketplace.json"
@@ -685,7 +1116,6 @@ except (OSError, json.JSONDecodeError) as e:
     check(False, "marketplace.json is valid JSON", str(e))
 
 if plugin:
-    check(plugin.get("name") == "power-app-yaml", "plugin.json name is 'power-app-yaml'")
     check(bool(re.match(r"^\d+\.\d+\.\d+$", str(plugin.get("version", "")))),
           "plugin.json version is SemVer", f"got {plugin.get('version')!r}")
 if plugin and market:
@@ -696,8 +1126,35 @@ if plugin and market:
 print("CHANGELOG mentions the current version")
 if plugin:
     cl = (ROOT / "CHANGELOG.md")
-    check(cl.is_file() and f"[{plugin.get('version')}]" in cl.read_text(encoding="utf-8"),
-          f"CHANGELOG.md has a section for {plugin.get('version')}")
+    cl_text = cl.read_text(encoding="utf-8") if cl.is_file() else ""
+    version = str(plugin.get("version"))
+    if f"[{version}]" in cl_text:
+        check(True, f"CHANGELOG.md has a section for {version}")
+    else:
+        # Between the version bump and the release, the entries sit under
+        # [Unreleased]. Accept that only while the version is newer than every
+        # released section, so a forgotten entry for an old version still fails.
+        def _v(s: str) -> tuple[int, ...]:
+            return tuple(int(x) for x in s.split("."))
+        released = re.findall(r"^## \[(\d+\.\d+\.\d+)\]", cl_text, re.M)
+        newer = bool(re.match(r"^\d+\.\d+\.\d+$", version)) and all(
+            _v(version) > _v(r) for r in released)
+        check("## [Unreleased]" in cl_text and newer,
+              f"CHANGELOG.md has a section for {version}, or it is pending under "
+              "[Unreleased]",
+              f"no [{version}] section, and either [Unreleased] is missing or "
+              f"{version} is not newer than {released[:1]}")
+
+print("Privacy guard (see CONTRIBUTING.md)")
+_term_hits, _shape_hits = privacy_check.run(ROOT)
+if privacy_check.load_terms(ROOT) is None:
+    check(True, privacy_check.SKIP_MESSAGE)
+else:
+    check(not _term_hits, "no private term in any tracked file or file name",
+          "; ".join(_term_hits[:10]))
+check(not _shape_hits,
+      "no stray e-mail address, tenant host or home path in any tracked file",
+      "; ".join(_shape_hits[:10]))
 
 print("Internal Markdown links resolve")
 md_files = [p for p in ROOT.rglob("*.md") if ".git" not in p.parts]

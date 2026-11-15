@@ -1,0 +1,6 @@
+{
+  "description": "Linted alone: a clean screen. Defining scrA a second time is only a finding when the files are one app.",
+  "expected_exit_code": 0,
+  "expected_verdict_code": "safe",
+  "expected_findings": []
+}

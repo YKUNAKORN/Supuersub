@@ -1,0 +1,16 @@
+{
+  "description": "two lists with the same name (the second is dropped, so the lookup to it breaks too)",
+  "edits": [
+    {
+      "file": "Requests.list.json",
+      "set": "name",
+      "value": "Sites"
+    }
+  ],
+  "checks": [
+    "lookup-target",
+    "name-duplicate"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

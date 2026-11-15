@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fixture-driven tests for scripts/pa_lint.py.
+"""Fixture-driven tests for skills/create-app/scripts/pa_lint.py.
 
 Each fixture under tests/fixtures/{valid,invalid}/ is a small .pa.yaml paired with a
 <name>.expected.json sidecar naming the layer and check id that must fire.
@@ -19,9 +19,9 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-LINTER = ROOT / "scripts" / "pa_lint.py"
+LINTER = ROOT / "skills" / "create-app" / "scripts" / "pa_lint.py"
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
-EXAMPLES = ROOT / "skills" / "power-app-yaml" / "assets" / "examples"
+EXAMPLES = ROOT / "skills" / "create-app" / "assets" / "examples"
 
 
 def run_linter(*args: str) -> tuple[int, dict, str]:
@@ -256,6 +256,181 @@ class TestExitCodes(unittest.TestCase):
             capture_output=True, text=True, encoding="utf-8", cwd=str(ROOT),
         )
         self.assertEqual(proc.returncode, 0)
+
+
+APP_FIXTURES = FIXTURES / "app"
+REFERENCE_APP = ROOT / "tests" / "evals" / "multi-screen-mock" / "supersub"
+
+
+def run_raw(*args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [sys.executable, str(LINTER), *args],
+        capture_output=True, text=True, encoding="utf-8", cwd=str(ROOT),
+    )
+
+
+def by_name(payload: dict) -> dict:
+    return {Path(r["path"]).name: r for r in payload["files"]}
+
+
+class TestAppFixtures(unittest.TestCase):
+    """Several files linted as one app: each <case>.app.expected.json names the
+    arguments and the findings every file must produce."""
+
+    def test_app_fixtures_produce_expected_findings(self):
+        sidecars = sorted(APP_FIXTURES.glob("*.app.expected.json"))
+        self.assertGreaterEqual(len(sidecars), 2, "expected at least two app fixtures")
+        for sidecar in sidecars:
+            expected = json.loads(sidecar.read_text(encoding="utf-8"))
+            with self.subTest(fixture=sidecar.name):
+                code, payload, stderr = run_linter(*expected["args"])
+                self.assertEqual(stderr.strip(), "", "linter must not leak a traceback")
+                self.assertEqual(code, expected["expected_exit_code"])
+                self.assertTrue(payload["app_checked"])
+                reports = by_name(payload)
+                self.assertEqual(set(reports), set(expected["expected_files"]),
+                                 "one report per file in the app directory")
+                for name, want in expected["expected_files"].items():
+                    report = reports[name]
+                    self.assertEqual(finding_ids(report), expected_ids(want),
+                                     f"\n{sidecar.name} / {name}: "
+                                     f"{expected['description']}")
+                    self.assertEqual(report["verdict_code"],
+                                     want["expected_verdict_code"], name)
+
+    def test_the_later_file_carries_one_finding_per_reused_name(self):
+        _, payload, _ = run_linter("--app-dir", str(APP_FIXTURES / "collisions"))
+        reused = [f for f in by_name(payload)["b-second.pa.yaml"]["findings"]
+                  if f["check"] == "L3.duplicate-control-name-in-app"]
+        self.assertEqual(sorted(f["path"].rsplit(".", 1)[-1] for f in reused),
+                         ["btnBack", "lblTitle"])
+
+    def test_one_app_on_files_matches_app_dir(self):
+        files = sorted(str(p) for p in (APP_FIXTURES / "collisions").glob("*.pa.yaml"))
+        _, from_files, _ = run_linter(*files, "--one-app")
+        _, from_dir, _ = run_linter("--app-dir", str(APP_FIXTURES / "collisions"))
+        self.assertEqual(
+            {n: finding_ids(r) for n, r in by_name(from_files).items()},
+            {n: finding_ids(r) for n, r in by_name(from_dir).items()})
+
+    def test_files_passed_together_are_not_compared_without_one_app(self):
+        """Unrelated files (the bundled patterns all use one placeholder screen name)
+        must not be compared just because they were linted in one call."""
+        files = sorted(str(p) for p in (APP_FIXTURES / "collisions").glob("*.pa.yaml"))
+        _, payload, _ = run_linter(*files)
+        self.assertFalse(payload["app_checked"])
+        for report in payload["files"]:
+            checks = {f["check"] for f in report["findings"]}
+            self.assertFalse(checks & {"L3.duplicate-control-name-in-app",
+                                       "L3.duplicate-screen-in-app"},
+                             Path(report["path"]).name)
+
+    def test_the_bundled_patterns_stay_safe_together(self):
+        patterns = sorted(str(p) for p in
+                          (ROOT / "skills" / "create-app" / "assets" / "patterns")
+                          .glob("*.pa.yaml"))
+        _, payload, _ = run_linter(*patterns)
+        self.assertEqual({r["verdict_code"] for r in payload["files"]}, {"safe"})
+
+    def test_without_the_sitemap_a_screen_only_listed_there_is_missing(self):
+        _, payload, _ = run_linter("--app-dir", str(APP_FIXTURES / "clean"))
+        self.assertEqual(finding_ids(by_name(payload)["scrDetail.pa.yaml"]),
+                         {("L3", "L3.navigate-target-missing")})
+        self.assertEqual(finding_ids(by_name(payload)["scrHome.pa.yaml"]), set(),
+                         "a screen in another file of the app resolves")
+
+
+class TestKnownScreens(unittest.TestCase):
+    def test_known_screens_resolve_a_navigate_target(self):
+        target = str(APP_FIXTURES / "collisions" / "a-first.pa.yaml")
+        _, alone, _ = run_linter(target)
+        self.assertIn(("L3", "L3.navigate-target-missing"),
+                      finding_ids(alone["files"][0]))
+        code, known, _ = run_linter(target, "--known-screens", "scrB, scrOther")
+        self.assertEqual(finding_ids(known["files"][0]), set())
+        self.assertEqual(known["files"][0]["verdict_code"], "safe")
+        self.assertEqual(known["known_screens"], ["scrB", "scrOther"])
+        self.assertEqual(code, 0)
+
+    def test_sitemap_resolves_a_single_file(self):
+        target = str(APP_FIXTURES / "clean" / "scrDetail.pa.yaml")
+        _, payload, _ = run_linter(
+            target, "--sitemap", str(APP_FIXTURES / "clean" / "sitemap.json"))
+        self.assertEqual(finding_ids(payload["files"][0]), set())
+        self.assertFalse(payload["app_checked"], "a sitemap alone is not app mode")
+
+    def test_a_target_in_neither_file_nor_sitemap_is_still_missing(self):
+        target = str(FIXTURES / "invalid" / "navigate-missing-screen.pa.yaml")
+        _, payload, _ = run_linter(
+            target, "--sitemap", str(APP_FIXTURES / "clean" / "sitemap.json"))
+        self.assertEqual(finding_ids(payload["files"][0]),
+                         {("L3", "L3.navigate-target-missing")})
+
+    def test_a_commented_placeholder_still_passes(self):
+        target = str(FIXTURES / "valid" / "navigate-placeholder-commented.pa.yaml")
+        _, payload, _ = run_linter(target, "--known-screens", "scrUnrelated")
+        self.assertEqual(payload["files"][0]["verdict_code"], "safe")
+
+
+class TestAppUsageErrors(unittest.TestCase):
+    """Bad arguments exit 2 with one sentence on stderr, never a traceback."""
+
+    def test_unreadable_sitemap(self):
+        for bad in ("tests/fixtures/app/no-such-sitemap.json",
+                    "tests/fixtures/app/clean/scrHome.pa.yaml"):
+            with self.subTest(sitemap=bad):
+                proc = run_raw(str(FIXTURES / "valid" / "clean-screen.pa.yaml"),
+                               "--sitemap", bad)
+                self.assertEqual(proc.returncode, 2)
+                self.assertIn("sitemap", proc.stderr)
+                self.assertNotIn("Traceback", proc.stderr)
+
+    def test_missing_or_empty_app_dir(self):
+        for bad in ("tests/fixtures/app/no-such-dir", "tests/fixtures/app"):
+            with self.subTest(app_dir=bad):
+                proc = run_raw("--app-dir", bad)
+                self.assertEqual(proc.returncode, 2)
+                self.assertNotIn("Traceback", proc.stderr)
+
+    def test_no_file_and_no_app_dir_is_a_usage_error(self):
+        proc = run_raw()
+        self.assertEqual(proc.returncode, 2)
+        self.assertNotIn("Traceback", proc.stderr)
+
+
+class TestReferenceApp(unittest.TestCase):
+    """Acceptance for the mock-ui branch: the phase 03 example, converted one file
+    per screen, lints with no error, no unresolved target and no collision."""
+
+    def test_reference_app_is_safe_as_one_app_with_its_sitemap(self):
+        code, payload, stderr = run_linter(
+            "--app-dir", str(REFERENCE_APP / "app"),
+            "--sitemap", str(REFERENCE_APP / "mockup" / "sitemap.json"))
+        self.assertEqual(stderr.strip(), "")
+        self.assertEqual(code, 0)
+        reports = by_name(payload)
+        self.assertEqual(set(reports), {"scrLoanList.pa.yaml", "scrNewLoan.pa.yaml",
+                                        "scrLoanDetail.pa.yaml"})
+        for name, report in reports.items():
+            with self.subTest(file=name):
+                self.assertEqual(report["findings"], [])
+                self.assertEqual(report["verdict_code"], "safe")
+
+    def test_one_screen_per_file_named_after_its_screen(self):
+        import yaml
+        for path in sorted((REFERENCE_APP / "app").glob("*.pa.yaml")):
+            with self.subTest(file=path.name):
+                screens = list(yaml.safe_load(path.read_text(encoding="utf-8"))["Screens"])
+                self.assertEqual(screens, [path.name.replace(".pa.yaml", "")])
+
+    def test_every_sitemap_screen_has_a_file(self):
+        sitemap = json.loads((REFERENCE_APP / "mockup" / "sitemap.json")
+                             .read_text(encoding="utf-8"))
+        ids = {s["id"] for s in sitemap["screens"]}
+        files = {p.name.replace(".pa.yaml", "")
+                 for p in (REFERENCE_APP / "app").glob("*.pa.yaml")}
+        self.assertEqual(ids, files)
+        self.assertTrue((REFERENCE_APP / "app" / "PASTE-ORDER.md").is_file())
 
 
 class TestHumanOutput(unittest.TestCase):

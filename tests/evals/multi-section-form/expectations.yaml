@@ -61,5 +61,5 @@ catalog:
 reference:
   # Not model output -- a hand-written screen standing in for a good answer, so the
   # scorer can be exercised in CI without running a model. See docs/evals.md.
-  output: ../../../skills/power-app-yaml/assets/examples/example-form.yaml
+  output: ../../../skills/create-app/assets/examples/example-form.yaml
   known_deviations: []

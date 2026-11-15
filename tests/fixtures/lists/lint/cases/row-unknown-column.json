@@ -1,0 +1,15 @@
+{
+  "description": "a row key that is no column",
+  "edits": [
+    {
+      "file": "Requests.list.json",
+      "set": "rows/0/Colour",
+      "value": "red"
+    }
+  ],
+  "checks": [
+    "row-unknown-column"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

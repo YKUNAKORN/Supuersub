@@ -1,0 +1,123 @@
+# create-flow catalog: what a <FlowName>.flow.json may use.
+#
+# Read by scripts/flow_lint.py and scripts/build_flow_package.py. Grown by
+# scripts/harvest_flow.py from legacy packages the owner exported from their own
+# environment. Edit by hand only to change an evidence level, a source or a note.
+#
+# Evidence levels (most to least trusted):
+#   import-tested  the owner imported a package using it into their own tenant and it
+#                  worked; the source says when (YYYY-MM-DD)
+#   export         harvested from a real export out of the owner's tenant
+#   doc            stated by Microsoft documentation; the source holds the URL
+#   unverified     everything else
+# Only the owner's own report moves an item to import-tested.
+#
+# Every entry below comes from the owner's reference package (kept unpacked in
+# assets/reference-package/). The owner reported on 2026-11-15 that this package
+# imported into their own tenant and that the flow ran, so its entries are
+# import-tested. One thing the builder writes differs from that package: the
+# connection reference names a generated connection instead of a real one. That is
+# the package_connection_reference entry, unverified until the rebuilt example is
+# imported (test plan, F2). The linter warns once for each unverified item a spec uses.
+#
+# The catalog holds parameter keys and shapes, never tenant values: no site
+# addresses, list or item ids, e-mail addresses or connection names.
+
+catalog_version: 1
+updated: "2026-11-15"
+
+package:
+  # The legacy package layout itself (references/package-format.md).
+  evidence: import-tested
+  source: "owner's reference package ClaudeImportTest_LegacyPackage.zip; owner reported import and run OK on 2026-11-15"
+
+package_connection_reference:
+  # What the builder writes in definition.json connectionReferences: a generated
+  # connectionName (shared-<name>-<fresh GUID>) that points at no real connection,
+  # source Embedded. The imported reference held a real connection's name instead.
+  # Assumed: the connection selected at import replaces it.
+  evidence: unverified
+  source: "builder choice; the rebuilt example has not been imported yet (test plan F2)"
+
+connectors:
+  shared_office365:
+    display_name: Office 365 Outlook
+    connection_display_name: Office 365 Outlook connection
+    icon_uri: https://connectoricons-prod.azureedge.net/releases/v1.0.1464/1.0.1464.2404/office365/icon.png
+    evidence: import-tested
+    source: "owner's reference package; owner reported import and run OK on 2026-11-15"
+    operations:
+      SendEmailV2:
+        evidence: import-tested
+        source: "owner's reference package; owner reported import and run OK on 2026-11-15"
+        parameters:
+          emailMessage/To: import-tested
+          emailMessage/Subject: import-tested
+          emailMessage/Body: import-tested
+        example:
+          emailMessage/To: "@triggerBody()?['email']"
+          emailMessage/Subject: "{{EmailMessageSubject}}"
+          emailMessage/Body: "<p>@{outputs('Build_message')}</p>"
+
+triggers:
+  Request/Button:
+    # Manually trigger a flow (the instant "button" trigger).
+    type: Request
+    kind: Button
+    evidence: import-tested
+    source: "owner's reference package; owner reported import and run OK on 2026-11-15"
+    input_hints:
+      # x-ms-content-hint -> the JSON Schema type and format the input carries.
+      EMAIL:
+        type: string
+        format: email
+      TEXT:
+        type: string
+
+actions:
+  # Built-in action types (definition `type`). OpenApiConnection is the connector
+  # action; its connector and operation are catalogued under connectors.
+  Compose:
+    evidence: import-tested
+    source: "owner's reference package; owner reported import and run OK on 2026-11-15"
+  OpenApiConnection:
+    evidence: import-tested
+    source: "owner's reference package; owner reported import and run OK on 2026-11-15"
+
+# Not attempted: no package here contains them, so their shape is not known. A spec
+# that needs one of them fails lint with catalog-missing. To make one usable, build the
+# flow by hand once, export it as a legacy package, and run scripts/harvest_flow.py.
+# The names are what to look for in an export; none of them is confirmed here.
+unattempted:
+  connectors:
+    - api: shared_sharepointonline
+      name: SharePoint (list item triggers and actions, files)
+    - api: shared_approvals
+      name: Approvals (start and wait for an approval)
+    - api: shared_teams
+      name: Microsoft Teams (post a message or adaptive card)
+    - api: shared_wordonlinebusiness
+      name: Word Online (Business) (populate a template, convert to PDF)
+    - api: shared_onedriveforbusiness
+      name: OneDrive for Business (create and convert files)
+    - api: shared_office365users
+      name: Office 365 Users (manager, profile)
+    - api: shared_excelonlinebusiness
+      name: Excel Online (Business)
+  triggers:
+    - name: Power Apps (V2) trigger, called from a canvas app
+    - name: Recurrence (a schedule)
+    - name: SharePoint "When an item is created" and "When an item is created or modified"
+    - name: Office 365 Outlook "When a new email arrives"
+  actions:
+    - name: Condition (If)
+    - name: Apply to each (Foreach)
+    - name: Do until (Until)
+    - name: Switch
+    - name: Scope
+    - name: Initialize variable, Set variable, Increment variable, Append to array variable
+    - name: Respond to a Power App or flow
+    - name: Terminate
+    - name: Delay
+    - name: Filter array, Select, Create HTML table, Parse JSON
+    - name: HTTP

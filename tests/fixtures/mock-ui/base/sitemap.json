@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "target": "power-apps",
+  "canvas": {
+    "width": 1366,
+    "height": 768
+  },
+  "design": "DESIGN.md",
+  "start": "scrHome",
+  "screens": [
+    {
+      "id": "scrHome",
+      "file": "home.html",
+      "title": "Requests",
+      "purpose": "List of requests",
+      "height": 768,
+      "nav": [
+        {
+          "label": "New request",
+          "to": "scrNewRequest"
+        }
+      ],
+      "data": [
+        {
+          "source": "Requests",
+          "mode": "read",
+          "fields": [
+            "Title",
+            "Status"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "id": "filter:Requests",
+          "on": "Filter"
+        }
+      ]
+    },
+    {
+      "id": "scrNewRequest",
+      "file": "new-request.html",
+      "title": "New request",
+      "purpose": "Raise a request",
+      "height": 768,
+      "nav": [
+        {
+          "label": "Requests",
+          "to": "scrHome"
+        }
+      ],
+      "data": [
+        {
+          "source": "Requests",
+          "mode": "create",
+          "fields": [
+            "Title",
+            "Priority"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "id": "submit:Requests",
+          "on": "Send"
+        },
+        {
+          "id": "run-flow:NotifyApprover",
+          "on": "Send"
+        }
+      ]
+    }
+  ]
+}

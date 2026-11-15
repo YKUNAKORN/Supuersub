@@ -1,0 +1,469 @@
+# CONVERSION SAMPLE -- skills/mock-ui/assets/example/new-loan.html -> scrNewLoan
+# Written by hand on 2026-11-15 by following skills/create-app/SKILL.md (control picker,
+# assets/patterns/, references/layout-mapping.md). It shows that one mock-ui page is
+# acceptable create-app input. It is ONE sample, not proof, and it is not model output
+# from a fresh session. tests/test_mock_lint.py runs pa_lint.py on it.
+#
+# Geometry is copied from the mockup's CSS 1:1: the mockup is 1366 x 768 and every box
+# is an absolute px position, so layout-mapping.md has nothing left to compute.
+# Child X/Y inside a card are the CSS values, measured from the card's edge as in the
+# create-app examples (the CSS measures from inside the 1px border: a 1px difference).
+#
+# Declared gaps (no confirmed equivalent in controls.yaml; see the mockup):
+# - Due back is <input type="date">. DatePicker is in unattempted_controls, so this file
+#   uses a Classic/TextInput with a date hint. Paste-test
+#   skills/create-app/assets/test-snippets/datepicker.pa.yaml first.
+# - Reason is a <textarea>. A multi-line mode on Classic/TextInput is not catalogued, so
+#   txtReason is a tall single-line input.
+# - Quantity is <input type="number">. No numeric format property is catalogued.
+# - The two dropdowns have square corners: Classic/DropDown has no Radius* in the catalog
+#   (the mockup draws 6px corners).
+# - Nav labels are centred: Classic/Button has no confirmed text alignment, and the
+#   create-app sidebar-nav-item pattern centres them too (the mockup indents to x 56).
+# - Nav icons: the mockup draws list and plus glyphs as inline SVG; Icon.Document and
+#   Icon.Edit are the nearest members any bundled example uses.
+# - The avatar is a data-image placeholder; it stays a filled container until there is
+#   a photo source.
+# - Send request carries data-action="submit:Loans run-flow:NotifyApprover". Writing to
+#   the Loans list and running the flow need a data source and a flow connection, which
+#   the create-app data-binding notes mark UNVERIFIED; OnSelect only navigates for now.
+Screens:
+  scrNewLoan:
+    Properties:
+      Fill: =RGBA(243, 245, 247, 1)
+    Children:
+      - grpSidebar:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(255, 255, 255, 1)
+            X: =0
+            Y: =0
+            Width: =280
+            Height: =768
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+          Children:
+            - lblLogo:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="Kitroom"
+                  Color: =RGBA(15, 92, 140, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Size: =22
+                  X: =24
+                  Y: =18
+                  Width: =232
+                  Height: =28
+            - btnNavLoans:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Text: ="Loans"
+                  BorderStyle: =BorderStyle.None
+                  Color: =RGBA(27, 34, 40, 1)
+                  Fill: =RGBA(255, 255, 255, 1)
+                  HoverColor: =RGBA(27, 34, 40, 1)
+                  HoverFill: =RGBA(243, 245, 247, 1)
+                  PressedColor: =RGBA(27, 34, 40, 1)
+                  PressedFill: =RGBA(230, 234, 238, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =16
+                  OnSelect: =Navigate('scrLoanList', ScreenTransition.None)  # placeholder - scrLoanList is converted from loan-list.html separately
+                  X: =0
+                  Y: =104
+                  Width: =280
+                  Height: =48
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+            - icoNavLoans:
+                Control: Classic/Icon@2.5.0
+                Properties:
+                  Icon: =Icon.Document
+                  Color: =RGBA(27, 34, 40, 1)
+                  X: =16
+                  Y: =116
+                  Width: =24
+                  Height: =24
+            - btnNavNewLoan:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Text: ="New loan"
+                  BorderStyle: =BorderStyle.None
+                  Color: =RGBA(15, 92, 140, 1)
+                  Fill: =RGBA(219, 233, 243, 1)
+                  HoverColor: =RGBA(15, 92, 140, 1)
+                  HoverFill: =RGBA(219, 233, 243, 1)
+                  PressedColor: =RGBA(15, 92, 140, 1)
+                  PressedFill: =RGBA(219, 233, 243, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =16
+                  OnSelect: =Navigate(scrNewLoan, ScreenTransition.None)
+                  X: =0
+                  Y: =152
+                  Width: =280
+                  Height: =48
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+            - recNavActive:
+                Control: Rectangle@2.3.0
+                Properties:
+                  Fill: =RGBA(15, 92, 140, 1)
+                  X: =0
+                  Y: =152
+                  Width: =4
+                  Height: =48
+            - icoNavNewLoan:
+                Control: Classic/Icon@2.5.0
+                Properties:
+                  Icon: =Icon.Edit
+                  Color: =RGBA(15, 92, 140, 1)
+                  X: =16
+                  Y: =164
+                  Width: =24
+                  Height: =24
+      - grpTopBar:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(255, 255, 255, 1)
+            X: =280
+            Y: =0
+            Width: =1086
+            Height: =64
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+          Children:
+            - lblUserName:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="Rin Okafor"
+                  Align: =Align.Right
+                  Color: =RGBA(27, 34, 40, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Size: =14
+                  X: =806
+                  Y: =12
+                  Width: =200
+                  Height: =20
+            - lblUserRole:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="Operations"
+                  Align: =Align.Right
+                  Color: =RGBA(79, 91, 102, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =12
+                  X: =806
+                  Y: =32
+                  Width: =200
+                  Height: =16
+            - grpAvatar:              # data-image placeholder: the signed-in user's photo
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  Fill: =RGBA(230, 234, 238, 1)
+                  X: =1022
+                  Y: =12
+                  Width: =40
+                  Height: =40
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+      - recTopBarRule:
+          Control: Rectangle@2.3.0
+          Properties:
+            Fill: =RGBA(201, 209, 216, 1)
+            X: =280
+            Y: =63
+            Width: =1086
+            Height: =1
+      - lblPageTitle:
+          Control: Label@2.5.1
+          Properties:
+            Text: ="New loan"
+            Color: =RGBA(27, 34, 40, 1)
+            Font: =Font.'Segoe UI'
+            FontWeight: =FontWeight.Bold
+            Size: =28
+            X: =304
+            Y: =88
+            Width: =880
+            Height: =36
+      - grpLoanForm:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(255, 255, 255, 1)
+            BorderColor: =RGBA(201, 209, 216, 1)
+            BorderThickness: =1
+            X: =304
+            Y: =148
+            Width: =686
+            Height: =410
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+          Children:
+            - lblFormTitle:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="Loan details"
+                  Color: =RGBA(27, 34, 40, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Size: =18
+                  X: =24
+                  Y: =24
+                  Width: =636
+                  Height: =24
+            - lblItem:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="Item"
+                  Color: =RGBA(79, 91, 102, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =12
+                  X: =24
+                  Y: =64
+                  Width: =306
+                  Height: =16
+            - ddItem:
+                Control: Classic/DropDown@2.3.1
+                Properties:
+                  Items: =["Laptop 14-inch", "Monitor 27-inch", "Headset", "Camera"]
+                  Items.Value: =Value
+                  BorderColor: =RGBA(201, 209, 216, 1)
+                  BorderThickness: =1
+                  Color: =RGBA(27, 34, 40, 1)
+                  Size: =14
+                  X: =24
+                  Y: =86
+                  Width: =306
+                  Height: =40
+            - lblQuantity:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="Quantity"
+                  Color: =RGBA(79, 91, 102, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =12
+                  X: =354
+                  Y: =64
+                  Width: =306
+                  Height: =16
+            - txtQuantity:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Default: ="1"
+                  BorderColor: =RGBA(201, 209, 216, 1)
+                  BorderThickness: =1
+                  Color: =RGBA(27, 34, 40, 1)
+                  Size: =14
+                  X: =354
+                  Y: =86
+                  Width: =306
+                  Height: =40
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+            - lblDueDate:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="Due back"
+                  Color: =RGBA(79, 91, 102, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =12
+                  X: =24
+                  Y: =142
+                  Width: =306
+                  Height: =16
+            - txtDueDate:             # stands in for a DatePicker (unattempted): see header
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Default: =""
+                  HintText: ="YYYY-MM-DD"
+                  BorderColor: =RGBA(201, 209, 216, 1)
+                  BorderThickness: =1
+                  Color: =RGBA(27, 34, 40, 1)
+                  Size: =14
+                  X: =24
+                  Y: =164
+                  Width: =306
+                  Height: =40
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+            - lblSite:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="Collection point"
+                  Color: =RGBA(79, 91, 102, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =12
+                  X: =354
+                  Y: =142
+                  Width: =306
+                  Height: =16
+            - ddSite:
+                Control: Classic/DropDown@2.3.1
+                Properties:
+                  Items: =["Front desk", "Floor 2 store", "Floor 4 store"]
+                  Items.Value: =Value
+                  BorderColor: =RGBA(201, 209, 216, 1)
+                  BorderThickness: =1
+                  Color: =RGBA(27, 34, 40, 1)
+                  Size: =14
+                  X: =354
+                  Y: =164
+                  Width: =306
+                  Height: =40
+            - lblReason:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="Reason"
+                  Color: =RGBA(79, 91, 102, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =12
+                  X: =24
+                  Y: =220
+                  Width: =636
+                  Height: =16
+            - txtReason:              # textarea in the mockup; multi-line mode not catalogued
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Default: =""
+                  HintText: ="What is it for?"
+                  BorderColor: =RGBA(201, 209, 216, 1)
+                  BorderThickness: =1
+                  Color: =RGBA(27, 34, 40, 1)
+                  Size: =14
+                  X: =24
+                  Y: =242
+                  Width: =636
+                  Height: =80
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+            - btnCancel:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Text: ="Cancel"
+                  BorderColor: =RGBA(201, 209, 216, 1)
+                  BorderThickness: =1
+                  Color: =RGBA(15, 92, 140, 1)
+                  Fill: =RGBA(255, 255, 255, 1)
+                  HoverColor: =RGBA(15, 92, 140, 1)
+                  HoverFill: =RGBA(243, 245, 247, 1)
+                  PressedColor: =RGBA(15, 92, 140, 1)
+                  PressedFill: =RGBA(230, 234, 238, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  OnSelect: =Navigate('scrLoanList', ScreenTransition.None)  # placeholder - scrLoanList is converted from loan-list.html separately
+                  X: =408
+                  Y: =346
+                  Width: =100
+                  Height: =40
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+            - btnSendRequest:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Text: ="Send request"
+                  BorderColor: =RGBA(15, 92, 140, 1)
+                  BorderThickness: =1
+                  Color: =RGBA(255, 255, 255, 1)
+                  Fill: =RGBA(15, 92, 140, 1)
+                  HoverColor: =RGBA(255, 255, 255, 1)
+                  HoverBorderColor: =RGBA(11, 74, 114, 1)
+                  HoverFill: =RGBA(11, 74, 114, 1)
+                  PressedColor: =RGBA(255, 255, 255, 1)
+                  PressedFill: =RGBA(11, 74, 114, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  OnSelect: =Navigate('scrLoanList', ScreenTransition.None)  # placeholder - scrLoanList converted separately; submit:Loans and run-flow:NotifyApprover not wired (data binding UNVERIFIED)
+                  X: =520
+                  Y: =346
+                  Width: =140
+                  Height: =40
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+      - grpTips:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(255, 255, 255, 1)
+            BorderColor: =RGBA(201, 209, 216, 1)
+            BorderThickness: =1
+            X: =1014
+            Y: =148
+            Width: =328
+            Height: =224
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+          Children:
+            - lblTipsTitle:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="Before you borrow"
+                  Color: =RGBA(27, 34, 40, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Size: =18
+                  X: =24
+                  Y: =24
+                  Width: =280
+                  Height: =24
+            - lblTip1:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="Loans last up to four weeks. Ask for longer in the reason."
+                  Color: =RGBA(79, 91, 102, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  X: =24
+                  Y: =64
+                  Width: =280
+                  Height: =40
+            - lblTip2:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="Your manager approves the request by e-mail."
+                  Color: =RGBA(79, 91, 102, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  X: =24
+                  Y: =112
+                  Width: =280
+                  Height: =40
+            - lblTip3:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="Collect the item within two working days."
+                  Color: =RGBA(79, 91, 102, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  X: =24
+                  Y: =160
+                  Width: =280
+                  Height: =40

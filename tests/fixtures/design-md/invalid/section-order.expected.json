@@ -1,0 +1,11 @@
+{
+  "description": "Typography placed after Layout.",
+  "target": "web",
+  "expected_exit_code": 1,
+  "expected_verdict_code": "will_fail",
+  "expected_findings": [
+    {
+      "check": "section-order"
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+name: Flow import report
+description: Report what Power Automate did with a package create-flow built (Import Package (Legacy))
+title: "[flow import] <FlowName>"
+labels: ["create-flow", "evidence", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Every catalog entry in `skills/create-flow/references/connectors.yaml` carries an
+        evidence level. A report with context is what moves one. See CONTRIBUTING.md,
+        "Reporting a Power Automate import result". Never attach an export from your
+        tenant, a connection name, an environment name or an e-mail address.
+  - type: input
+    id: build
+    attributes:
+      label: Spec and build command
+      description: Which .flow.json, and the build_flow_package.py command (with --seed if used). Did it print VERIFIED?
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment kind, and "Create in Dataverse solutions" on or off
+      placeholder: "developer, off"
+    validations:
+      required: true
+  - type: dropdown
+    id: upload
+    attributes:
+      label: Upload
+      options:
+        - "Package details shown: one flow row, one connection row per connector"
+        - "Package details shown, but rows differ (say how in notes)"
+        - "Upload rejected (exact message in notes)"
+    validations:
+      required: true
+  - type: dropdown
+    id: import
+    attributes:
+      label: Import
+      options: ["Succeeded", "Failed (exact message in notes)"]
+    validations:
+      required: true
+  - type: dropdown
+    id: connection
+    attributes:
+      label: Connection after import
+      options:
+        - "The action used the connection picked at import"
+        - "The action asked for a connection"
+        - "Not checked"
+    validations:
+      required: true
+  - type: dropdown
+    id: run
+    attributes:
+      label: One run
+      options: ["Succeeded; text readable", "Succeeded; non-ASCII text garbled", "Failed (message in notes)", "Not run"]
+    validations:
+      required: true
+  - type: input
+    id: entries
+    attributes:
+      label: Catalog entries this bears on
+      description: From the linter's unverified-step warnings, e.g. package_connection_reference.
+  - type: input
+    id: date
+    attributes:
+      label: Date of the import
+      placeholder: "2026-11-15"
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes / exact messages

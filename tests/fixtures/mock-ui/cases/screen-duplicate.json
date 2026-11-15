@@ -1,0 +1,19 @@
+{
+  "defect": "Two files claim the same data-screen.",
+  "edits": [
+    {
+      "file": "copy.html",
+      "create": "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\"><title>scrHome</title>\n<style>\n  :root { --canvas-width: 1366px; --canvas-height: 768px; --color-on-surface: #1b1d22; }\n  body { width: var(--canvas-width); height: var(--canvas-height); color: var(--color-on-surface); }\n  .nav { position: absolute; left: 0px; top: 0px; width: 160px; height: 48px; }\n</style></head>\n<body data-screen=\"scrHome\" data-title=\"scrHome\">\n  <a class=\"nav nav-1\" href=\"home.html\" data-nav=\"scrHome\">Requests</a>\n</body></html>\n"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "index-missing",
+      "screen-duplicate",
+      "sitemap-screens"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

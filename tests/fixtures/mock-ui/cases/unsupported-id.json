@@ -1,0 +1,18 @@
+{
+  "defect": "data-unsupported names an id the profile does not have.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "<section class=\"card\">",
+      "replace": "<section class=\"card\" data-unsupported=\"drop-shadow\">"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "unsupported-id"
+    ],
+    "exit": 0,
+    "verdict": "unverified"
+  }
+}

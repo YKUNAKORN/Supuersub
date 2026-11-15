@@ -1,0 +1,18 @@
+{
+  "defect": "A screen without data-title.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "<body data-screen=\"scrHome\" data-title=\"Requests\">",
+      "replace": "<body data-screen=\"scrHome\">"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "screen-title"
+    ],
+    "exit": 0,
+    "verdict": "unverified"
+  }
+}

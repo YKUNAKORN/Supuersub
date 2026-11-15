@@ -1,0 +1,471 @@
+# scrNewLeave -- converted from supersub/mockup/new-leave.html (Restday, target
+# power-apps, canvas 1366 x 768). One screen of two; see PASTE-ORDER.md.
+# Written in the phase 07 working session by following create-app's SKILL.md and
+# references/from-mock-ui.md, not in a fresh model session. The sidebar and top bar
+# follow the bundled Kitroom conversion, re-coloured from Restday's DESIGN.md.
+#
+# Data hints (data-source="LeaveRequests", data-field LeaveType / ApproverEmail /
+# StartDate / EndDate / Reason): plain input controls, each with the column it maps to
+# in a comment. A Form bound to the list is unattempted: paste-test
+# assets/test-snippets/form.pa.yaml first. Column names come from
+# supersub/lists/LeaveRequests.list.json (create-list).
+#
+# Actions: ส่งใบลา carries data-action="submit:LeaveRequests run-flow:NotifyApprover" and
+# data-nav="scrLeaveList". OnSelect only navigates for now. Writing to the list and
+# calling NotifyApprover need a data source and a flow connection, which data-binding.md
+# marks UNVERIFIED; the flow (create-flow) has a button trigger in this version, so the
+# app does not call it yet.
+#
+# Declared gaps (no confirmed equivalent in controls.yaml):
+# - วันเริ่ม and วันสิ้นสุด are <input type="date">: Classic/TextInput with a date hint
+#   stands in. Paste-test assets/test-snippets/datepicker.pa.yaml first.
+# - เหตุผล is a <textarea>: a tall single-line input (multi-line not catalogued).
+# - The dropdown has square corners: Classic/DropDown has no Radius*.
+# - The active sidebar row is bold in the mockup: FontWeight is unverified on
+#   Classic/Button, so it is left out. Nav labels are centred, not indented to x 56.
+# - Nav icons: Icon.Document and Icon.Edit stand in for the mockup's inline SVG.
+Screens:
+  scrNewLeave:
+    Properties:
+      Fill: =RGBA(244, 246, 245, 1)
+    Children:
+      - grpNewLeaveSidebar:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(255, 255, 255, 1)
+            X: =0
+            Y: =0
+            Width: =280
+            Height: =768
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+          Children:
+            - lblNewLeaveLogo:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="Restday"
+                  Color: =RGBA(31, 111, 92, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Size: =22
+                  X: =24
+                  Y: =18
+                  Width: =232
+                  Height: =28
+            - btnNewLeaveNavMyLeave:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Text: ="ใบลาของฉัน"
+                  BorderStyle: =BorderStyle.None
+                  Color: =RGBA(26, 36, 32, 1)
+                  Fill: =RGBA(255, 255, 255, 1)
+                  HoverColor: =RGBA(26, 36, 32, 1)
+                  HoverFill: =RGBA(244, 246, 245, 1)
+                  PressedColor: =RGBA(26, 36, 32, 1)
+                  PressedFill: =RGBA(229, 235, 232, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =16
+                  OnSelect: =Navigate(scrLeaveList, ScreenTransition.None)
+                  X: =0
+                  Y: =104
+                  Width: =280
+                  Height: =48
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+            - icoNewLeaveNavMyLeave:
+                Control: Classic/Icon@2.5.0
+                Properties:
+                  Icon: =Icon.Document
+                  Color: =RGBA(26, 36, 32, 1)
+                  X: =16
+                  Y: =116
+                  Width: =24
+                  Height: =24
+            - btnNewLeaveNavNewLeave:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Text: ="ยื่นใบลา"
+                  BorderStyle: =BorderStyle.None
+                  Color: =RGBA(31, 111, 92, 1)
+                  Fill: =RGBA(220, 239, 232, 1)
+                  HoverColor: =RGBA(31, 111, 92, 1)
+                  HoverFill: =RGBA(220, 239, 232, 1)
+                  PressedColor: =RGBA(31, 111, 92, 1)
+                  PressedFill: =RGBA(220, 239, 232, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =16
+                  OnSelect: =Navigate(scrNewLeave, ScreenTransition.None)
+                  X: =0
+                  Y: =152
+                  Width: =280
+                  Height: =48
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+            - recNewLeaveNavActive:
+                Control: Rectangle@2.3.0
+                Properties:
+                  Fill: =RGBA(31, 111, 92, 1)
+                  X: =0
+                  Y: =152
+                  Width: =4
+                  Height: =48
+            - icoNewLeaveNavNewLeave:
+                Control: Classic/Icon@2.5.0
+                Properties:
+                  Icon: =Icon.Edit
+                  Color: =RGBA(31, 111, 92, 1)
+                  X: =16
+                  Y: =164
+                  Width: =24
+                  Height: =24
+      - grpNewLeaveTopBar:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(255, 255, 255, 1)
+            X: =280
+            Y: =0
+            Width: =1086
+            Height: =64
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+          Children:
+            - lblNewLeaveUserName:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="ณิชา ตัวอย่าง"
+                  Align: =Align.Right
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Size: =14
+                  X: =806
+                  Y: =12
+                  Width: =200
+                  Height: =20
+            - lblNewLeaveUserRole:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="ฝ่ายปฏิบัติการ"
+                  Align: =Align.Right
+                  Color: =RGBA(76, 90, 84, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =12
+                  X: =806
+                  Y: =32
+                  Width: =200
+                  Height: =16
+            - grpNewLeaveAvatar:  # data-image placeholder: the signed-in user's photo
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  Fill: =RGBA(229, 235, 232, 1)
+                  X: =1022
+                  Y: =12
+                  Width: =40
+                  Height: =40
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+      - recNewLeaveTopBarRule:
+          Control: Rectangle@2.3.0
+          Properties:
+            Fill: =RGBA(199, 210, 205, 1)
+            X: =280
+            Y: =63
+            Width: =1086
+            Height: =1
+      - lblNewLeavePageTitle:
+          Control: Label@2.5.1
+          Properties:
+            Text: ="ยื่นใบลา"
+            Color: =RGBA(26, 36, 32, 1)
+            Font: =Font.'Segoe UI'
+            FontWeight: =FontWeight.Bold
+            Size: =28
+            X: =304
+            Y: =88
+            Width: =880
+            Height: =36
+      - grpNewLeaveForm:  # data-source LeaveRequests: a create form, drawn as static inputs
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(255, 255, 255, 1)
+            BorderColor: =RGBA(199, 210, 205, 1)
+            BorderThickness: =1
+            X: =304
+            Y: =148
+            Width: =686
+            Height: =410
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+          Children:
+            - lblNewLeaveFormTitle:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="รายละเอียดการลา"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Size: =18
+                  X: =24
+                  Y: =24
+                  Width: =636
+                  Height: =24
+            - lblNewLeaveTypeLabel:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="ประเภทการลา"
+                  Color: =RGBA(76, 90, 84, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =12
+                  X: =24
+                  Y: =64
+                  Width: =306
+                  Height: =16
+            - ddNewLeaveType:  # LeaveRequests.LeaveType
+                Control: Classic/DropDown@2.3.1
+                Properties:
+                  Items: =["ลาพักร้อน", "ลาป่วย", "ลากิจ"]
+                  Items.Value: =Value
+                  BorderColor: =RGBA(199, 210, 205, 1)
+                  BorderThickness: =1
+                  Color: =RGBA(26, 36, 32, 1)
+                  Size: =14
+                  X: =24
+                  Y: =86
+                  Width: =306
+                  Height: =40
+            - lblNewLeaveApproverLabel:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="อีเมลผู้อนุมัติ"
+                  Color: =RGBA(76, 90, 84, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =12
+                  X: =354
+                  Y: =64
+                  Width: =306
+                  Height: =16
+            - txtNewLeaveApprover:  # LeaveRequests.ApproverEmail
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Default: =""
+                  HintText: ="manager@example.com"
+                  BorderColor: =RGBA(199, 210, 205, 1)
+                  BorderThickness: =1
+                  Color: =RGBA(26, 36, 32, 1)
+                  Size: =14
+                  X: =354
+                  Y: =86
+                  Width: =306
+                  Height: =40
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+            - lblNewLeaveStartLabel:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="วันเริ่ม"
+                  Color: =RGBA(76, 90, 84, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =12
+                  X: =24
+                  Y: =142
+                  Width: =306
+                  Height: =16
+            - txtNewLeaveStart:  # LeaveRequests.StartDate; stands in for a DatePicker (unattempted)
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Default: =""
+                  HintText: ="YYYY-MM-DD"
+                  BorderColor: =RGBA(199, 210, 205, 1)
+                  BorderThickness: =1
+                  Color: =RGBA(26, 36, 32, 1)
+                  Size: =14
+                  X: =24
+                  Y: =164
+                  Width: =306
+                  Height: =40
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+            - lblNewLeaveEndLabel:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="วันสิ้นสุด"
+                  Color: =RGBA(76, 90, 84, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =12
+                  X: =354
+                  Y: =142
+                  Width: =306
+                  Height: =16
+            - txtNewLeaveEnd:  # LeaveRequests.EndDate; stands in for a DatePicker (unattempted)
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Default: =""
+                  HintText: ="YYYY-MM-DD"
+                  BorderColor: =RGBA(199, 210, 205, 1)
+                  BorderThickness: =1
+                  Color: =RGBA(26, 36, 32, 1)
+                  Size: =14
+                  X: =354
+                  Y: =164
+                  Width: =306
+                  Height: =40
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+            - lblNewLeaveReasonLabel:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="เหตุผล"
+                  Color: =RGBA(76, 90, 84, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =12
+                  X: =24
+                  Y: =220
+                  Width: =636
+                  Height: =16
+            - txtNewLeaveReason:  # LeaveRequests.Reason; textarea, multi-line mode not catalogued
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  Default: =""
+                  HintText: ="ลาเพราะอะไร"
+                  BorderColor: =RGBA(199, 210, 205, 1)
+                  BorderThickness: =1
+                  Color: =RGBA(26, 36, 32, 1)
+                  Size: =14
+                  X: =24
+                  Y: =242
+                  Width: =636
+                  Height: =80
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+            - btnNewLeaveCancel:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Text: ="ยกเลิก"
+                  BorderColor: =RGBA(199, 210, 205, 1)
+                  BorderThickness: =1
+                  Color: =RGBA(31, 111, 92, 1)
+                  Fill: =RGBA(255, 255, 255, 1)
+                  HoverColor: =RGBA(31, 111, 92, 1)
+                  HoverFill: =RGBA(244, 246, 245, 1)
+                  PressedColor: =RGBA(31, 111, 92, 1)
+                  PressedFill: =RGBA(229, 235, 232, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  OnSelect: =Navigate(scrLeaveList, ScreenTransition.None)
+                  X: =408
+                  Y: =346
+                  Width: =100
+                  Height: =40
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+            - btnNewLeaveSend:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Text: ="ส่งใบลา"
+                  BorderColor: =RGBA(31, 111, 92, 1)
+                  BorderThickness: =1
+                  Color: =RGBA(255, 255, 255, 1)
+                  Fill: =RGBA(31, 111, 92, 1)
+                  HoverColor: =RGBA(255, 255, 255, 1)
+                  HoverBorderColor: =RGBA(23, 86, 70, 1)
+                  HoverFill: =RGBA(23, 86, 70, 1)
+                  PressedColor: =RGBA(255, 255, 255, 1)
+                  PressedFill: =RGBA(23, 86, 70, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  OnSelect: =Navigate(scrLeaveList, ScreenTransition.None)  # action submit:LeaveRequests + run-flow:NotifyApprover not wired: data binding UNVERIFIED (data-binding.md)
+                  X: =520
+                  Y: =346
+                  Width: =140
+                  Height: =40
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+      - grpNewLeaveTips:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(255, 255, 255, 1)
+            BorderColor: =RGBA(199, 210, 205, 1)
+            BorderThickness: =1
+            X: =1014
+            Y: =148
+            Width: =328
+            Height: =224
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+          Children:
+            - lblNewLeaveTipsTitle:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="ก่อนยื่นใบลา"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Size: =18
+                  X: =24
+                  Y: =24
+                  Width: =280
+                  Height: =24
+            - lblNewLeaveTip1:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="ยื่นลาพักร้อนล่วงหน้าอย่างน้อยสามวันทำการ"
+                  Color: =RGBA(76, 90, 84, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  X: =24
+                  Y: =64
+                  Width: =280
+                  Height: =40
+            - lblNewLeaveTip2:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="หัวหน้าจะได้รับอีเมลแจ้งทันทีที่ส่งใบลา"
+                  Color: =RGBA(76, 90, 84, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  X: =24
+                  Y: =112
+                  Width: =280
+                  Height: =40
+            - lblNewLeaveTip3:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="ลาป่วยเกินสองวันให้แนบใบรับรองแพทย์ภายหลัง"
+                  Color: =RGBA(76, 90, 84, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  X: =24
+                  Y: =160
+                  Width: =280
+                  Height: =40

@@ -1,0 +1,17 @@
+{
+  "defect": "No index.html screen map.",
+  "edits": [
+    {
+      "file": "index.html",
+      "delete": true
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "index-missing"
+    ],
+    "exit": 0,
+    "verdict": "unverified"
+  }
+}

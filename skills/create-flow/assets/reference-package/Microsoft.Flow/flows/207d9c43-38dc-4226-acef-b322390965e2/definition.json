@@ -1,0 +1,113 @@
+{
+  "name": "955ed331-913f-40fa-bf15-25b32ef09f4c",
+  "id": "/providers/Microsoft.Flow/flows/955ed331-913f-40fa-bf15-25b32ef09f4c",
+  "type": "Microsoft.Flow/flows",
+  "properties": {
+    "apiId": "/providers/Microsoft.PowerApps/apis/shared_logicflows",
+    "displayName": "Claude Import Test (Legacy)",
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "7d4eb3a4-b5d8-4752-b86b-f19d3b961aa4"
+          },
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "title": "Message",
+                  "type": "string",
+                  "x-ms-dynamically-added": true,
+                  "description": "Type any message to include in the email",
+                  "x-ms-content-hint": "TEXT"
+                },
+                "email": {
+                  "title": "Send to",
+                  "type": "string",
+                  "format": "email",
+                  "x-ms-dynamically-added": true,
+                  "description": "Your own email address",
+                  "x-ms-content-hint": "EMAIL"
+                }
+              },
+              "required": [
+                "text",
+                "email"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Get_Bangkok_time": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "bf9722b7-bdac-4420-9833-a0dfca14fd6f"
+          },
+          "type": "Compose",
+          "inputs": "@convertFromUtc(utcNow(), 'SE Asia Standard Time', 'dd/MM/yyyy HH:mm')"
+        },
+        "Build_message": {
+          "runAfter": {
+            "Get_Bangkok_time": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "5b1ae331-0df4-4d70-844b-c7e094c54a31"
+          },
+          "type": "Compose",
+          "inputs": "\u0e02\u0e49\u0e2d\u0e04\u0e27\u0e32\u0e21\u0e17\u0e35\u0e48\u0e1e\u0e34\u0e21\u0e1e\u0e4c: @{triggerBody()?['text']} | \u0e40\u0e27\u0e25\u0e32 (\u0e01\u0e23\u0e38\u0e07\u0e40\u0e17\u0e1e\u0e2f): @{outputs('Get_Bangkok_time')}"
+        },
+        "Send_an_email_(V2)": {
+          "runAfter": {
+            "Build_message": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "411a94c4-5f36-453b-848c-e8d58ba75dc1"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+              "connectionName": "shared_office365",
+              "operationId": "SendEmailV2"
+            },
+            "parameters": {
+              "emailMessage/To": "@triggerBody()?['email']",
+              "emailMessage/Subject": "\u0e17\u0e14\u0e2a\u0e2d\u0e1a import \u0e08\u0e32\u0e01 Claude \u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08",
+              "emailMessage/Body": "<p>@{outputs('Build_message')}</p>"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        }
+      }
+    },
+    "connectionReferences": {
+      "shared_office365": {
+        "connectionName": "shared-office365-00000000-0000-4000-8000-000000000001",
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_office365",
+        "tier": "NotSpecified"
+      }
+    },
+    "flowFailureAlertSubscribed": false
+  }
+}

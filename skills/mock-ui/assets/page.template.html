@@ -1,0 +1,87 @@
+<!doctype html>
+<!-- {{PRODUCT}} mockup, target {{TARGET}}, canvas {{CANVAS_WIDTH}} x {{CANVAS_HEIGHT}}.
+     Design: {{DESIGN_SOURCE}}.
+     Contract (references/html-contract.md): one inline <style>, tokens first, no network,
+     no script; every link and button either navigates (data-nav + a real href or form
+     action) or names its action (data-action="verb:Object").
+     Replace every {{PLACEHOLDER}}; delete the blocks this screen does not use. -->
+<html lang="{{LANG}}">
+<head>
+<meta charset="utf-8">
+<title>{{SCREEN_TITLE}} - {{PRODUCT}}</title>
+<style>
+  /* 1. Paste the :root block printed by scripts/tokens_to_css.py here, unchanged. */
+  {{ROOT_BLOCK}}
+
+  /* 2. Base. Under power-apps the body is the fixed canvas; its height is this screen's
+        "height" in sitemap.json (the canvas height unless the content runs past it).
+        Under web, drop width/height/overflow and let the page flow. */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { position: relative; width: var(--canvas-width); height: {{SCREEN_HEIGHT}}px;
+         overflow: hidden; background: var(--color-surface); color: var(--color-on-surface);
+         font-family: var(--font-body-md-family); font-size: var(--font-body-md-size);
+         font-weight: var(--font-body-md-weight); line-height: var(--font-body-md-line-height); }
+
+  /* 3. Shared chrome: write it once, paste it unchanged into every screen. */
+  .sidebar { position: absolute; left: 0px; top: 0px; width: 280px; height: {{SCREEN_HEIGHT}}px;
+             background: var(--color-surface-raised); }
+  .nav-item { position: absolute; left: 0px; width: 280px; height: 48px; padding-left: 56px;
+              color: var(--color-on-surface); text-decoration: none; line-height: 48px; }
+  .nav-item svg { position: absolute; left: 16px; top: 12px; }
+  .nav-item.is-active { color: var(--color-primary); }
+  .nav-marker { position: absolute; left: 0px; top: 0px; width: 4px; height: 48px;
+                background: var(--color-primary); }
+  .nav-1 { top: 104px; }
+  .nav-2 { top: 152px; }
+  .topbar { position: absolute; left: 280px; top: 0px; width: 1086px; height: 64px;
+            background: var(--color-surface-raised); }
+
+  /* 4. Components, every value a var(). */
+  .btn { position: absolute; display: block; height: 40px; text-align: center;
+         text-decoration: none; line-height: 38px; cursor: pointer; }
+  .btn-primary { background: var(--button-primary-bg); color: var(--button-primary-text);
+                 border: 1px solid var(--button-primary-bg);
+                 border-radius: var(--button-primary-radius); }
+
+  /* 5. This screen: px positions for every block. */
+  .page-title { position: absolute; left: 304px; top: 88px; width: 880px; height: 36px; }
+</style>
+</head>
+<body data-screen="{{SCREEN_ID}}" data-title="{{SCREEN_TITLE}}">
+  <nav class="sidebar" aria-label="Main">
+    <!-- One row per destination. The row for this screen gets is-active and the marker. -->
+    <a class="nav-item nav-1 is-active" href="{{FILE_1}}" data-nav="{{SCREEN_ID_1}}"><span class="nav-marker"></span><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="2" fill="currentColor"/></svg>{{LABEL_1}}</a>
+    <a class="nav-item nav-2" href="{{FILE_2}}" data-nav="{{SCREEN_ID_2}}"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="11" y="4" width="2" height="16" fill="currentColor"/></svg>{{LABEL_2}}</a>
+  </nav>
+  <header class="topbar"></header>
+
+  <h1 class="page-title">{{SCREEN_TITLE}}</h1>
+
+  <!-- Navigation styled as a button: -->
+  <a class="btn btn-primary" href="{{NEXT_FILE}}" data-nav="{{NEXT_SCREEN_ID}}">{{LABEL}}</a>
+
+  <!-- An action that stays on the screen: -->
+  <button class="btn btn-primary" type="button" data-action="{{VERB}}:{{OBJECT}}">{{LABEL}}</button>
+
+  <!-- A data-backed form; the submit button acts, then moves on: -->
+  <form action="{{NEXT_FILE}}" method="get" data-source="{{ListName}}">
+    <label for="{{FIELD_ID}}">{{FIELD_LABEL}}</label>
+    <input id="{{FIELD_ID}}" name="{{ColumnName}}" type="text" data-field="{{ColumnName}}">
+    <label for="{{CHOICE_ID}}">{{CHOICE_LABEL}}</label>
+    <select id="{{CHOICE_ID}}" name="{{ChoiceColumn}}" data-field="{{ChoiceColumn}}">
+      <option>{{OPTION_1}}</option>
+      <option>{{OPTION_2}}</option>
+    </select>
+    <button class="btn btn-primary" type="submit" data-action="submit:{{ListName}}" data-nav="{{NEXT_SCREEN_ID}}">{{SUBMIT_LABEL}}</button>
+  </form>
+
+  <!-- Repeating data: two or three full sample rows, header outside the container. -->
+  <div data-repeat="{{ListName}}">
+    <div class="row"><span data-field="{{ColumnName}}">{{SAMPLE_1}}</span></div>
+    <div class="row"><span data-field="{{ColumnName}}">{{SAMPLE_2}}</span></div>
+  </div>
+
+  <!-- An image is a placeholder box that says what it shows. -->
+  <div class="photo" data-image="{{WHAT_IT_SHOWS}}"></div>
+</body>
+</html>

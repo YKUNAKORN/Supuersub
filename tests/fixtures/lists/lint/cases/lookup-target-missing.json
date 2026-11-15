@@ -1,0 +1,12 @@
+{
+  "description": "the target list is not passed",
+  "only": [
+    "Requests.list.json"
+  ],
+  "edits": [],
+  "checks": [
+    "lookup-target"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

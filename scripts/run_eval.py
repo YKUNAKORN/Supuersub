@@ -65,7 +65,7 @@ except ImportError:  # pragma: no cover
     raise SystemExit(2)
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT / "skills" / "create-app" / "scripts"))
 
 import pa_lint  # noqa: E402  (needs the sys.path line above)
 
@@ -170,6 +170,19 @@ class Case:
                 int(canvas.get("height", DEFAULT_CANVAS_HEIGHT)))
 
     @property
+    def known_screens(self):
+        """Screen ids from `navigation.sitemap` (a mock-ui sitemap.json, relative to
+        the case). A multi-screen case scores one screen file at a time, and a
+        Navigate() to another screen of the same app is resolved, not dangling."""
+        rel = (self.data.get("navigation") or {}).get("sitemap")
+        if not rel:
+            return set()
+        try:
+            return pa_lint.load_sitemap_screens(self.dir / rel)
+        except ValueError as exc:
+            raise CaseError(f"{self.dir.name}: navigation.sitemap: {exc}") from exc
+
+    @property
     def reference(self):
         """(path, {check: reason}) or (None, {})."""
         ref = self.data.get("reference") or {}
@@ -207,8 +220,9 @@ def load_case(directory: Path) -> Case:
     case = Case(directory, data)
     # Validate the reference block now, not when a reference run happens to read
     # it -- a malformed waiver should be caught by any invocation, including the
-    # ones that will not use it.
+    # ones that will not use it. The same goes for a sitemap that will not load.
     case.reference
+    case.known_screens
     return case
 
 
@@ -545,11 +559,16 @@ def check_navigation(scorer, case, out):
         # "Resolves" means: a screen in this file, or an acknowledged placeholder.
         # SKILL.md rule 7 allows the second because a single-screen deliverable
         # cannot contain the screen it navigates to -- but it has to say so in a
-        # comment, so the gap is visible rather than silent.
+        # comment, so the gap is visible rather than silent. A case built on a
+        # mock-ui sitemap also accepts the sitemap's screens: they are the other
+        # files of the same app.
+        known = case.known_screens
         unresolved = [f"{c.name}.{p} -> {t}"
                       for c, p, t, commented in calls
-                      if t not in out.screens and not commented]
+                      if t not in out.screens and t not in known and not commented]
         scorer.add("navigation.targets-resolve", not unresolved,
+                   "every target a screen here, in the sitemap, or a commented "
+                   "placeholder" if known else
                    "every target a screen here or a commented placeholder",
                    f"{len(unresolved)} dangling" if unresolved else "all resolve",
                    note="; ".join(unresolved[:4]))
@@ -654,7 +673,8 @@ def score(case: Case, output_path: Path, deviations=None):
     schema = None
     if pa_lint.HAVE_JSONSCHEMA:
         schema = yaml.safe_load(pa_lint.SCHEMA_PATH.read_text(encoding="utf-8-sig"))
-    lint_report = pa_lint.lint_file(output_path, catalog, schema, candidates)
+    lint_report = pa_lint.lint_file(output_path, catalog, schema, candidates,
+                                    case.known_screens or None)
 
     check_structure(scorer, case, out)
     check_lint(scorer, case, out, lint_report, schema is not None)

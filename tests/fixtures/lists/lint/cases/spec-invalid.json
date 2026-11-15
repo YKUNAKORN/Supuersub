@@ -1,0 +1,14 @@
+{
+  "description": "a required key is missing",
+  "edits": [
+    {
+      "file": "Sites.list.json",
+      "delete": "sampleRows"
+    }
+  ],
+  "checks": [
+    "spec-invalid"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

@@ -1,0 +1,16 @@
+{
+  "description": "a required column left empty",
+  "edits": [
+    {
+      "file": "Sites.list.json",
+      "set": "rows/1/SiteName",
+      "value": ""
+    }
+  ],
+  "checks": [
+    "required-empty",
+    "column-sparse"
+  ],
+  "exit": 0,
+  "verdict": "unverified"
+}

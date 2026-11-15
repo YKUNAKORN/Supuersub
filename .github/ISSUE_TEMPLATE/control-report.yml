@@ -65,5 +65,5 @@ body:
     attributes:
       label: Current catalog
       options:
-        - label: I checked `skills/power-app-yaml/references/confirmed-controls.md` and it is missing or wrong about this
+        - label: I checked `skills/create-app/references/confirmed-controls.md` and it is missing or wrong about this
           required: true

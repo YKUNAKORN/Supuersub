@@ -1,0 +1,549 @@
+# scrLeaveList -- converted from supersub/mockup/leave-list.html (Restday, target
+# power-apps, canvas 1366 x 768). One screen of two; see PASTE-ORDER.md.
+# Written in the phase 07 working session by following create-app's SKILL.md and
+# references/from-mock-ui.md, not in a fresh model session. The sidebar and top bar
+# follow the bundled Kitroom conversion, re-coloured from Restday's DESIGN.md.
+#
+# Navigation: every data-nav is a Navigate() to a screen id in sitemap.json
+# (scrNewLeave, and this screen for the active sidebar row).
+#
+# Data hints (data-repeat="LeaveRequests", data-field LeaveType / StartDate / EndDate /
+# Reason / Status): the three sample rows are static Labels, the confirmed path.
+# Binding them to the list needs a Gallery, which controls.yaml lists as unattempted.
+# Paste-test assets/test-snippets/gallery.pa.yaml first.
+#
+# Declared gaps (no confirmed equivalent in controls.yaml):
+# - The table head has square top corners: Rectangle Radius* is unverified.
+# - Status badges are a GroupContainer (radius confirmed) holding a Label.
+# - The active sidebar row is bold in the mockup: FontWeight is unverified on
+#   Classic/Button, so it is left out. Nav labels are centred, not indented to x 56.
+# - Nav icons: Icon.Document and Icon.Edit stand in for the mockup's inline SVG.
+Screens:
+  scrLeaveList:
+    Properties:
+      Fill: =RGBA(244, 246, 245, 1)
+    Children:
+      - grpLeaveListSidebar:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(255, 255, 255, 1)
+            X: =0
+            Y: =0
+            Width: =280
+            Height: =768
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+          Children:
+            - lblLeaveListLogo:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="Restday"
+                  Color: =RGBA(31, 111, 92, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Size: =22
+                  X: =24
+                  Y: =18
+                  Width: =232
+                  Height: =28
+            - btnLeaveListNavMyLeave:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Text: ="ใบลาของฉัน"
+                  BorderStyle: =BorderStyle.None
+                  Color: =RGBA(31, 111, 92, 1)
+                  Fill: =RGBA(220, 239, 232, 1)
+                  HoverColor: =RGBA(31, 111, 92, 1)
+                  HoverFill: =RGBA(220, 239, 232, 1)
+                  PressedColor: =RGBA(31, 111, 92, 1)
+                  PressedFill: =RGBA(220, 239, 232, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =16
+                  OnSelect: =Navigate(scrLeaveList, ScreenTransition.None)
+                  X: =0
+                  Y: =104
+                  Width: =280
+                  Height: =48
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+            - recLeaveListNavActive:
+                Control: Rectangle@2.3.0
+                Properties:
+                  Fill: =RGBA(31, 111, 92, 1)
+                  X: =0
+                  Y: =104
+                  Width: =4
+                  Height: =48
+            - icoLeaveListNavMyLeave:
+                Control: Classic/Icon@2.5.0
+                Properties:
+                  Icon: =Icon.Document
+                  Color: =RGBA(31, 111, 92, 1)
+                  X: =16
+                  Y: =116
+                  Width: =24
+                  Height: =24
+            - btnLeaveListNavNewLeave:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Text: ="ยื่นใบลา"
+                  BorderStyle: =BorderStyle.None
+                  Color: =RGBA(26, 36, 32, 1)
+                  Fill: =RGBA(255, 255, 255, 1)
+                  HoverColor: =RGBA(26, 36, 32, 1)
+                  HoverFill: =RGBA(244, 246, 245, 1)
+                  PressedColor: =RGBA(26, 36, 32, 1)
+                  PressedFill: =RGBA(229, 235, 232, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =16
+                  OnSelect: =Navigate(scrNewLeave, ScreenTransition.None)
+                  X: =0
+                  Y: =152
+                  Width: =280
+                  Height: =48
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+            - icoLeaveListNavNewLeave:
+                Control: Classic/Icon@2.5.0
+                Properties:
+                  Icon: =Icon.Edit
+                  Color: =RGBA(26, 36, 32, 1)
+                  X: =16
+                  Y: =164
+                  Width: =24
+                  Height: =24
+      - grpLeaveListTopBar:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(255, 255, 255, 1)
+            X: =280
+            Y: =0
+            Width: =1086
+            Height: =64
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+          Children:
+            - lblLeaveListUserName:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="ณิชา ตัวอย่าง"
+                  Align: =Align.Right
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Size: =14
+                  X: =806
+                  Y: =12
+                  Width: =200
+                  Height: =20
+            - lblLeaveListUserRole:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="ฝ่ายปฏิบัติการ"
+                  Align: =Align.Right
+                  Color: =RGBA(76, 90, 84, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =12
+                  X: =806
+                  Y: =32
+                  Width: =200
+                  Height: =16
+            - grpLeaveListAvatar:  # data-image placeholder: the signed-in user's photo
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  Fill: =RGBA(229, 235, 232, 1)
+                  X: =1022
+                  Y: =12
+                  Width: =40
+                  Height: =40
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+      - recLeaveListTopBarRule:
+          Control: Rectangle@2.3.0
+          Properties:
+            Fill: =RGBA(199, 210, 205, 1)
+            X: =280
+            Y: =63
+            Width: =1086
+            Height: =1
+      - lblLeaveListPageTitle:
+          Control: Label@2.5.1
+          Properties:
+            Text: ="ใบลาของฉัน"
+            Color: =RGBA(26, 36, 32, 1)
+            Font: =Font.'Segoe UI'
+            FontWeight: =FontWeight.Bold
+            Size: =28
+            X: =304
+            Y: =88
+            Width: =880
+            Height: =36
+      - btnLeaveListNew:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: ="ยื่นใบลา"
+            BorderColor: =RGBA(31, 111, 92, 1)
+            BorderThickness: =1
+            Color: =RGBA(255, 255, 255, 1)
+            Fill: =RGBA(31, 111, 92, 1)
+            HoverColor: =RGBA(255, 255, 255, 1)
+            HoverBorderColor: =RGBA(23, 86, 70, 1)
+            HoverFill: =RGBA(23, 86, 70, 1)
+            PressedColor: =RGBA(255, 255, 255, 1)
+            PressedFill: =RGBA(23, 86, 70, 1)
+            Font: =Font.'Segoe UI'
+            Size: =14
+            OnSelect: =Navigate(scrNewLeave, ScreenTransition.None)
+            X: =1222
+            Y: =86
+            Width: =120
+            Height: =40
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+      - grpLeaveListTable:  # data-repeat LeaveRequests, drawn as three static rows
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(255, 255, 255, 1)
+            BorderColor: =RGBA(199, 210, 205, 1)
+            BorderThickness: =1
+            X: =304
+            Y: =148
+            Width: =1038
+            Height: =186
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+          Children:
+            - recLeaveListTableHead:
+                Control: Rectangle@2.3.0
+                Properties:
+                  Fill: =RGBA(229, 235, 232, 1)
+                  X: =0
+                  Y: =0
+                  Width: =1036
+                  Height: =40
+            - lblLeaveListHeadType:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="ประเภทการลา"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Size: =12
+                  X: =24
+                  Y: =12
+                  Width: =200
+                  Height: =16
+            - lblLeaveListHeadStart:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="วันเริ่ม"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Size: =12
+                  X: =240
+                  Y: =12
+                  Width: =140
+                  Height: =16
+            - lblLeaveListHeadEnd:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="วันสิ้นสุด"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Size: =12
+                  X: =396
+                  Y: =12
+                  Width: =140
+                  Height: =16
+            - lblLeaveListHeadReason:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="เหตุผล"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Size: =12
+                  X: =552
+                  Y: =12
+                  Width: =320
+                  Height: =16
+            - lblLeaveListHeadStatus:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="สถานะ"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Bold
+                  Size: =12
+                  X: =888
+                  Y: =12
+                  Width: =120
+                  Height: =16
+            - recLeaveListRow1Rule:  # data-repeat LeaveRequests: sample row 1 of 3, static. Binding to the list needs a Gallery (UNVERIFIED): assets/test-snippets/gallery.pa.yaml
+                Control: Rectangle@2.3.0
+                Properties:
+                  Fill: =RGBA(199, 210, 205, 1)
+                  X: =0
+                  Y: =40
+                  Width: =1036
+                  Height: =1
+            - lblLeaveListRow1Type:  # LeaveRequests.LeaveType
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="ลาพักร้อน"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  X: =24
+                  Y: =54
+                  Width: =200
+                  Height: =20
+            - lblLeaveListRow1Start:  # LeaveRequests.StartDate
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="2026-12-21"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  X: =240
+                  Y: =54
+                  Width: =140
+                  Height: =20
+            - lblLeaveListRow1End:  # LeaveRequests.EndDate
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="2026-12-25"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  X: =396
+                  Y: =54
+                  Width: =140
+                  Height: =20
+            - lblLeaveListRow1Reason:  # LeaveRequests.Reason
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="เดินทางกับครอบครัว"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  X: =552
+                  Y: =54
+                  Width: =320
+                  Height: =20
+            - grpLeaveListRow1Status:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  Fill: =RGBA(138, 90, 0, 1)
+                  X: =888
+                  Y: =54
+                  Width: =80
+                  Height: =20
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                Children:
+                  - lblLeaveListRow1Status:
+                      Control: Label@2.5.1
+                      Properties:
+                        Text: ="รออนุมัติ"
+                        Align: =Align.Center
+                        Color: =RGBA(255, 255, 255, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Size: =12
+                        X: =0
+                        Y: =0
+                        Width: =80
+                        Height: =20
+            - recLeaveListRow2Rule:
+                Control: Rectangle@2.3.0
+                Properties:
+                  Fill: =RGBA(199, 210, 205, 1)
+                  X: =0
+                  Y: =88
+                  Width: =1036
+                  Height: =1
+            - lblLeaveListRow2Type:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="ลาป่วย"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  X: =24
+                  Y: =102
+                  Width: =200
+                  Height: =20
+            - lblLeaveListRow2Start:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="2026-11-03"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  X: =240
+                  Y: =102
+                  Width: =140
+                  Height: =20
+            - lblLeaveListRow2End:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="2026-11-04"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  X: =396
+                  Y: =102
+                  Width: =140
+                  Height: =20
+            - lblLeaveListRow2Reason:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="ไข้หวัด มีใบรับรองแพทย์"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  X: =552
+                  Y: =102
+                  Width: =320
+                  Height: =20
+            - grpLeaveListRow2Status:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  Fill: =RGBA(29, 107, 69, 1)
+                  X: =888
+                  Y: =102
+                  Width: =80
+                  Height: =20
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                Children:
+                  - lblLeaveListRow2Status:
+                      Control: Label@2.5.1
+                      Properties:
+                        Text: ="อนุมัติ"
+                        Align: =Align.Center
+                        Color: =RGBA(255, 255, 255, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Size: =12
+                        X: =0
+                        Y: =0
+                        Width: =80
+                        Height: =20
+            - recLeaveListRow3Rule:
+                Control: Rectangle@2.3.0
+                Properties:
+                  Fill: =RGBA(199, 210, 205, 1)
+                  X: =0
+                  Y: =136
+                  Width: =1036
+                  Height: =1
+            - lblLeaveListRow3Type:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="ลากิจ"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  X: =24
+                  Y: =150
+                  Width: =200
+                  Height: =20
+            - lblLeaveListRow3Start:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="2026-10-16"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  X: =240
+                  Y: =150
+                  Width: =140
+                  Height: =20
+            - lblLeaveListRow3End:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="2026-10-16"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  X: =396
+                  Y: =150
+                  Width: =140
+                  Height: =20
+            - lblLeaveListRow3Reason:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="ติดต่อราชการ"
+                  Color: =RGBA(26, 36, 32, 1)
+                  Font: =Font.'Segoe UI'
+                  Size: =14
+                  X: =552
+                  Y: =150
+                  Width: =320
+                  Height: =20
+            - grpLeaveListRow3Status:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  Fill: =RGBA(179, 38, 30, 1)
+                  X: =888
+                  Y: =150
+                  Width: =80
+                  Height: =20
+                  RadiusTopLeft: =4
+                  RadiusTopRight: =4
+                  RadiusBottomLeft: =4
+                  RadiusBottomRight: =4
+                Children:
+                  - lblLeaveListRow3Status:
+                      Control: Label@2.5.1
+                      Properties:
+                        Text: ="ไม่อนุมัติ"
+                        Align: =Align.Center
+                        Color: =RGBA(255, 255, 255, 1)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Bold
+                        Size: =12
+                        X: =0
+                        Y: =0
+                        Width: =80
+                        Height: =20
+      - lblLeaveListCount:
+          Control: Label@2.5.1
+          Properties:
+            Text: ="แสดง 3 จาก 3 รายการ"
+            Color: =RGBA(76, 90, 84, 1)
+            Font: =Font.'Segoe UI'
+            Size: =12
+            X: =304
+            Y: =350
+            Width: =400
+            Height: =16

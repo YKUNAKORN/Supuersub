@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "mock-ui sitemap.json",
+  "description": "Screens, navigation edges, data and action hints for one mockup. Read by mock_lint.py (which validates this subset of JSON Schema with the standard library) and by the create-app, create-list and create-flow skills. Under the power-apps target, mock_lint.py also requires canvas and every screen's height.",
+  "type": "object",
+  "required": ["version", "target", "start", "screens"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 1 },
+    "target": { "enum": ["web", "power-apps"] },
+    "canvas": {
+      "type": "object",
+      "required": ["width", "height"],
+      "additionalProperties": false,
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "design": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path of the DESIGN.md, relative to sitemap.json."
+    },
+    "styleBrief": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The short style brief used when there was no DESIGN.md."
+    },
+    "start": { "$ref": "#/$defs/screenId" },
+    "screens": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/screen" }
+    }
+  },
+  "$defs": {
+    "screenId": { "type": "string", "pattern": "^scr[A-Z][A-Za-z0-9]*$" },
+    "internalName": { "type": "string", "pattern": "^[A-Z][A-Za-z0-9]*$" },
+    "screen": {
+      "type": "object",
+      "required": ["id", "file", "title", "purpose", "nav", "data", "actions"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/screenId" },
+        "file": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*\\.html$" },
+        "title": { "type": "string", "minLength": 1 },
+        "purpose": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["screen", "dialog", "state"] },
+        "variantOf": { "$ref": "#/$defs/screenId" },
+        "height": { "type": "integer", "minimum": 1 },
+        "scrolls": { "type": "boolean" },
+        "nav": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["label", "to"],
+            "additionalProperties": false,
+            "properties": {
+              "label": { "type": "string", "minLength": 1 },
+              "to": { "$ref": "#/$defs/screenId" }
+            }
+          }
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["source", "mode", "fields"],
+            "additionalProperties": false,
+            "properties": {
+              "source": { "$ref": "#/$defs/internalName" },
+              "mode": { "enum": ["read", "create", "update", "delete"] },
+              "fields": { "type": "array", "items": { "$ref": "#/$defs/internalName" } }
+            }
+          }
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "on"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*:[A-Za-z][A-Za-z0-9]*$" },
+              "on": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

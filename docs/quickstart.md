@@ -1,136 +1,162 @@
 # Quickstart
 
-Get from a mockup to a pasted Power Apps screen in about five minutes.
+Install `supersub` on the surface you use, run one skill, then read the section for the
+skill you need. The five skills are the same everywhere; what differs is how they are
+installed and where their files go.
 
-## 1. Install the skill
+## Table of contents
 
-You have two options. They deliver the same skill — pick whichever fits your setup.
+- [Install in Claude chat or Cowork](#install-in-claude-chat-or-cowork)
+- [Install in Claude Code](#install-in-claude-code)
+- [First run](#first-run)
+- [design-md](#design-md)
+- [mock-ui](#mock-ui)
+- [create-app](#create-app)
+- [create-list](#create-list)
+- [create-flow](#create-flow)
 
-### Option A — as a Claude Code plugin (recommended)
+## Install in Claude chat or Cowork
+
+Chat means claude.ai, the desktop app and mobile. The skills' scripts run in the
+code-execution sandbox, so code execution must be enabled for your account.
+
+**From the marketplace (recommended).**
+
+1. Customize > Plugins > **Add** > **Add marketplace**.
+2. Enter `YKUNAKORN/power-app-yaml` (or the full GitHub URL).
+3. Install **supersub** from that marketplace.
+
+**From a file.**
+
+1. In a clone: `pip install pyyaml`, then `python scripts/package_plugin.py`. It writes
+   `dist/supersub.zip` and prints the file count and size (well under the 5,000-file,
+   200 MB limit).
+2. Customize > Plugins > **Add** > **Upload plugin**, and choose `dist/supersub.zip`.
+
+Check: ask *"Which skills do you have from plugins?"*. Claude should name `design-md`,
+`mock-ui`, `create-app`, `create-list` and `create-flow`. Type `/` and they appear as
+`supersub:<name>`.
+
+A plugin installed on your claude.ai account also reaches Claude Code on your machines
+as a synced plugin.
+
+**Where the files go in chat.** There is no project folder. Each skill creates its files
+with the fixed names (`DESIGN.md`, `sitemap.json`, `LeaveRequests.xlsx`, ...) and hands
+them to you as downloads. To continue with the next skill, attach them again in the
+conversation.
+
+## Install in Claude Code
 
 ```bash
 /plugin marketplace add YKUNAKORN/power-app-yaml
-/plugin install power-app-yaml@power-app-yaml
+/plugin install supersub@supersub
 ```
 
-Claude Code reads the plugin from `.claude-plugin/plugin.json` and loads the skill
-from `skills/power-app-yaml/`. Update later with:
+Update later with `/plugin marketplace update supersub`. Skills run as
+`/supersub:design-md`, `/supersub:mock-ui`, `/supersub:create-app`,
+`/supersub:create-list` and `/supersub:create-flow`, or simply describe the task.
+
+To try a clone without installing it: `claude --plugin-dir /path/to/clone` from your
+project folder. `claude plugin validate /path/to/clone` checks the manifests.
+
+The scripts run with your Python. Install what they use once:
 
 ```bash
-/plugin marketplace update power-app-yaml
+pip install pyyaml jsonschema openpyxl
 ```
 
-### Option B — as a plain skill folder
+`pyyaml` is required. Without `jsonschema` the linters for screens, lists and flows say
+**UNPROVEN** instead of passing a file, because a check did not run. Without `openpyxl`,
+`create-list` offers a `.csv` instead of an `.xlsx`.
 
-Copy the skill directory into wherever your Claude setup loads skills from:
+**Where the files go in Claude Code.** In your project:
 
-```bash
-git clone https://github.com/YKUNAKORN/power-app-yaml.git
-cp -r power-app-yaml/skills/power-app-yaml  <your-skills-directory>/
+```
+<project>/
+├── DESIGN.md
+└── supersub/
+    ├── mockup/   index.html, one .html per screen, sitemap.json
+    ├── app/      one .pa.yaml per screen, PASTE-ORDER.md
+    ├── lists/    lists.md, <ListName>.list.json, .xlsx or .csv
+    └── flows/    flow.md, <FlowName>.flow.json, <FlowName>_LegacyPackage.zip
 ```
 
-The folder that must land in your skills directory is
-**`skills/power-app-yaml/`** (the one containing `SKILL.md`), not the repository
-root.
+## First run
 
-### Optional, but worth two minutes: the linter's dependencies
+Ask, in any language:
 
-The scripts under `scripts/` are plain Python and need two packages:
+> Set up a design system for a small leave request app. It will be built in Power Apps.
 
-```bash
-pip install pyyaml jsonschema
-```
+`design-md` loads, asks at most two rounds of questions, writes `DESIGN.md`, lints it and
+ends with the verdict and the next step (`mock-ui`). If a different skill loaded, or none
+did, check the [trigger matrix](trigger-matrix.md) and report it.
 
-`pyyaml` is required. `jsonschema` is optional in the sense that the linter still
-runs without it — but the layer it powers is the one that catches the error which
-blocks a whole paste (`PA1001`). Without it the linter says **UNPROVEN** instead
-of **SAFE TO PASTE**, and it is right to: it cannot claim a file is clean when the
-check that would have caught the worst failure did not run.
+## design-md
 
-## 2. Give Claude a mockup
+Writes a `DESIGN.md` design system.
 
-Anything visual works:
+- **Ask for**: a design system, style guide, brand, design tokens, or a check of an
+  existing `DESIGN.md`. Say "for Power Apps" to get the `power-apps` target.
+- **You get**: `DESIGN.md` with the verdict of `scripts/design_lint.py` (`CLEAN`, or
+  usable with warnings) and the reason each warning stands.
+- **Check it yourself**: `python3 skills/design-md/scripts/design_lint.py DESIGN.md`
+  (add `--target power-apps`).
+- **Next**: `mock-ui`.
 
-- An HTML/CSS export from Google Stitch, v0, or Figma
-- A screenshot of a UI
-- A hand-drawn wireframe photo
+## mock-ui
 
-Ask, in plain words:
+Writes a clickable HTML mockup.
 
-> Convert this to pa.yaml — make it a Power Apps screen.
+- **Ask for**: a mockup, wireframe or click-through prototype; attach the `DESIGN.md`.
+- **First** it shows a screen inventory and waits for your agreement.
+- **You get**: one `.html` per screen, `index.html`, `sitemap.json`, the lint verdict,
+  and the lists and flows the mockup implies.
+- **Open it**: double-click `index.html`; it works from disk, without JavaScript.
+- **Check it yourself**: `python3 skills/mock-ui/scripts/mock_lint.py supersub/mockup --design DESIGN.md`.
+- **Next**: `create-app`, `create-list`, `create-flow`.
 
-If the screen is going into an **app that already exists**, say so and hand over an
-export of it (`pac canvas download -d <dir>`, or just unzip the `.msapp`). Claude
-runs `scripts/app_inventory.py` over it first, so the new screen matches the app's
-naming convention, reuses its theme variables, and does not collide with a name
-that is already taken. See
-[`extend-existing-app.md`](../skills/power-app-yaml/references/extend-existing-app.md).
+## create-app
 
-## 3. Claude produces the `.pa.yaml`
+Writes Power Apps Canvas screens (`.pa.yaml`) for **Paste code**.
 
-It reads the confirmed-controls catalog, picks the patterns the mockup needs,
-derives the absolute coordinates, and writes the full file. Anything it is not
-sure about is tagged `# UNVERIFIED` and comes with a small isolated paste-test
-snippet.
+- **Ask for**: "turn this into a Power Apps screen" with a mockup folder, an HTML file or
+  a screenshot. To add to an app that exists, attach its export (`.msapp` or `pac canvas
+  download`).
+- **You get**: one `.pa.yaml` per screen, `PASTE-ORDER.md` for several screens, the
+  verdict of `scripts/pa_lint.py` and an isolated snippet for each unverified item.
+- **Paste**: in Studio add a **blank screen**, select it, **Paste code**, paste the whole
+  file. Paste any snippets on a scratch screen first.
+- **Check it yourself**: `python3 skills/create-app/scripts/pa_lint.py --app-dir supersub/app --sitemap supersub/mockup/sitemap.json`.
+- **Detail**: [`create-app.md`](create-app.md); paste errors: [`troubleshooting.md`](troubleshooting.md).
+- **Next**: `create-list`, `create-flow`.
 
-## 4. Lint it before it goes near Studio
+## create-list
 
-This is the step that saves the round trip, and Claude runs it as part of its own
-workflow. Run it yourself on anything you did not watch it lint:
+Designs SharePoint lists and builds their import files.
 
-```bash
-python scripts/pa_lint.py myscreen.pa.yaml
-```
+- **Ask for**: a SharePoint or Microsoft Lists list, which columns a list needs, or an
+  import from Excel or CSV.
+- **First** it shows `lists.md` and waits for your agreement.
+- **You get**: per list a `.list.json`, an `.xlsx` (with a `Setup` sheet) or a `.csv` with
+  `Setup.md`, the type to pick per column on the import screen, and the post-import
+  checklist. Every assumption that rests on an unverified import behaviour is named.
+- **Import**: Lists app or SharePoint **Create > List** > **From Excel** (pick the table
+  named after the list) or **From CSV**; then apply the checklist.
+- **Tell us what the import screen showed**: [`CONTRIBUTING.md`](../CONTRIBUTING.md#reporting-a-sharepoint-import-result).
+- **Next**: `create-app`, `create-flow`.
 
-Four layers run in order, and each maps to something Studio would have told you
-later:
+## create-flow
 
-| Layer | Checks | Studio equivalent |
-|---|---|---|
-| **L0** | the file is YAML at all | a paste that does nothing |
-| **L1** | the bundled Microsoft v3.0 schema | `PA1001` — blocks the whole paste |
-| **L2** | this repo's control catalog | `PA2108` — unknown control or property |
-| **L3** | SKILL.md's own conventions | nothing; Studio accepts these silently |
+Plans Power Automate flows and builds legacy import packages.
 
-The last line is the verdict. **`VERDICT: SAFE TO PASTE` is the only one that
-means go.** The others, and what to do about each, are in
-[troubleshooting](troubleshooting.md#the-linters-verdict-lines).
-
-Useful flags: `--quiet` prints only the verdict, `--strict` exits non-zero on
-warnings, `--json` is for scripting.
-
-## 5. Paste into Power Apps Studio
-
-1. Open your Canvas app in **Power Apps Studio**.
-2. Add a **blank screen**.
-3. With the screen selected, use **Paste code** (the tree-view context menu, or
-   `Ctrl+V` after copying the whole file).
-4. Paste the **entire** file — Studio needs the full `Screens:` wrapper, not a
-   fragment.
-
-If the file came with isolated paste-test snippets, paste each of those onto a
-scratch screen **first**. That is what they are for: a one-control file fails in a
-way you can attribute, and a 200-control file does not.
-
-## 6. Feed results back
-
-If Studio shows an error or warning, paste the exact text back to Claude. It
-knows which codes block a paste (`PA1001`, `PA2108`) and which are harmless
-version warnings (`PA2105`, `PA2106`) — see [troubleshooting](troubleshooting.md).
-
-If a Studio test confirms a control the catalog did not have, record it in your
-own `controls.yaml` and `confirmed-controls.md`, and please
-[report it](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=control-report.yml)
-so the next person benefits. Results for the twelve bundled test snippets go in
-[`test-plan.md`](test-plan.md).
-
-## Next steps
-
-- **Add another screen:** ask Claude to "add a screen to this app" and give it the
-  new mockup — it reuses the existing screen names for `Navigate()`.
-- **Grow the catalog from a real export** instead of one paste test at a time:
-  `python scripts/harvest_controls.py ./myapp/src --report`, then `--merge`. Full
-  walkthrough in [`harvesting.md`](harvesting.md).
-- **Check whether a change helped.** If you edit `SKILL.md` or the catalog, the
-  eval cases under `tests/evals/` and `scripts/run_eval.py` are how you tell better
-  from worse — see [`evals.md`](evals.md).
+- **Ask for**: "automate this process", which flows you need, a notification or an
+  approval, or help with a package that failed to import.
+- **First** it writes `flow.md` and builds nothing until you agree.
+- **You get**: per flow a `.flow.json` and `<FlowName>_LegacyPackage.zip` (verified by
+  reopening), the connections to select, the post-import checklist and the unverified
+  list.
+- **Import**: Power Automate > **My flows** > **Import** > **Import Package (Legacy)**;
+  pick a connection for each connector; save, turn the flow on, run it once. If
+  **Create in Dataverse solutions** is on, the legacy import may not be offered.
+- **Tell us whether it imported**: [`CONTRIBUTING.md`](../CONTRIBUTING.md#reporting-a-power-automate-import-result).
+- **Next**: `create-app` (calls the flows), `create-list` (owns the lists flows read).

@@ -22,9 +22,9 @@ SOFTWARE.
 
 ---
 
-This license covers the skill itself (everything under skills/power-app-yaml/,
+This license covers the skill itself (everything under skills/create-app/,
 including SKILL.md, references/confirmed-controls.md, and the files under assets/)
 and the repository's own documentation. It does NOT cover
-skills/power-app-yaml/references/schema-v3.pa.yaml, which is Microsoft's official
+skills/create-app/references/schema-v3.pa.yaml, which is Microsoft's official
 Power Apps pa.yaml v3.0 schema, licensed separately under the MIT License by
 Microsoft Corporation. See the NOTICE file.

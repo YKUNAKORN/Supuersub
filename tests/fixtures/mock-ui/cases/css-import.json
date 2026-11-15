@@ -1,0 +1,18 @@
+{
+  "defect": "An @import inside the style block.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "<style>\n",
+      "replace": "<style>\n  @import url(\"https://cdn.example.com/reset.css\");\n"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "external-resource"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

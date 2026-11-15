@@ -1,0 +1,31 @@
+# App fixture 'clean', screen 2 of 2. Navigates to scrHome (the other file) and to
+# scrSettings, which is only in sitemap.json: no file defines it yet.
+Screens:
+  scrDetail:
+    Children:
+      - lblDetailTitle:
+          Control: Label@2.5.1
+          Properties:
+            Text: ="Detail"
+            X: =40
+            Y: =40
+            Width: =400
+            Height: =32
+      - btnDetailBack:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: ="Back"
+            OnSelect: =Navigate(scrHome, ScreenTransition.None)
+            X: =40
+            Y: =100
+            Width: =200
+            Height: =40
+      - btnDetailSettings:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: ="Settings"
+            OnSelect: =Navigate(scrSettings, ScreenTransition.None)
+            X: =40
+            Y: =160
+            Width: =200
+            Height: =40

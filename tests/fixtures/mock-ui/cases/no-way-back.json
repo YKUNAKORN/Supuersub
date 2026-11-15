@@ -1,0 +1,37 @@
+{
+  "defect": "A screen you can reach but not leave.",
+  "edits": [
+    {
+      "file": "done.html",
+      "create": "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\"><title>scrDone</title>\n<style>\n  :root { --canvas-width: 1366px; --canvas-height: 768px; --color-on-surface: #1b1d22; }\n  body { width: var(--canvas-width); height: var(--canvas-height); color: var(--color-on-surface); }\n  .nav { position: absolute; left: 0px; top: 0px; width: 160px; height: 48px; }\n</style></head>\n<body data-screen=\"scrDone\" data-title=\"scrDone\">\n  <p>Nothing to click</p>\n</body></html>\n"
+    },
+    {
+      "file": "home.html",
+      "find": "<button class=\"btn btn-filter\" type=\"button\" data-action=\"filter:Requests\">Filter</button>",
+      "replace": "<button class=\"btn btn-filter\" type=\"button\" data-action=\"filter:Requests\">Filter</button>\n  <a class=\"btn btn-done\" href=\"done.html\" data-nav=\"scrDone\">Done</a>"
+    },
+    {
+      "file": "sitemap.json",
+      "find": "\"nav\": [\n        {\n          \"label\": \"New request\",\n          \"to\": \"scrNewRequest\"\n        }\n      ],",
+      "replace": "\"nav\": [\n        {\n          \"label\": \"New request\",\n          \"to\": \"scrNewRequest\"\n        },\n        {\n          \"label\": \"Done\",\n          \"to\": \"scrDone\"\n        }\n      ],"
+    },
+    {
+      "file": "sitemap.json",
+      "find": "\"on\": \"Send\"\n        }\n      ]\n    }",
+      "replace": "\"on\": \"Send\"\n        }\n      ]\n    },\n    {\n      \"id\": \"scrDone\",\n      \"file\": \"done.html\",\n      \"title\": \"scrDone\",\n      \"purpose\": \"Extra screen\",\n      \"height\": 768,\n      \"nav\": [],\n      \"data\": [],\n      \"actions\": []\n    }"
+    },
+    {
+      "file": "index.html",
+      "find": "<li><a href=\"new-request.html\" data-nav=\"scrNewRequest\">New request</a></li>",
+      "replace": "<li><a href=\"new-request.html\" data-nav=\"scrNewRequest\">New request</a></li>\n    <li><a href=\"done.html\" data-nav=\"scrDone\">Done</a></li>"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "no-way-back"
+    ],
+    "exit": 0,
+    "verdict": "unverified"
+  }
+}

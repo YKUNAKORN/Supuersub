@@ -1,0 +1,18 @@
+{
+  "defect": "data-nav on a type=button: with JavaScript off it goes nowhere.",
+  "edits": [
+    {
+      "file": "home.html",
+      "find": "<button class=\"btn btn-filter\" type=\"button\" data-action=\"filter:Requests\">Filter</button>",
+      "replace": "<button class=\"btn btn-filter\" type=\"button\" data-action=\"filter:Requests\" data-nav=\"scrNewRequest\">Filter</button>"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "nav-mismatch"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "description": "a list name Excel reads as a cell reference",
+  "edits": [
+    {
+      "file": "Requests.list.json",
+      "set": "name",
+      "value": "AB12"
+    }
+  ],
+  "checks": [
+    "name-invalid"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

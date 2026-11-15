@@ -1,0 +1,30 @@
+{
+  "description": "two lists look each other up",
+  "edits": [
+    {
+      "file": "Sites.list.json",
+      "append": "columns",
+      "value": {
+        "name": "LastRequest",
+        "displayName": "Last request",
+        "importType": "skip",
+        "finalType": "lookup",
+        "required": false,
+        "unique": false,
+        "indexed": false,
+        "default": null,
+        "choices": null,
+        "lookup": {
+          "list": "Requests",
+          "column": "RequestTitle"
+        },
+        "notes": ""
+      }
+    }
+  ],
+  "checks": [
+    "lookup-target"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

@@ -1,0 +1,18 @@
+{
+  "defect": "A submit button that navigates but carries no data-nav.",
+  "edits": [
+    {
+      "file": "new-request.html",
+      "find": "<button class=\"btn btn-send\" type=\"submit\" data-action=\"submit:Requests run-flow:NotifyApprover\" data-nav=\"scrHome\">Send</button>",
+      "replace": "<button class=\"btn btn-send\" type=\"submit\" data-action=\"submit:Requests run-flow:NotifyApprover\">Send</button>"
+    }
+  ],
+  "args": [],
+  "expect": {
+    "checks": [
+      "nav-mismatch"
+    ],
+    "exit": 1,
+    "verdict": "will_fail"
+  }
+}

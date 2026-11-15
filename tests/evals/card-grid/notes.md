@@ -29,7 +29,7 @@ Repetition at a scale where abbreviating is tempting, and per-row state.
 
 ## Reference output
 
-`skills/power-app-yaml/assets/examples/example-card-grid.yaml` — 158 controls,
+`skills/create-app/assets/examples/example-card-grid.yaml` — 158 controls,
 screen `Height: =2232`. **Not model output**: a hand-written screen used so the
 scorer can be exercised in CI without running a model. The mockup here reproduces
 its 17 row titles so the counts line up.

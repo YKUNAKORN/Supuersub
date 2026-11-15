@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "target": "power-apps",
+  "canvas": {
+    "width": 1366,
+    "height": 768
+  },
+  "design": "DESIGN.md",
+  "start": "scrLoanList",
+  "screens": [
+    {
+      "id": "scrLoanList",
+      "file": "loan-list.html",
+      "title": "Loans",
+      "purpose": "Start screen: every current loan, filterable by status, with a way to open one or start a new one",
+      "height": 768,
+      "scrolls": false,
+      "nav": [
+        {
+          "label": "New loan",
+          "to": "scrNewLoan"
+        },
+        {
+          "label": "Open",
+          "to": "scrLoanDetail"
+        }
+      ],
+      "data": [
+        {
+          "source": "Loans",
+          "mode": "read",
+          "fields": [
+            "Title",
+            "Borrower",
+            "DueDate",
+            "Status"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "id": "filter:Loans",
+          "on": "Apply"
+        }
+      ]
+    },
+    {
+      "id": "scrNewLoan",
+      "file": "new-loan.html",
+      "title": "New loan",
+      "purpose": "Request an item: what, how many, when it comes back, where to collect it, and why",
+      "height": 768,
+      "scrolls": false,
+      "nav": [
+        {
+          "label": "Loans",
+          "to": "scrLoanList"
+        },
+        {
+          "label": "Cancel",
+          "to": "scrLoanList"
+        },
+        {
+          "label": "Send request",
+          "to": "scrLoanList"
+        }
+      ],
+      "data": [
+        {
+          "source": "Loans",
+          "mode": "create",
+          "fields": [
+            "Title",
+            "Quantity",
+            "DueDate",
+            "Site",
+            "Reason"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "id": "submit:Loans",
+          "on": "Send request"
+        },
+        {
+          "id": "run-flow:NotifyApprover",
+          "on": "Send request"
+        }
+      ]
+    },
+    {
+      "id": "scrLoanDetail",
+      "file": "loan-detail.html",
+      "title": "Loan detail",
+      "purpose": "One loan in full, with the actions its borrower can take",
+      "height": 768,
+      "scrolls": false,
+      "nav": [
+        {
+          "label": "Back to loans",
+          "to": "scrLoanList"
+        },
+        {
+          "label": "Loans",
+          "to": "scrLoanList"
+        },
+        {
+          "label": "New loan",
+          "to": "scrNewLoan"
+        }
+      ],
+      "data": [
+        {
+          "source": "Loans",
+          "mode": "read",
+          "fields": [
+            "Title",
+            "Borrower",
+            "LoanDate",
+            "DueDate",
+            "Site",
+            "Status"
+          ]
+        },
+        {
+          "source": "Loans",
+          "mode": "update",
+          "fields": [
+            "Status"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "id": "update:Loans",
+          "on": "Mark returned"
+        },
+        {
+          "id": "run-flow:ReportLostItem",
+          "on": "Report lost"
+        }
+      ]
+    }
+  ]
+}
