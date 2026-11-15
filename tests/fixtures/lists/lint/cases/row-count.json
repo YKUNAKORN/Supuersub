@@ -1,0 +1,14 @@
+{
+  "description": "more than 5,000 rows",
+  "edits": [
+    {
+      "file": "Sites.list.json",
+      "generate_rows": 5001
+    }
+  ],
+  "checks": [
+    "row-count"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

@@ -1,0 +1,15 @@
+{
+  "description": "a number written as text",
+  "edits": [
+    {
+      "file": "Requests.list.json",
+      "set": "rows/0/Quantity",
+      "value": "1"
+    }
+  ],
+  "checks": [
+    "row-value"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

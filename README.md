@@ -154,6 +154,27 @@ python skills/create-app/scripts/pa_lint.py --app-dir supersub/app --sitemap sup
 Whether a multi-screen paste works as `PASTE-ORDER.md` describes has not been tested in
 Studio yet; the open questions are in [`docs/test-plan.md`](docs/test-plan.md#multi-screen-paste).
 
+## The data behind the screens: SharePoint lists (`create-list`)
+
+The fourth skill, [`skills/create-list/`](skills/create-list/SKILL.md), designs the lists
+with you first (which lists, which columns, which type each, how they relate, the order
+to create them in) in a `lists.md`, then writes one `<ListName>.list.json` spec per list
+and builds an import file from it: an `.xlsx` holding one Excel table plus a `Setup`
+sheet, or a `.csv` with a `Setup.md`. You create the list with **New list > From Excel**
+(or **From CSV**) and then apply the settings the import cannot set: display names,
+required, indexed then unique, choices, defaults, lookups.
+
+`skills/create-list/scripts/list_lint.py` checks the specs offline and ends in a verdict;
+`build_list.py` builds the file and reopens it to verify it. Much of what the import
+screen does is undocumented (which types its drop-down offers, whether it insists on a
+Title column, how it reads a UTF-8 CSV), so every such behaviour is a row in
+[`references/import-behavior.md`](skills/create-list/references/import-behavior.md) with
+an evidence level, and the linter warns whenever a spec relies on an unverified one. The
+type probe and its results table are in
+[`docs/test-plan.md`](docs/test-plan.md#sharepoint-list-import-create-list). Ask to
+"design the list", which columns a list needs, or to import a list from Excel or CSV.
+`.xlsx` output needs `openpyxl`.
+
 ## Repository layout
 
 ```
@@ -161,6 +182,7 @@ Studio yet; the open questions are in [`docs/test-plan.md`](docs/test-plan.md#mu
 ├── shared/                          # files several skills need; copied into each by scripts/sync_shared.py
 ├── skills/design-md/                 # interview -> DESIGN.md design system; scripts/design_lint.py
 ├── skills/mock-ui/                   # DESIGN.md + requirements -> linked HTML mockup; scripts/mock_lint.py, tokens_to_css.py
+├── skills/create-list/               # list design -> <ListName>.list.json -> .xlsx/.csv import file; scripts/list_lint.py, build_list.py
 ├── skills/create-app/                # the skill itself
 │   ├── SKILL.md                      # workflow, control picker, templates, checklist
 │   ├── scripts/                      # run-time tools, shipped inside the skill

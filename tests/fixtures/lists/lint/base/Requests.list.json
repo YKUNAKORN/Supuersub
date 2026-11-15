@@ -1,0 +1,227 @@
+{
+  "version": 1,
+  "name": "Requests",
+  "displayName": "Requests",
+  "description": "Item requests.",
+  "columns": [
+    {
+      "name": "RequestTitle",
+      "displayName": "Request",
+      "importType": "text",
+      "finalType": "text",
+      "required": true,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": ""
+    },
+    {
+      "name": "Quantity",
+      "displayName": "Quantity",
+      "importType": "number",
+      "finalType": "number",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": ""
+    },
+    {
+      "name": "Amount",
+      "displayName": "Amount",
+      "importType": "currency",
+      "finalType": "currency",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": ""
+    },
+    {
+      "name": "NeededBy",
+      "displayName": "Needed by",
+      "importType": "datetime",
+      "finalType": "date",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": ""
+    },
+    {
+      "name": "SubmittedAt",
+      "displayName": "Submitted",
+      "importType": "datetime",
+      "finalType": "datetime",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": ""
+    },
+    {
+      "name": "Urgent",
+      "displayName": "Urgent",
+      "importType": "boolean",
+      "finalType": "boolean",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": ""
+    },
+    {
+      "name": "Status",
+      "displayName": "Status",
+      "importType": "choice",
+      "finalType": "choice",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": "Draft",
+      "choices": [
+        "Draft",
+        "Submitted",
+        "Approved"
+      ],
+      "lookup": null,
+      "notes": ""
+    },
+    {
+      "name": "Tags",
+      "displayName": "Tags",
+      "importType": "text",
+      "finalType": "multichoice",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": [
+        "Tools",
+        "Safety",
+        "IT"
+      ],
+      "lookup": null,
+      "notes": ""
+    },
+    {
+      "name": "Requester",
+      "displayName": "Requested by",
+      "importType": "person",
+      "finalType": "person",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": ""
+    },
+    {
+      "name": "Link",
+      "displayName": "Link",
+      "importType": "hyperlink",
+      "finalType": "hyperlink",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": ""
+    },
+    {
+      "name": "Details",
+      "displayName": "Details",
+      "importType": "note",
+      "finalType": "note",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": ""
+    },
+    {
+      "name": "Site",
+      "displayName": "Site",
+      "importType": "skip",
+      "finalType": "lookup",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": {
+        "list": "Sites",
+        "column": "SiteCode"
+      },
+      "notes": ""
+    }
+  ],
+  "rows": [
+    {
+      "RequestTitle": "Ladder",
+      "Quantity": 1,
+      "Amount": 120.5,
+      "NeededBy": "2026-01-15",
+      "SubmittedAt": "2026-01-10T09:30",
+      "Urgent": true,
+      "Status": "Draft",
+      "Tags": [
+        "Tools"
+      ],
+      "Requester": "ada@example.com",
+      "Link": "https://example.com/1",
+      "Details": "Two-metre ladder.",
+      "Site": "N01"
+    },
+    {
+      "RequestTitle": "Gloves",
+      "Quantity": 20,
+      "Amount": 45,
+      "NeededBy": "2026-02-01",
+      "SubmittedAt": "2026-01-20T14:00",
+      "Urgent": false,
+      "Status": "Submitted",
+      "Tags": [
+        "Safety",
+        "Tools"
+      ],
+      "Requester": "grace@example.com",
+      "Link": "https://example.com/2",
+      "Details": "Size L.",
+      "Site": "S01"
+    },
+    {
+      "RequestTitle": "Laptop",
+      "Quantity": 2,
+      "Amount": 2400,
+      "NeededBy": "2026-03-01",
+      "SubmittedAt": "2026-02-02T08:15:00",
+      "Urgent": true,
+      "Status": "Approved",
+      "Tags": [
+        "IT"
+      ],
+      "Requester": "alan@example.com",
+      "Link": "https://example.com/3",
+      "Details": "For the new starters.",
+      "Site": "E01"
+    }
+  ],
+  "sampleRows": true
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/YKUNAKORN/power-app-yaml/skills/create-list/assets/list.schema.json",
+  "title": "create-list spec: one SharePoint list (<ListName>.list.json)",
+  "description": "Written by the model, checked by scripts/list_lint.py, turned into an import file by scripts/build_list.py. Type names come from references/column-types.md.",
+  "type": "object",
+  "required": ["version", "name", "displayName", "description", "columns", "rows", "sampleRows"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {"const": 1},
+    "name": {
+      "description": "Internal list name, also the Excel table and data-sheet name. ASCII PascalCase, at most 31 characters; list_lint.py checks the naming rules.",
+      "type": "string"
+    },
+    "displayName": {"description": "The list's name as users see it, any language.", "type": "string", "minLength": 1},
+    "description": {"type": "string"},
+    "language": {"description": "BCP 47 tag of the user's language, for the setup text (e.g. th, en).", "type": "string"},
+    "columns": {
+      "type": "array", "minItems": 1,
+      "items": {"$ref": "#/$defs/column"}
+    },
+    "rows": {
+      "description": "Seed or sample data, one object per row keyed by column name. Types follow the data, so at least three.",
+      "type": "array",
+      "items": {"type": "object"}
+    },
+    "sampleRows": {"description": "true when rows are samples to delete after import, false when they are real seed data.", "type": "boolean"},
+    "setup": {
+      "description": "User-facing text of the Setup sheet / Setup.md, in the user's language. English defaults are used for what is absent.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "headers": {"type": "array", "items": {"type": "string"}, "minItems": 4, "maxItems": 4},
+        "notesHeading": {"type": "string"},
+        "notes": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  },
+  "$defs": {
+    "column": {
+      "type": "object",
+      "required": ["name", "displayName", "importType", "finalType", "required", "unique", "indexed", "default", "choices", "lookup", "notes"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"description": "Internal name and file header. ASCII PascalCase; list_lint.py checks the naming rules.", "type": "string"},
+        "displayName": {"type": "string", "minLength": 1},
+        "importType": {"enum": ["text", "note", "number", "currency", "datetime", "boolean", "choice", "person", "hyperlink", "skip"]},
+        "finalType": {"enum": ["text", "note", "number", "currency", "date", "datetime", "boolean", "choice", "multichoice", "person", "hyperlink", "lookup"]},
+        "required": {"type": "boolean"},
+        "unique": {"type": "boolean"},
+        "indexed": {"type": "boolean"},
+        "default": {"description": "Default value applied after import, or null.", "type": ["string", "number", "boolean", "null"]},
+        "choices": {"description": "For choice and multichoice: the choices in display order. Otherwise null.", "type": ["array", "null"], "items": {"type": "string"}},
+        "lookup": {
+          "description": "For lookup: the target list and column (internal names). Otherwise null.",
+          "type": ["object", "null"],
+          "required": ["list", "column"],
+          "additionalProperties": false,
+          "properties": {
+            "list": {"type": "string"},
+            "column": {"type": "string"}
+          }
+        },
+        "postImport": {"description": "Extra post-import steps in the user's language, appended to the generated ones.", "type": "string"},
+        "notes": {"description": "Free notes in the user's language, or an empty string.", "type": "string"}
+      }
+    }
+  }
+}

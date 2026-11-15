@@ -7,9 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Phase 04 of 2.0.0: `create-app` takes a `mock-ui` mockup folder and writes one
-`.pa.yaml` per screen. Phase 03: the `mock-ui` skill, and the HTML contract between it
+Phase 05 of 2.0.0: the `create-list` skill. Phase 04: `create-app` takes a `mock-ui`
+mockup folder and writes one `.pa.yaml` per screen. Phase 03: the `mock-ui` skill, and the HTML contract between it
 and `create-app`.
+
+### Added (phase 05)
+- **`create-list` skill** (`skills/create-list/`): designs SharePoint lists with the user
+  in `lists.md` (columns, types, relationships, creation order), gets agreement, then
+  writes one `<ListName>.list.json` per list (schema `assets/list.schema.json`) and builds
+  the import file for **New list > From Excel / From CSV**. Every column keeps
+  `importType` (what to pick in the import drop-down, or `skip`), `finalType` (what the
+  design needs) and the post-import steps between them apart.
+- **`scripts/build_list.py`**: spec to `.xlsx` (a data sheet named after the list with one
+  Excel table, `TableStyleMedium2`, frozen header, real dates with `yyyy-mm-dd`, real
+  numbers; a `Setup` sheet with the type to choose, the settings after import and notes,
+  in the user's language) or `.csv` plus `<ListName>.Setup.md`. Lints first and refuses
+  on errors, reopens the file and prints `VERIFIED` only when the table, headers and
+  typed cells match. Same spec, same bytes. Without `openpyxl` it says
+  `pip install openpyxl` or `--format csv`.
+- **`scripts/list_lint.py`**: stable check ids (`spec-invalid`, `name-invalid`,
+  `name-duplicate`, `name-reserved`, `import-type`, `choices-missing`, `lookup-target`,
+  `unique-not-indexed`, `unique-values`, `row-value`, `row-unknown-column`, `row-count`,
+  `rows-too-few`; warnings `unverified-behavior`, `title-column`, `column-sparse`,
+  `required-empty`, `personal-data`), the creation order (lookup targets first), and a
+  verdict in the `pa_lint.py` style. `UNPROVEN` without `jsonschema`.
+- **`references/import-behavior.md`**: the evidence table the linter reads. Eight rows
+  are `doc` (Microsoft's "Create a list based on a spreadsheet", read 2026-11-15); the
+  rest, including which types the drop-down offers, the Title mapping, the empty table,
+  CSV encoding and values, choices from data and internal names, are `unverified`.
+  `references/column-types.md` (the type table, also read by the scripts) and
+  `references/naming.md`.
+- **CSV encoding: UTF-8 with a byte-order mark, CRLF**, recorded as an unverified
+  choice; `--csv-encoding utf-8` writes it without the mark so both can be tried.
+- **Type probe** `assets/type-probe.list.json` and `docs/test-plan.md` section
+  "SharePoint list import": four files to import, a per-column table of proposed and
+  offered types, and questions P3–P8 (Title, empty table, Thai in CSV with and without
+  the mark, choices, internal names).
+- **Example** `assets/example/Holidays.list.json`, which builds to the owner's reference
+  workbook shape; the reference is kept as `tests/fixtures/lists/9AM_Holidays.xlsx`.
+- Tests: `tests/test_list_lint.py` (28 fixture cases over a two-list base, every check id
+  covered, plus the real evidence table) and `tests/test_build_list.py` (structural
+  comparison with the reference, determinism, CSV, refusal, missing `openpyxl`).
+
+### Changed (phase 05)
+- CI and `CONTRIBUTING.md` install `openpyxl`; the `.xlsx` tests skip with a message
+  without it.
+- `scripts/sync_shared.py` copies `handoff.md` into `create-list`; `scripts/validate.py`
+  checks the skill's files, description triggers, evidence table, that the schema enums
+  equal the type table, and that the example and probe lint with no finding other than
+  `unverified-behavior`.
+- `README.md`: a section on `create-list` and its place in the layout.
+
+### Not changed (phase 05)
+- Nothing is recorded as `import-tested`: whether the reference workbook imported as
+  intended has not been reported yet.
 
 ### Added (phase 04)
 - **`create-app` pipeline branch**, `references/from-mock-ui.md`: read `sitemap.json`

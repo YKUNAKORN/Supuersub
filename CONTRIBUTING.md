@@ -78,10 +78,11 @@ python scripts/validate.py
 python -m unittest discover tests
 ```
 
-Both need `pyyaml` and `jsonschema`:
+Both need `pyyaml` and `jsonschema`; the `create-list` `.xlsx` tests also need
+`openpyxl` and skip without it:
 
 ```bash
-pip install pyyaml jsonschema
+pip install pyyaml jsonschema openpyxl
 ```
 
 To check a `.pa.yaml` you are working on:

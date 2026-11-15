@@ -13,6 +13,7 @@ everything below them is specific to the create-app skill.
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
 import subprocess
@@ -807,6 +808,79 @@ if MU_LINT.is_file() and (MU_EXAMPLE / "sitemap.json").is_file():
         check(report["errors"] == 0 and not report["findings"],
               "the example's DESIGN.md lints clean with design-md's linter",
               f"{report['verdict']}")
+
+print("create-list")
+CL_DIR = ROOT / "skills" / "create-list"
+CL_LINT = CL_DIR / "scripts" / "list_lint.py"
+for rel in ("references/import-behavior.md", "references/column-types.md",
+            "references/naming.md", "references/shared/handoff.md",
+            "assets/list.schema.json", "assets/type-probe.list.json",
+            "assets/example/Holidays.list.json", "scripts/list_lint.py",
+            "scripts/build_list.py"):
+    check((CL_DIR / rel).is_file(), f"skills/create-list/{rel} present")
+check((ROOT / "tests" / "fixtures" / "lists" / "9AM_Holidays.xlsx").is_file(),
+      "tests/fixtures/lists/9AM_Holidays.xlsx present",
+      "the owner's reference workbook the build is compared with")
+cl_skill = CL_DIR / "SKILL.md"
+if cl_skill.is_file():
+    cl_text = cl_skill.read_text(encoding="utf-8")
+    cl_desc = str((skill_checks.read_frontmatter(cl_skill, yaml) or {})
+                  .get("description") or "").lower()
+    # The phrases the skill has to fire on, and the two neighbours it must name as the
+    # skills that do what it does not.
+    for phrase in ("sharepoint list", "design the list", "which columns", "from excel",
+                   "csv", "not for building flows", "create-flow", "create-app"):
+        check(phrase in cl_desc, f"create-list description mentions {phrase!r}")
+    for needle, label in (("## The workflow", "the ordered workflow"),
+                          ("lists.md", "the design-before-build step"),
+                          ("list_lint.py", "the lint step"),
+                          ("build_list.py", "the build step"),
+                          ("VERIFIED", "the reopen-and-verify step"),
+                          ("import-behavior.md", "a pointer to the evidence table"),
+                          ("column-types.md", "a pointer to the type table"),
+                          ("naming.md", "a pointer to the naming rule"),
+                          ("unverified-behavior", "the unverified-assumption rule"),
+                          ("create-app", "the create-app hand-off"),
+                          ("create-flow", "the create-flow hand-off")):
+        check(needle in cl_text, f"create-list SKILL.md still contains {label}",
+              f"missing {needle!r}")
+if CL_LINT.is_file():
+    _spec = importlib.util.spec_from_file_location("list_lint", CL_LINT)
+    cl_mod = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(cl_mod)
+    evidence = cl_mod.load_evidence()
+    types = cl_mod.load_types()
+    bad_levels = sorted(k for k, v in evidence.items() if v["level"] not in cl_mod.LEVELS)
+    check(evidence and not bad_levels, "every evidence row has a declared level",
+          f"bad: {bad_levels}")
+    undated = sorted(k for k, v in evidence.items()
+                     if v["level"] == "import-tested" and not re.match(r"\d{4}-\d{2}-\d{2}",
+                                                                      v["date"]))
+    check(not undated, "every import-tested row carries a date", f"undated: {undated}")
+    # The six open questions of the phase brief. Each must stay a row of its own, so
+    # that settling one is an edit to one row.
+    for row_id in ("offer-person", "offer-hyperlink", "title-mapping", "empty-table",
+                   "csv-encoding", "choice-from-data", "internal-name"):
+        check(row_id in evidence, f"evidence table has row {row_id!r}")
+    imports = sorted({i for t in types.values() for i in t["imports"]} - {"skip"})
+    no_row = [i for i in imports if f"offer-{i}" not in evidence]
+    check(types and not no_row, "every importType has an offer-<type> evidence row",
+          f"missing: {no_row}")
+    cl_schema = json.loads((CL_DIR / "assets" / "list.schema.json").read_text(encoding="utf-8"))
+    col_props = cl_schema["$defs"]["column"]["properties"]
+    check(sorted(col_props["finalType"]["enum"]) == sorted(types),
+          "list.schema.json finalType enum equals the type table")
+    check(sorted(col_props["importType"]["enum"]) == sorted(imports + ["skip"]),
+          "list.schema.json importType enum equals the type table")
+    for rel, fmt in (("assets/example/Holidays.list.json", "xlsx"),
+                     ("assets/example/Holidays.list.json", "csv"),
+                     ("assets/type-probe.list.json", "xlsx"),
+                     ("assets/type-probe.list.json", "csv")):
+        rep = cl_mod.lint_files([CL_DIR / rel], fmt)
+        others = sorted({f["check"] for f in rep["findings"]} - {"unverified-behavior"})
+        check(rep["errors"] == 0 and not others,
+              f"{rel} lints with no finding but unverified-behavior ({fmt})",
+              f"{rep['verdict']}: {others}")
 
 print("Plugin metadata")
 plugin_json = ROOT / ".claude-plugin" / "plugin.json"

@@ -1,0 +1,15 @@
+{
+  "description": "a sample row with a real-looking address",
+  "edits": [
+    {
+      "file": "Requests.list.json",
+      "set": "rows/0/Requester",
+      "value": "someone@contoso.com"
+    }
+  ],
+  "checks": [
+    "personal-data"
+  ],
+  "exit": 0,
+  "verdict": "unverified"
+}

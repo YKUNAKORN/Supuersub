@@ -1,0 +1,22 @@
+{
+  "description": "a column named Title",
+  "edits": [
+    {
+      "file": "Requests.list.json",
+      "set": "columns/0/name",
+      "value": "Title"
+    },
+    {
+      "file": "Requests.list.json",
+      "rename_key": [
+        "RequestTitle",
+        "Title"
+      ]
+    }
+  ],
+  "checks": [
+    "title-column"
+  ],
+  "exit": 0,
+  "verdict": "unverified"
+}

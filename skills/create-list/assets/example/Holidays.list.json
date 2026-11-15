@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "name": "Holidays",
+  "displayName": "วันหยุด",
+  "description": "วันหยุดสถาบันการเงินตามประกาศ ธปท. ใช้คำนวณวันทำการ",
+  "language": "th",
+  "columns": [
+    {
+      "name": "HolidayDate",
+      "displayName": "วันที่",
+      "importType": "datetime",
+      "finalType": "date",
+      "required": true,
+      "unique": true,
+      "indexed": true,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": "วันหยุดสถาบันการเงินตามประกาศ ธปท."
+    },
+    {
+      "name": "Name",
+      "displayName": "ชื่อวันหยุด",
+      "importType": "text",
+      "finalType": "text",
+      "required": false,
+      "unique": false,
+      "indexed": false,
+      "default": null,
+      "choices": null,
+      "lookup": null,
+      "notes": ""
+    }
+  ],
+  "rows": [
+    {
+      "HolidayDate": "2026-12-07",
+      "Name": "ชดเชยวันพ่อแห่งชาติ (5 ธ.ค. ตรงวันเสาร์)"
+    },
+    {
+      "HolidayDate": "2026-12-10",
+      "Name": "วันรัฐธรรมนูญ"
+    },
+    {
+      "HolidayDate": "2026-12-31",
+      "Name": "วันสิ้นปี"
+    },
+    {
+      "HolidayDate": "2027-01-01",
+      "Name": "วันขึ้นปีใหม่"
+    },
+    {
+      "HolidayDate": "2027-02-22",
+      "Name": "ชดเชยวันมาฆบูชา (21 ก.พ. ตรงวันอาทิตย์)"
+    },
+    {
+      "HolidayDate": "2027-04-06",
+      "Name": "วันจักรี"
+    },
+    {
+      "HolidayDate": "2027-04-13",
+      "Name": "วันสงกรานต์"
+    },
+    {
+      "HolidayDate": "2027-04-14",
+      "Name": "วันสงกรานต์"
+    },
+    {
+      "HolidayDate": "2027-04-15",
+      "Name": "วันสงกรานต์"
+    },
+    {
+      "HolidayDate": "2027-05-03",
+      "Name": "ชดเชยวันแรงงานแห่งชาติ (1 พ.ค. ตรงวันเสาร์)"
+    },
+    {
+      "HolidayDate": "2027-05-04",
+      "Name": "วันฉัตรมงคล"
+    },
+    {
+      "HolidayDate": "2027-05-20",
+      "Name": "วันวิสาขบูชา"
+    },
+    {
+      "HolidayDate": "2027-06-03",
+      "Name": "วันเฉลิมพระชนมพรรษา สมเด็จพระราชินี"
+    },
+    {
+      "HolidayDate": "2027-07-19",
+      "Name": "ชดเชยวันอาสาฬหบูชา (18 ก.ค. ตรงวันอาทิตย์)"
+    },
+    {
+      "HolidayDate": "2027-07-28",
+      "Name": "วันเฉลิมพระชนมพรรษา พระบาทสมเด็จพระเจ้าอยู่หัว"
+    },
+    {
+      "HolidayDate": "2027-08-12",
+      "Name": "วันแม่แห่งชาติ"
+    },
+    {
+      "HolidayDate": "2027-10-13",
+      "Name": "วันนวมินทรมหาราช"
+    },
+    {
+      "HolidayDate": "2027-10-25",
+      "Name": "ชดเชยวันปิยมหาราช (23 ต.ค. ตรงวันเสาร์)"
+    },
+    {
+      "HolidayDate": "2027-12-06",
+      "Name": "ชดเชยวันพ่อแห่งชาติ (5 ธ.ค. ตรงวันอาทิตย์)"
+    },
+    {
+      "HolidayDate": "2027-12-10",
+      "Name": "วันรัฐธรรมนูญ"
+    },
+    {
+      "HolidayDate": "2027-12-31",
+      "Name": "วันสิ้นปี"
+    }
+  ],
+  "sampleRows": false,
+  "setup": {
+    "headers": [
+      "Column",
+      "เลือกชนิดในหน้า import",
+      "ตั้งค่าหลัง import (Column settings)",
+      "หมายเหตุ"
+    ],
+    "notesHeading": "หลัง import:",
+    "notes": [
+      "ต้องตั้ง Indexed ก่อน แล้วจึงเปิด Enforce unique values ได้",
+      "ข้อมูล: ประกาศ ธปท. วันหยุดสถาบันการเงินปี 2569 (เฉพาะ ธ.ค.) และปี 2570 (ประกาศที่ 37/2569) ไม่รวมวันหยุดเพิ่มเติมของ 5 จังหวัดชายแดนใต้และธนาคารอิสลาม"
+    ]
+  }
+}

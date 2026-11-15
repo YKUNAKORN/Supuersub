@@ -1,0 +1,15 @@
+{
+  "description": "the target column does not exist",
+  "edits": [
+    {
+      "file": "Requests.list.json",
+      "set": "columns/11/lookup/column",
+      "value": "SiteNumber"
+    }
+  ],
+  "checks": [
+    "lookup-target"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}

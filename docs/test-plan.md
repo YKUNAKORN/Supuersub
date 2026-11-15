@@ -122,6 +122,81 @@ What each answer changes:
 - **M2 accepted and M3 yes**: the order does not matter; drop "create every screen
   first" from `PASTE-ORDER.md`.
 
+## SharePoint list import (`create-list`)
+
+`create-list` builds files for **New list > From Excel** and **From CSV**. Microsoft's
+page documents the entry points, the table requirement, the 5,000-row limit and that
+types are proposed from the data, but not which types the drop-down offers, whether a
+Title column is demanded, or how a CSV is decoded. Each open question is a row in
+[`import-behavior.md`](../skills/create-list/references/import-behavior.md); this
+section settles them in one sitting with the **type probe**: one column per candidate
+import type, four sample rows, Thai text in `ProbeThai`.
+
+Not yet recorded either: whether the owner's reference workbook
+(`tests/fixtures/lists/9AM_Holidays.xlsx`) imported as intended. If it did, say so with
+the date, and `offer-datetime` and `offer-text` can move to `import-tested` from that
+alone.
+
+### Build the four probe files once
+
+```bash
+python skills/create-list/scripts/build_list.py skills/create-list/assets/type-probe.list.json --format xlsx --out probe
+python skills/create-list/scripts/build_list.py skills/create-list/assets/type-probe.list.json --format csv --out probe
+python skills/create-list/scripts/build_list.py skills/create-list/assets/type-probe.list.json --format csv --csv-encoding utf-8 --out probe/no-bom
+python skills/create-list/scripts/build_list.py skills/create-list/assets/type-probe.list.json --format xlsx --empty-table --out probe/empty
+```
+
+Import each into a test site as a **new** list (Lists app or SharePoint
+**Create > List**), stopping on the screen with the type drop-downs. Delete the lists
+afterwards. Tenant kind (commercial, GCC, ...), never a tenant name or URL:
+
+```
+Tenant kind:  ______________   Entry point (Lists / SharePoint / Teams):  __________   Date: __________
+```
+
+### P1–P2: per column, what the drop-down proposed and offered
+
+Write the type the screen preselected in **Proposed**, and every type in the drop-down
+in **Offered** (or "same list as row 1" after the first column).
+
+| Column | importType asked for | Evidence row | xlsx: proposed | xlsx: offered | csv: proposed | csv: offered |
+|---|---|---|---|---|---|---|
+| `ProbeText` | Single line of text | `offer-text` | | | | |
+| `ProbeNote` | Multiple lines of text | `offer-note` | | | | |
+| `ProbeNumber` | Number | `offer-number` | | | | |
+| `ProbeCurrency` | Currency | `offer-currency` | | | | |
+| `ProbeDate` | Date and time (is Date only offered?) | `offer-datetime` | | | | |
+| `ProbeDateTime` | Date and time | `offer-datetime`, `csv-values` | | | | |
+| `ProbeYesNo` | Yes/No | `offer-boolean`, `csv-values` | | | | |
+| `ProbeChoice` | Choice | `offer-choice` | | | | |
+| `ProbePerson` | Person | `offer-person` | | | | |
+| `ProbeLink` | Hyperlink | `offer-hyperlink` | | | | |
+| `ProbeThai` | Single line of text | `offer-text` | | | | |
+
+### P3–P8: the other open questions
+
+| # | Question | Evidence row | How to see it | Answer |
+|---|---|---|---|---|
+| P3 | Did the screen ask for, or force, a column mapped to Title? Did the created list have a Title column? | `title-mapping` | The import screen; then List settings > Columns | |
+| P4 | `probe/empty/TypeProbe.xlsx` (headers, one blank row): what types were proposed? Could the list be created? | `empty-table` | The import screen | |
+| P5 | `ProbeThai` after importing `probe/TypeProbe.csv` (with byte-order mark): readable Thai, or garbled? | `csv-encoding` | The created list | |
+| P6 | The same for `probe/no-bom/TypeProbe.csv` (no byte-order mark) | `csv-encoding` | The created list | |
+| P7 | `ProbeChoice` imported as Choice: are Draft, Submitted and Approved already the choices? | `choice-from-data` | Column settings of ProbeChoice | |
+| P8 | Internal names: open List settings > `ProbeDateTime`; the URL ends in `Field=<internal name>`. Is it `ProbeDateTime`? | `internal-name` | The browser's address bar | |
+
+What each answer changes:
+
+- An `offer-*` row confirmed for both formats becomes `import-tested` in
+  `import-behavior.md` with the date, and the linter stops warning about that type. A
+  type **not** offered: say so in the row's Behaviour and keep the level; then
+  `column-types.md` should make `text` or `skip` the default for that type.
+- **P3 forced**: the skill must tell the user which column to map to Title before the
+  import, and `naming.md` changes from a check to a step.
+- **P5 garbled, P6 fine**: change the default `--csv-encoding` to `utf-8` and record why.
+  Both garbled: recommend From Excel for any non-ASCII data.
+- **P7 yes**: the post-import "check the choices" step stays (order and default still
+  need it), but can say the choices arrive from the data.
+
 ## Feeding a result back into the catalog
 
 A result becomes durable only when it lands in

@@ -1,0 +1,22 @@
+{
+  "description": "a column name with a space",
+  "edits": [
+    {
+      "file": "Requests.list.json",
+      "set": "columns/1/name",
+      "value": "Item Count"
+    },
+    {
+      "file": "Requests.list.json",
+      "rename_key": [
+        "Quantity",
+        "Item Count"
+      ]
+    }
+  ],
+  "checks": [
+    "name-invalid"
+  ],
+  "exit": 1,
+  "verdict": "will_fail"
+}
