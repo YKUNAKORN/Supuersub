@@ -32,7 +32,7 @@ Screens:
             - tileTitle:
                 Control: Label@2.5.1
                 Properties:
-                  Text: ="Onboarding Form.docx"
+                  Text: ="Welcome Letter.docx"
                   Color: =RGBA(24, 28, 35, 1)
                   Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold

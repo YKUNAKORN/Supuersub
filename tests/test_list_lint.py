@@ -26,7 +26,9 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import types
 import unittest
+from unittest import mock
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -152,6 +154,38 @@ class CaseTests(unittest.TestCase):
                 if HAVE_JSONSCHEMA:
                     self.assertEqual(code, case["exit"])
                     self.assertEqual(report["verdict_code"], case["verdict"])
+
+
+class OldJsonschemaTests(unittest.TestCase):
+    """jsonschema older than 4.0 has no Draft202012Validator; the linter must not crash."""
+
+    @unittest.skipUnless(HAVE_JSONSCHEMA, "jsonschema not installed")
+    def test_falls_back_to_draft7_when_2020_12_is_missing(self):
+        import jsonschema
+        mod = load_module()
+        # A jsonschema 3.x look-alike: Draft 7 exists, Draft202012Validator does not.
+        old = types.SimpleNamespace(Draft7Validator=jsonschema.Draft7Validator)
+        with mock.patch.dict(sys.modules, {"jsonschema": old}):
+            linter = mod.Linter()
+        self.assertIsInstance(linter.validator, jsonschema.Draft7Validator)
+        self.assertEqual(linter.degraded, "")  # the bundled schema has no 2020-12-only keyword
+        self.assertTrue(list(linter.validator.iter_errors({})))
+
+    @unittest.skipUnless(HAVE_JSONSCHEMA, "jsonschema not installed")
+    def test_2020_12_only_keyword_is_reported_unproven_on_draft7(self):
+        import jsonschema
+        mod = load_module()
+        validator, note = mod.make_validator(
+            types.SimpleNamespace(Draft7Validator=jsonschema.Draft7Validator),
+            {"type": "array", "prefixItems": [{"type": "string"}]})
+        self.assertIsNotNone(validator)
+        self.assertIn("prefixItems", note)
+
+    def test_no_validator_class_degrades_like_a_missing_package(self):
+        mod = load_module()
+        validator, note = mod.make_validator(types.SimpleNamespace(), {})
+        self.assertIsNone(validator)
+        self.assertIn("too old", note)
 
 
 class EvidenceTests(unittest.TestCase):

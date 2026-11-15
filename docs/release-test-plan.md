@@ -85,7 +85,7 @@ four type-probe files as shown there, import each as a new list, stop on the typ
 
 | Done | ID | Check | Settles | Result | Date |
 |---|---|---|---|---|---|
-| [ ] | R0 | Did the owner's reference workbook `9AM_Holidays.xlsx` import as intended? | evidence for date and text from a real file | | |
+| [ ] | R0 | Did the owner's reference workbook `reference-holidays.xlsx` import as intended? | evidence for date and text from a real file | | |
 | [ ] | P1 | `TypeProbe.xlsx`: per column, the proposed type and every type the drop-down offered. | `offer-text`, `offer-note`, `offer-number`, `offer-currency`, `offer-datetime`, `offer-boolean`, `offer-choice`, `offer-person`, `offer-hyperlink` | | |
 | [ ] | P2 | `TypeProbe.csv`: the same table. Were `YYYY-MM-DD`, digits and `TRUE`/`FALSE` typed as date, number and Yes/No? | `csv-values` | | |
 | [ ] | P3 | Did the screen ask for or force a Title column? | `title-mapping` | | |

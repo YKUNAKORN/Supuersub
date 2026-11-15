@@ -54,7 +54,8 @@ except ImportError:  # pragma: no cover
 
 try:
     import jsonschema
-    HAVE_JSONSCHEMA = True
+    # Draft7Validator arrived in jsonschema 3.0; an older one is treated as missing.
+    HAVE_JSONSCHEMA = hasattr(jsonschema, "Draft7Validator")
 except ImportError:  # pragma: no cover - exercised on minimal installs
     HAVE_JSONSCHEMA = False
 

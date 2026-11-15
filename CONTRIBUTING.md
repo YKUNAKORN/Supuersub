@@ -115,6 +115,17 @@ that a control lacks a property**. Never add a "does not support" claim from a h
 - Keep the empirical tone: say *which Studio version* confirmed it.
 - If a newer Studio changes a version number, add a row — don't overwrite history.
 
+## Privacy guard
+
+This repository is public. `scripts/validate.py` runs `scripts/privacy_check.py`, which
+fails on any e-mail address outside `example.com`, `example.org` and `contoso.*`, any
+SharePoint or Microsoft 365 tenant host other than `contoso`, and any absolute home path.
+You can also keep a local, untracked `.private-terms.txt` at the repo root (one term per
+line, `#` comments allowed) listing words that must never appear in a tracked file or file
+name; the check matches them case-insensitively, reports only the file and line, never the
+term, and passes with a "skip" note when the file is absent, as it is in CI. Never write
+those terms into the repository, a test, a doc or a commit message.
+
 ## YAML / skill style
 
 - Every property value starts with `=` (`Text: ="hi"`, `X: =0`).

@@ -30,6 +30,18 @@ ALLOWED_TOP = {".claude-plugin", "skills", "README.md", "LICENSE", "NOTICE"}
 SKILL_NAMES = sorted(d.name for d in (ROOT / "skills").iterdir() if d.is_dir())
 
 
+def _claude_can_validate() -> bool:
+    """True when `claude plugin validate --help` runs. Some builds only support `claude -p`."""
+    exe = shutil.which("claude")
+    if not exe:
+        return False
+    try:
+        return subprocess.run([exe, "plugin", "validate", "--help"], capture_output=True,
+                              timeout=60).returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
 class TestRealArchive(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -86,6 +98,8 @@ class TestRealArchive(unittest.TestCase):
             self.assertEqual(again.read_bytes(), self.path.read_bytes())
 
     @unittest.skipUnless(shutil.which("claude"), "claude CLI not on PATH")
+    @unittest.skipUnless(_claude_can_validate(),
+                         "claude CLI cannot run `claude plugin validate`")
     def test_claude_plugin_validate_accepts_the_unpacked_archive(self):
         with tempfile.TemporaryDirectory() as tmp:
             with zipfile.ZipFile(self.path) as zf:

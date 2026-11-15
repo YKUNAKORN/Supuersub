@@ -18,11 +18,14 @@ Run:  python -m unittest discover tests
 from __future__ import annotations
 
 import copy
+import importlib.util
 import json
 import subprocess
 import sys
 import tempfile
+import types
 import unittest
+from unittest import mock
 from pathlib import Path
 
 import yaml
@@ -235,6 +238,47 @@ class TestCases(unittest.TestCase):
         covered = set().union(*(c[2] for c in CASES.values())) | {"unverified-step",
                                                                    "name-duplicate"}
         self.assertEqual(documented - covered, set())
+
+
+class OldJsonschemaTests(unittest.TestCase):
+    """jsonschema older than 4.0 has no Draft202012Validator; the linter must not crash."""
+
+    def load(self):
+        spec = importlib.util.spec_from_file_location("flow_lint", LINTER)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+
+    def test_falls_back_to_draft7_when_2020_12_is_missing(self):
+        try:
+            import jsonschema
+        except ImportError:
+            self.skipTest("jsonschema not installed")
+        mod = self.load()
+        # A jsonschema 3.x look-alike: Draft 7 exists, Draft202012Validator does not.
+        old = types.SimpleNamespace(Draft7Validator=jsonschema.Draft7Validator)
+        with mock.patch.dict(sys.modules, {"jsonschema": old}):
+            linter = mod.Linter()
+        self.assertIsInstance(linter.validator, jsonschema.Draft7Validator)
+        self.assertEqual(linter.degraded, [])  # no 2020-12-only keyword in the bundled schema
+        self.assertEqual(list(linter.validator.iter_errors(BASE)), [])
+        self.assertTrue(list(linter.validator.iter_errors({})))
+
+    def test_2020_12_only_keyword_is_reported_on_draft7(self):
+        try:
+            import jsonschema
+        except ImportError:
+            self.skipTest("jsonschema not installed")
+        validator, note = self.load().make_validator(
+            types.SimpleNamespace(Draft7Validator=jsonschema.Draft7Validator),
+            {"unevaluatedProperties": False})
+        self.assertIsNotNone(validator)
+        self.assertIn("unevaluatedProperties", note)
+
+    def test_no_validator_class_degrades_like_a_missing_package(self):
+        validator, note = self.load().make_validator(types.SimpleNamespace(), {})
+        self.assertIsNone(validator)
+        self.assertIn("too old", note)
 
 
 class TestRealCatalog(unittest.TestCase):

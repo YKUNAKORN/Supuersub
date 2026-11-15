@@ -199,6 +199,45 @@ def is_empty(value) -> bool:
     return value is None or value == "" or value == []
 
 
+# Keywords that exist only in JSON Schema 2020-12. The bundled schema uses none of
+# them, so Draft 7 validates it the same way; this list guards a future schema edit.
+_DRAFT_2020_ONLY = {"prefixItems", "unevaluatedProperties", "unevaluatedItems",
+                    "dependentRequired", "dependentSchemas", "$dynamicRef",
+                    "$dynamicAnchor", "minContains", "maxContains"}
+
+
+def _keys(node):
+    if isinstance(node, dict):
+        for k, v in node.items():
+            yield k
+            yield from _keys(v)
+    elif isinstance(node, list):
+        for v in node:
+            yield from _keys(v)
+
+
+def make_validator(jsonschema, schema):
+    """Pick the newest validator this jsonschema offers: 2020-12, else Draft 7.
+
+    Returns (validator or None, note or None). A note means the schema layer is reduced
+    (the run is then UNPROVEN); None for the validator means no usable class at all.
+    """
+    cls = getattr(jsonschema, "Draft202012Validator", None)
+    if cls is not None:
+        return cls(schema), None
+    cls = getattr(jsonschema, "Draft7Validator", None)
+    if cls is None:
+        return None, ("this jsonschema is too old to validate the schema (needs 3.0 or "
+                      "newer), so the schema layer ran a reduced check. Install it with: "
+                      "pip install -U jsonschema")
+    used = sorted(set(_keys(schema)) & _DRAFT_2020_ONLY)
+    if used:
+        return cls(schema), ("this jsonschema predates Draft 2020-12 and the schema uses "
+                             f"{used}; those rules were not checked. Install it with: "
+                             "pip install -U jsonschema")
+    return cls(schema), None
+
+
 # --------------------------------------------------------------------------- linting
 
 
@@ -214,7 +253,9 @@ class Linter:
         try:
             import jsonschema  # type: ignore
             schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
-            self.validator = jsonschema.Draft202012Validator(schema)
+            self.validator, note = make_validator(jsonschema, schema)
+            if note:
+                self.degraded = note[0].upper() + note[1:]
         except ImportError:
             self.degraded = ("jsonschema is not installed, so the schema layer ran a reduced "
                              "check. Install it with: pip install jsonschema")

@@ -22,6 +22,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import privacy_check  # noqa: E402
 import skill_checks  # noqa: E402  (needs the sys.path line above)
 
 SKILL_DIR = ROOT / "skills" / "create-app"
@@ -818,8 +819,8 @@ for rel in ("references/import-behavior.md", "references/column-types.md",
             "assets/example/Holidays.list.json", "scripts/list_lint.py",
             "scripts/build_list.py"):
     check((CL_DIR / rel).is_file(), f"skills/create-list/{rel} present")
-check((ROOT / "tests" / "fixtures" / "lists" / "9AM_Holidays.xlsx").is_file(),
-      "tests/fixtures/lists/9AM_Holidays.xlsx present",
+check((ROOT / "tests" / "fixtures" / "lists" / "reference-holidays.xlsx").is_file(),
+      "tests/fixtures/lists/reference-holidays.xlsx present",
       "the owner's reference workbook the build is compared with")
 cl_skill = CL_DIR / "SKILL.md"
 if cl_skill.is_file():
@@ -1143,6 +1144,17 @@ if plugin:
               "[Unreleased]",
               f"no [{version}] section, and either [Unreleased] is missing or "
               f"{version} is not newer than {released[:1]}")
+
+print("Privacy guard (see CONTRIBUTING.md)")
+_term_hits, _shape_hits = privacy_check.run(ROOT)
+if privacy_check.load_terms(ROOT) is None:
+    check(True, privacy_check.SKIP_MESSAGE)
+else:
+    check(not _term_hits, "no private term in any tracked file or file name",
+          "; ".join(_term_hits[:10]))
+check(not _shape_hits,
+      "no stray e-mail address, tenant host or home path in any tracked file",
+      "; ".join(_shape_hits[:10]))
 
 print("Internal Markdown links resolve")
 md_files = [p for p in ROOT.rglob("*.md") if ".git" not in p.parts]

@@ -147,7 +147,7 @@ class ContentTests(unittest.TestCase):
 
     def test_data_sources_with_their_type(self):
         self.assertIn("Requests[Table]", self.out)
-        self.assertIn("GenerateDocument[Actions]", self.out)
+        self.assertIn("CreatePdf[Actions]", self.out)
 
     def test_component_definitions_are_listed(self):
         self.assertIn("cmpPageHeader", self.out)

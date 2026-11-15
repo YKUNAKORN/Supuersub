@@ -65,7 +65,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =24
                   Size: =14
-                  Text: ="Onboarding Form.docx"
+                  Text: ="Welcome Letter.docx"
                   Width: =886
                   X: =88
                   Y: =18
@@ -150,7 +150,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =24
                   Size: =14
-                  Text: ="Onboarding Form (EN).docx"
+                  Text: ="Project Brief.docx"
                   Width: =886
                   X: =88
                   Y: =18
@@ -235,7 +235,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =24
                   Size: =14
-                  Text: ="Change Request.pdf"
+                  Text: ="Meeting Notes.pdf"
                   Width: =886
                   X: =88
                   Y: =18
@@ -320,7 +320,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =24
                   Size: =14
-                  Text: ="Cancellation Form.pdf"
+                  Text: ="Travel Request.pdf"
                   Width: =886
                   X: =88
                   Y: =18
@@ -405,7 +405,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =24
                   Size: =14
-                  Text: ="Sign-up Form.pdf"
+                  Text: ="Expense Summary.pdf"
                   Width: =886
                   X: =88
                   Y: =18
@@ -490,7 +490,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =24
                   Size: =14
-                  Text: ="Transfer Form.pdf"
+                  Text: ="Leave Form.pdf"
                   Width: =886
                   X: =88
                   Y: =18
@@ -575,7 +575,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =24
                   Size: =14
-                  Text: ="Tax Declaration.pdf"
+                  Text: ="Equipment Request.pdf"
                   Width: =886
                   X: =88
                   Y: =18
@@ -660,7 +660,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =24
                   Size: =14
-                  Text: ="Signature Card.docx"
+                  Text: ="Training Plan.docx"
                   Width: =886
                   X: =88
                   Y: =18
@@ -745,7 +745,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =24
                   Size: =14
-                  Text: ="Update Details (EN).docx"
+                  Text: ="Style Guide.docx"
                   Width: =886
                   X: =88
                   Y: =18
@@ -830,7 +830,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =24
                   Size: =14
-                  Text: ="Update Details.docx"
+                  Text: ="Budget Outline.docx"
                   Width: =886
                   X: =88
                   Y: =18
@@ -915,7 +915,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =24
                   Size: =14
-                  Text: ="Risk Disclosure (EN).docx"
+                  Text: ="Contact Sheet.docx"
                   Width: =886
                   X: =88
                   Y: =18
@@ -1000,7 +1000,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =24
                   Size: =14
-                  Text: ="Risk Disclosure.docx"
+                  Text: ="Status Report.docx"
                   Width: =886
                   X: =88
                   Y: =18
@@ -1085,7 +1085,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =24
                   Size: =14
-                  Text: ="Trading Agreement.docx"
+                  Text: ="Supplier List.docx"
                   Width: =886
                   X: =88
                   Y: =18
@@ -1170,7 +1170,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =24
                   Size: =14
-                  Text: ="Consent Form.docx"
+                  Text: ="Room Booking.docx"
                   Width: =886
                   X: =88
                   Y: =18
@@ -1255,7 +1255,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =24
                   Size: =14
-                  Text: ="Terms of Service.docx"
+                  Text: ="Asset Register.docx"
                   Width: =886
                   X: =88
                   Y: =18
@@ -1340,7 +1340,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =24
                   Size: =14
-                  Text: ="Privacy Notice.docx"
+                  Text: ="Feedback Form.docx"
                   Width: =886
                   X: =88
                   Y: =18
@@ -1425,7 +1425,7 @@ Screens:
                   FontWeight: =FontWeight.Bold
                   Height: =24
                   Size: =14
-                  Text: ="Eligibility Confirmation.docx"
+                  Text: ="Handover Checklist.docx"
                   Width: =886
                   X: =88
                   Y: =18

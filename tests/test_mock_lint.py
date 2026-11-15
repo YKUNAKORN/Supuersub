@@ -159,8 +159,10 @@ class TestSitemapSchema(unittest.TestCase):
             import jsonschema  # type: ignore
         except ImportError:  # pragma: no cover - optional dependency
             self.skipTest("jsonschema not installed (pip install jsonschema)")
-        jsonschema.Draft202012Validator.check_schema(self.schema)
-        validator = jsonschema.Draft202012Validator(self.schema)
+        # jsonschema older than 4.0 has no 2020-12 class; the schema also validates as Draft 7.
+        cls = getattr(jsonschema, "Draft202012Validator", None) or jsonschema.Draft7Validator
+        cls.check_schema(self.schema)
+        validator = cls(self.schema)
         good = json.loads((EXAMPLE / "sitemap.json").read_text(encoding="utf-8"))
         bad_docs = []
         for mutate in (

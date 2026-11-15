@@ -42,7 +42,7 @@ V = jsonschema.Draft7Validator(schema)
 for name, doc in {
     "Table, no Parameters":  {"DataSources": {"Requests": {"Type": "Table"}}},
     "Table + TableLogicalName": {"DataSources": {"Requests": {"Type": "Table", "Parameters": {"TableLogicalName": "Requests"}}}},
-    "Actions": {"DataSources": {"GenerateDocument": {"Type": "Actions"}}},
+    "Actions": {"DataSources": {"CreatePdf": {"Type": "Actions"}}},
     "Table + ConnectorId": {"DataSources": {"Requests": {"Type": "Table", "ConnectorId": "/providers/x"}}},
     "Type: SharePoint": {"DataSources": {"Requests": {"Type": "SharePoint"}}},
 }.items():
@@ -88,7 +88,7 @@ DataSources:
     Type: Table
   ArchiveRequests:
     Type: Table
-  GenerateDocument:
+  CreatePdf:
     Type: Actions
 Screens:
   ScrRequests:
@@ -315,7 +315,7 @@ above and is the one connector-ish thing the published schema does model. Callin
 
 ```text
 UNVERIFIED  run a flow and keep what it returns
-    OnSelect: =Set(varDocUrl, GenerateDocument.Run(varNewRequest.ID, varUserEmail))
+    OnSelect: =Set(varDocUrl, CreatePdf.Run(varNewRequest.ID, varUserEmail))
 
 UNVERIFIED  ... then open the document
     OnSelect: =Launch(varDocUrl)

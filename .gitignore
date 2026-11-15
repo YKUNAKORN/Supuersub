@@ -37,5 +37,7 @@ dev-prompts/
 /build/
 
 # Secrets and local environment
+# Local list of terms that must never appear in the repo (scripts/privacy_check.py)
+.private-terms.txt
 .env
 .env.*

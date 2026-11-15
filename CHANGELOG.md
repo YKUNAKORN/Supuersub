@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (phase 08)
+
+- `scripts/privacy_check.py`, run by `scripts/validate.py`: fails on e-mail addresses
+  outside `example.com`, `example.org` and `contoso.*`, tenant hosts other than
+  `contoso`, and absolute home paths; and, when a local untracked `.private-terms.txt`
+  exists, on any listed term in a tracked file or file name (reporting file and line,
+  never the term). Documented in `CONTRIBUTING.md`; tests in `tests/test_privacy_check.py`.
+
+### Changed (phase 08)
+
+- The reference workbook is now `tests/fixtures/lists/reference-holidays.xlsx`.
+- The seventeen document titles in `example-card-grid.yaml`, the `tile-grid-cell` pattern,
+  the `layout-mapping.md` samples and the card-grid eval mockup are neutral office
+  documents. No line counts changed.
+- The sample action data source in the data-binding reference, the ten-screen test app and its inventory test is now named `CreatePdf`.
+
+### Fixed (phase 08)
+
+- `list_lint.py` and `flow_lint.py` no longer crash on `jsonschema` older than 4.0: they
+  use `Draft202012Validator` when present, else `Draft7Validator` (the bundled schemas use
+  no 2020-12-only keyword; if one is added, the run reports UNPROVEN). `pa_lint.py` treats
+  a `jsonschema` older than 3.0 as missing.
+- `tests/test_package_plugin.py` skips the `claude plugin validate` test when that
+  subcommand cannot run, not only when `claude` is absent.
+
 ## [2.0.0] - 2026-11-15
 
 One skill became a plugin of five. `power-app-yaml` converted a mockup into Power Apps
@@ -190,7 +215,7 @@ The phase entries below give the detail. The migration note is at the end of pha
   offered types, and questions P3–P8 (Title, empty table, Thai in CSV with and without
   the mark, choices, internal names).
 - **Example** `assets/example/Holidays.list.json`, which builds to the owner's reference
-  workbook shape; the reference is kept as `tests/fixtures/lists/9AM_Holidays.xlsx`.
+  workbook shape; the reference is kept as `tests/fixtures/lists/reference-holidays.xlsx`.
 - Tests: `tests/test_list_lint.py` (28 fixture cases over a two-list base, every check id
   covered, plus the real evidence table) and `tests/test_build_list.py` (structural
   comparison with the reference, determinism, CSV, refusal, missing `openpyxl`).

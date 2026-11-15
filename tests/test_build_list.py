@@ -2,7 +2,7 @@
 """Tests for skills/create-list/scripts/build_list.py.
 
 The central test builds assets/example/Holidays.list.json and compares the workbook
-structurally with tests/fixtures/lists/9AM_Holidays.xlsx, the owner's reference: sheet
+structurally with tests/fixtures/lists/reference-holidays.xlsx, the owner's reference: sheet
 names, table name, range, style and columns, the frozen pane, the Python type and number
 format of the date cells, and the Setup header row. Bytes are never compared with the
 reference (a different writer produced it); they are compared between two builds of the
@@ -31,7 +31,7 @@ SKILL = ROOT / "skills" / "create-list"
 BUILD = SKILL / "scripts" / "build_list.py"
 EXAMPLE = SKILL / "assets" / "example" / "Holidays.list.json"
 PROBE = SKILL / "assets" / "type-probe.list.json"
-REFERENCE = Path(__file__).resolve().parent / "fixtures" / "lists" / "9AM_Holidays.xlsx"
+REFERENCE = Path(__file__).resolve().parent / "fixtures" / "lists" / "reference-holidays.xlsx"
 LINT_BASE = Path(__file__).resolve().parent / "fixtures" / "lists" / "lint" / "base"
 
 try:

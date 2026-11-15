@@ -170,7 +170,7 @@ section settles them in one sitting with the **type probe**: one column per cand
 import type, four sample rows, Thai text in `ProbeThai`.
 
 Not yet recorded either: whether the owner's reference workbook
-(`tests/fixtures/lists/9AM_Holidays.xlsx`) imported as intended. If it did, say so with
+(`tests/fixtures/lists/reference-holidays.xlsx`) imported as intended. If it did, say so with
 the date, and `offer-datetime` and `offer-text` can move to `import-tested` from that
 alone.
 

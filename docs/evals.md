@@ -362,7 +362,7 @@ compare with the `DESIGN.md`. Release test plan item `U1`.
 | What | Where |
 |---|---|
 | Every check id fires on its fixture (28 cases over a two-list base) | `tests/test_list_lint.py` |
-| The example builds to the shape of the owner's reference workbook | `tests/test_build_list.py`, `tests/fixtures/lists/9AM_Holidays.xlsx` |
+| The example builds to the shape of the owner's reference workbook | `tests/test_build_list.py`, `tests/fixtures/lists/reference-holidays.xlsx` |
 | Same spec, same bytes; CSV with and without the byte-order mark; refusal on errors | `tests/test_build_list.py` |
 | The evidence table and the schema enums agree with the type table | `scripts/validate.py` |
 

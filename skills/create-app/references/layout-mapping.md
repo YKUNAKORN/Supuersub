@@ -450,7 +450,7 @@ the right edge.
   <div class="mt-6 grid grid-cols-3 gap-6">
     <!-- x6 -->
     <div class="h-[180px] rounded-lg border p-6 bg-white">
-      <h3 class="text-lg font-semibold">Onboarding Form</h3>
+      <h3 class="text-lg font-semibold">Welcome Letter</h3>
       <p class="text-sm mt-2 text-slate-500">Word document</p>
     </div>
   </div>
@@ -594,7 +594,7 @@ Screens:
             - lblCard1Title:
                 Control: Label@2.5.1
                 Properties:
-                  Text: ="Onboarding Form"
+                  Text: ="Welcome Letter"
                   Color: =RGBA(24, 28, 35, 1)
                   Font: =Font.'Segoe UI'
                   FontWeight: =FontWeight.Bold
