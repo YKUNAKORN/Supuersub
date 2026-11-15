@@ -199,7 +199,7 @@ def check_plugin_layout(root: Path) -> list[Result]:
 # --- Cross-skill consistency (phase 07) ---------------------------------------------
 # The hand-off contract (shared/handoff.md) fixes one folder per skill under supersub/.
 LAYOUT_FOLDERS = ("mockup", "app", "lists", "flows")
-_LAYOUT_RE = re.compile(r"(?<![\w-])supersub/([A-Za-z0-9_.-]+)")
+_LAYOUT_RE = re.compile(r"(?<![\w/-])supersub/([A-Za-z0-9_.-]+)")
 _NOT_FOR_RE = re.compile(r"\b(not for|does not)\b", re.I)
 _HANDOFF_HEADING_RE = re.compile(r"^## Hand-off\b.*$", re.M)
 

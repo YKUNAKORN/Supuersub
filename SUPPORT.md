@@ -7,10 +7,10 @@ commercial support.
 
 | I want to… | Go to |
 |---|---|
-| Report that a generated `.pa.yaml` failed to paste | [Bug report issue](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=bug_report.yml) |
-| Report a control/property that Studio accepts or rejects | [Control test report issue](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=control-report.yml) |
-| Suggest a workflow change or a new example screen | [Feature request issue](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=feature_request.yml) |
-| Ask a general "how do I…" question | [GitHub Discussions](https://github.com/YKUNAKORN/power-app-yaml/discussions) |
+| Report that a generated `.pa.yaml` failed to paste | [Bug report issue](https://github.com/YKUNAKORN/supersub/issues/new?template=bug_report.yml) |
+| Report a control/property that Studio accepts or rejects | [Control test report issue](https://github.com/YKUNAKORN/supersub/issues/new?template=control-report.yml) |
+| Suggest a workflow change or a new example screen | [Feature request issue](https://github.com/YKUNAKORN/supersub/issues/new?template=feature_request.yml) |
+| Ask a general "how do I…" question | [GitHub Discussions](https://github.com/YKUNAKORN/supersub/discussions) |
 
 Before filing, please **search existing issues** — paste failures often share a
 root cause that is already documented.

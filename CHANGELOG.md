@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (phase 09)
+
+- `scripts/validate.py` fails if any tracked file other than the history entries of
+  `CHANGELOG.md` (the `1.0.0` section and older, and its link references, plus the one
+  line that records the move) still names the old repository slug.
+
 ### Added (phase 08)
 
 - `scripts/privacy_check.py`, run by `scripts/validate.py`: fails on e-mail addresses
@@ -33,6 +39,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   subcommand cannot run, not only when `claude` is absent.
 
 ## [2.0.0] - 2026-11-15
+
+- The repository moved from `YKUNAKORN/power-app-yaml` to `YKUNAKORN/supersub`. GitHub
+  redirects the old URL, but anyone who added the old marketplace should remove it and
+  add `YKUNAKORN/supersub`, because the marketplace and plugin names changed in 2.0.0
+  anyway. Every URL and install command in the repository now uses the new name.
 
 One skill became a plugin of five. `power-app-yaml` converted a mockup into Power Apps
 Canvas YAML; `supersub` takes a Power Platform app from a design system to mockups,
@@ -439,8 +450,7 @@ the same table as in 1.0.0.
 - The CHANGELOG check accepts a version that is newer than every released section and
   whose entries are still under `[Unreleased]`.
 - README, CONTRIBUTING, docs, issue template, `LICENSE`, `NOTICE` and `SECURITY.md`:
-  names, paths and install commands updated. GitHub URLs are unchanged until the
-  repository itself is renamed.
+  names, paths and install commands updated.
 - `.gitignore`: ignores the owner's `dev-prompts/`, local Claude Code state, the
   validator's scratch directories, root-level plugin packages (`*.zip`, `*.plugin`,
   `dist/`), tool caches and `.env` files.
@@ -451,7 +461,7 @@ In Claude Code:
 ```bash
 /plugin uninstall power-app-yaml@power-app-yaml
 /plugin marketplace remove power-app-yaml
-/plugin marketplace add YKUNAKORN/power-app-yaml
+/plugin marketplace add YKUNAKORN/supersub
 /plugin install supersub@supersub
 ```
 
@@ -478,7 +488,7 @@ calls `skills/create-app/scripts/pa_lint.py`.
   connection reference stays `unverified`.
 - **Multi-screen paste** (M1-M4) and the twelve one-control paste tests are untested in
   Studio.
-- GitHub URLs still point at `YKUNAKORN/power-app-yaml` until the repository is renamed
+- GitHub URLs still point at `YKUNAKORN/supersub` until the repository is renamed
   (decision D2).
 
 ## [1.0.0] - 2026-09-11
@@ -965,7 +975,7 @@ hardest part of the job — turning HTML/CSS into absolute X/Y.
   `SUPPORT`, GitHub issue/PR templates.
 - CI: `scripts/validate.py` and `.github/workflows/validate.yml`.
 
-[Unreleased]: https://github.com/YKUNAKORN/power-app-yaml/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/YKUNAKORN/supersub/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/YKUNAKORN/power-app-yaml/compare/v0.5.0...v1.0.0
 [0.5.0]: https://github.com/YKUNAKORN/power-app-yaml/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/YKUNAKORN/power-app-yaml/compare/v0.3.0...v0.4.0

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/YKUNAKORN/power-app-yaml/skills/create-list/assets/list.schema.json",
+  "$id": "https://github.com/YKUNAKORN/supersub/skills/create-list/assets/list.schema.json",
   "title": "create-list spec: one SharePoint list (<ListName>.list.json)",
   "description": "Written by the model, checked by scripts/list_lint.py, turned into an import file by scripts/build_list.py. Type names come from references/column-types.md.",
   "type": "object",

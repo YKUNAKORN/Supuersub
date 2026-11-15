@@ -355,7 +355,7 @@ paste test — see the next section.
 A harvest is worth more to everyone else than to you. Two ways to share it:
 
 **1. Open a Control test report issue.** Use the
-[Control test report](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=control-report.yml)
+[Control test report](https://github.com/YKUNAKORN/supersub/issues/new?template=control-report.yml)
 template. Map the harvest onto its fields:
 
 | Template field | From your harvest |

@@ -127,7 +127,7 @@ Everything in `skills/create-app/references/confirmed-controls.md` was confirmed
 specific version of Power Apps Studio. Studio pins control versions, so a newer Studio may emit
 different version numbers (it will warn and auto-substitute). **When your own Studio confirms or
 corrects something, update your copy of the catalog** — and, ideally,
-[report it](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=control-report.yml) so
+[report it](https://github.com/YKUNAKORN/supersub/issues/new?template=control-report.yml) so
 everyone benefits. Anything not in the catalog is treated as unverified by design.
 
 **Grow the catalog from a real export.** If you can download your app's source — `pac canvas
@@ -268,6 +268,6 @@ version warnings (`PA2105`, `PA2106`) — see [troubleshooting](troubleshooting.
 
 If a Studio test confirms a control the catalog did not have, record it in your
 own `controls.yaml` and `confirmed-controls.md`, and please
-[report it](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=control-report.yml)
+[report it](https://github.com/YKUNAKORN/supersub/issues/new?template=control-report.yml)
 so the next person benefits. Results for the twelve bundled test snippets go in
 [`test-plan.md`](test-plan.md).

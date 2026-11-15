@@ -11,7 +11,7 @@ The linter is an approximation of Studio, built from the bundled v3.0 schema and
 this repo's catalog of paste-tested controls. A clean verdict makes a clean paste
 likely, not certain. Where they disagree, **Studio is right** — and that
 disagreement is worth
-[reporting](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=control-report.yml),
+[reporting](https://github.com/YKUNAKORN/supersub/issues/new?template=control-report.yml),
 because it is how the catalog improves.
 
 ## Table of contents
@@ -87,7 +87,7 @@ better than "unknown control" — and never evidence.
 | `PA2106` | Warning — non-blocking | Control version is newer than the one Studio ships | Ignore, or lower the `@x.y.z`. Studio auto-substitutes. |
 
 If you see a code not listed here, treat it as blocking until proven otherwise
-and [open an issue](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=control-report.yml).
+and [open an issue](https://github.com/YKUNAKORN/supersub/issues/new?template=control-report.yml).
 
 ## Common paste failures
 
@@ -172,7 +172,7 @@ property to fake it, that is a bug worth reporting — it is exactly what the
 
 ## Still stuck?
 
-Open a [bug report](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=bug_report.yml)
+Open a [bug report](https://github.com/YKUNAKORN/supersub/issues/new?template=bug_report.yml)
 with the `.pa.yaml`, the exact Studio message, and your Studio version
 (Studio → `?` → About). The linter's `--json` output is useful to attach:
 

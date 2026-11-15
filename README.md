@@ -1,6 +1,6 @@
 # supersub
 
-[![validate](https://github.com/YKUNAKORN/power-app-yaml/actions/workflows/validate.yml/badge.svg)](https://github.com/YKUNAKORN/power-app-yaml/actions/workflows/validate.yml)
+[![validate](https://github.com/YKUNAKORN/supersub/actions/workflows/validate.yml/badge.svg)](https://github.com/YKUNAKORN/supersub/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **supersub** is a Claude plugin of five skills that take a Power Platform app from a
@@ -98,14 +98,14 @@ Which skill answers which request: [`docs/trigger-matrix.md`](docs/trigger-matri
 Full steps for both surfaces: [`docs/quickstart.md`](docs/quickstart.md).
 
 **Claude chat and Cowork.** Customize > Plugins > Add, then either **Add marketplace**
-with `YKUNAKORN/power-app-yaml`, or **Upload plugin** with `dist/supersub.zip` built by
+with `YKUNAKORN/supersub`, or **Upload plugin** with `dist/supersub.zip` built by
 `python scripts/package_plugin.py`. Type `/` and pick `supersub:<skill>`, or just describe
 the task.
 
 **Claude Code.**
 
 ```bash
-/plugin marketplace add YKUNAKORN/power-app-yaml
+/plugin marketplace add YKUNAKORN/supersub
 /plugin install supersub@supersub
 ```
 

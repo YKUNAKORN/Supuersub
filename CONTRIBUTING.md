@@ -9,11 +9,11 @@ its catalog matches what those tools actually accept.
 
 | You have… | Do this |
 |---|---|
-| A control/property that Studio **accepted** or **rejected**, and the catalog is wrong or silent about it | Open a [Control test report](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=control-report.yml) issue, then (optionally) a PR editing `skills/create-app/references/confirmed-controls.md` |
-| A `.pa.yaml` the skill produced that failed to paste | Open a [Bug report](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=bug_report.yml) with the file and the exact Studio error |
-| A SharePoint import of a file `create-list` built (worked or not) | Open a [List import report](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=list-import-report.yml) |
-| A Power Automate import of a package `create-flow` built (worked or not) | Open a [Flow import report](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=flow-import-report.yml) |
-| An idea for the workflow, templates, or a new example screen | Open a [Feature request](https://github.com/YKUNAKORN/power-app-yaml/issues/new?template=feature_request.yml) |
+| A control/property that Studio **accepted** or **rejected**, and the catalog is wrong or silent about it | Open a [Control test report](https://github.com/YKUNAKORN/supersub/issues/new?template=control-report.yml) issue, then (optionally) a PR editing `skills/create-app/references/confirmed-controls.md` |
+| A `.pa.yaml` the skill produced that failed to paste | Open a [Bug report](https://github.com/YKUNAKORN/supersub/issues/new?template=bug_report.yml) with the file and the exact Studio error |
+| A SharePoint import of a file `create-list` built (worked or not) | Open a [List import report](https://github.com/YKUNAKORN/supersub/issues/new?template=list-import-report.yml) |
+| A Power Automate import of a package `create-flow` built (worked or not) | Open a [Flow import report](https://github.com/YKUNAKORN/supersub/issues/new?template=flow-import-report.yml) |
+| An idea for the workflow, templates, or a new example screen | Open a [Feature request](https://github.com/YKUNAKORN/supersub/issues/new?template=feature_request.yml) |
 
 ## Reporting a control test result
 

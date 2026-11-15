@@ -39,7 +39,7 @@ python scripts/package_plugin.py
 
 | Done | ID | Check | Settles | Result | Date |
 |---|---|---|---|---|---|
-| [ ] | K1 | `/plugin marketplace add YKUNAKORN/power-app-yaml` succeeds. | | | |
+| [ ] | K1 | `/plugin marketplace add YKUNAKORN/supersub` succeeds. | | | |
 | [ ] | K2 | `/plugin install supersub@supersub` succeeds. If `power-app-yaml@power-app-yaml` was installed before, follow the migration note in `CHANGELOG.md` first and record whether the `renames` entry did anything. | the rename migration | | |
 | [ ] | K3 | In a project folder, run each of `/supersub:design-md`, `/supersub:mock-ui`, `/supersub:create-app`, `/supersub:create-list`, `/supersub:create-flow` once. Each finds its scripts (`${CLAUDE_SKILL_DIR}` resolved) and writes under `supersub/`. | `${CLAUDE_SKILL_DIR}` substitution in an installed plugin | | |
 
@@ -127,30 +127,11 @@ published.
 2. **Sections 1 to 7 above.** At least C1–C9 and K1–K3 before the tag; record every
    `fail` as a known issue in the 2.0.0 entry of [`CHANGELOG.md`](../CHANGELOG.md).
 3. **Set the release date** in `## [2.0.0] - 2026-11-15` if it is not today.
-4. **Decision D2, the repository rename.** Decide whether the repository becomes
-   `YKUNAKORN/supersub`. If it does, rename it on GitHub (GitHub redirects the old URL),
-   then replace `YKUNAKORN/power-app-yaml` in one pass. Occurrences at the time of
-   writing:
-
-   | File | Count | Note |
-   |---|---|---|
-   | `.claude-plugin/plugin.json` | 2 | `homepage`, `repository` |
-   | `.github/ISSUE_TEMPLATE/config.yml` | 1 | Discussions link |
-   | `CHANGELOG.md` | 9 | the 2.0.0 known issue and migration commands; keep released entries as they were |
-   | `CODE_OF_CONDUCT.md` | 1 | |
-   | `CONTRIBUTING.md` | 5 | issue-template links |
-   | `README.md` | 3 | badge (2), install |
-   | `SECURITY.md` | 1 | |
-   | `SUPPORT.md` | 4 | |
-   | `docs/create-app.md` | 2 | report link, issue template |
-   | `docs/quickstart.md` | 2 | marketplace add (chat, Claude Code) |
-   | `docs/release-test-plan.md` | 1 | K1 |
-   | `docs/troubleshooting.md` | 3 | |
-   | `skills/create-app/references/harvesting.md` | 1 | ships in the plugin |
-   | `skills/create-list/assets/list.schema.json` | 1 | ships in the plugin (`$id`) |
-
-   Re-count before editing: `grep -rIc "YKUNAKORN/power-app-yaml" --exclude-dir=.git .`.
-   The marketplace and plugin names (`supersub`) do not change.
+4. **Repository rename (decision D2), done in phase 09.** The repository is
+   `YKUNAKORN/supersub`; GitHub redirects the old URL, and `origin` and every tracked
+   file now point at the new one. `scripts/validate.py` fails if the old slug reappears
+   outside the history entries of `CHANGELOG.md`. The marketplace and plugin names
+   (`supersub`) did not change.
 5. **Merge** `feat/new-skills` into `main` through a pull request, so CI runs.
 6. **Tag and release**: `git tag -a v2.0.0 -m "supersub 2.0.0"`, push the tag, and
    create a GitHub release with the 2.0.0 entry of the CHANGELOG as notes and

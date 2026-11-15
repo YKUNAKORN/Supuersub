@@ -18,7 +18,7 @@ concerns are:
 **Do not open a public issue for security problems.**
 
 Report privately via GitHub:
-[**Report a vulnerability**](https://github.com/YKUNAKORN/power-app-yaml/security/advisories/new)
+[**Report a vulnerability**](https://github.com/YKUNAKORN/supersub/security/advisories/new)
 
 Please include what you found, the file/line, and (if relevant) a minimal
 reproduction. You can expect an initial response within **7 days**. Once a fix is

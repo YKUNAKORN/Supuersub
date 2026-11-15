@@ -1145,6 +1145,27 @@ if plugin:
               f"no [{version}] section, and either [Unreleased] is missing or "
               f"{version} is not newer than {released[:1]}")
 
+print("Repository name (phase 09)")
+_OLD_SLUG = "YKUNAKORN/power-app-yaml"
+_slug_hits = []
+for _rel in subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True,
+                           text=True).stdout.splitlines():
+    if _rel == "scripts/validate.py":
+        continue
+    try:
+        _lines = (ROOT / _rel).read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeDecodeError):
+        continue
+    _history = False  # CHANGELOG.md: the 1.0.0 section and below describe history
+    for _n, _line in enumerate(_lines, 1):
+        if _rel == "CHANGELOG.md" and _line.startswith("## [1.0.0]"):
+            _history = True
+        _move_note = (_rel == "CHANGELOG.md" and "YKUNAKORN/supersub" in _line)
+        if _OLD_SLUG in _line and not _history and not _move_note:
+            _slug_hits.append(f"{_rel}:{_n}")
+check(not _slug_hits, f"no tracked file names {_OLD_SLUG} outside CHANGELOG history",
+      "; ".join(_slug_hits[:10]))
+
 print("Privacy guard (see CONTRIBUTING.md)")
 _term_hits, _shape_hits = privacy_check.run(ROOT)
 if privacy_check.load_terms(ROOT) is None:

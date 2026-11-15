@@ -23,7 +23,7 @@ code-execution sandbox, so code execution must be enabled for your account.
 **From the marketplace (recommended).**
 
 1. Customize > Plugins > **Add** > **Add marketplace**.
-2. Enter `YKUNAKORN/power-app-yaml` (or the full GitHub URL).
+2. Enter `YKUNAKORN/supersub` (or the full GitHub URL).
 3. Install **supersub** from that marketplace.
 
 **From a file.**
@@ -48,7 +48,7 @@ conversation.
 ## Install in Claude Code
 
 ```bash
-/plugin marketplace add YKUNAKORN/power-app-yaml
+/plugin marketplace add YKUNAKORN/supersub
 /plugin install supersub@supersub
 ```
 

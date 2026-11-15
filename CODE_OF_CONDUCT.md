@@ -52,7 +52,7 @@ an individual is officially representing the community in public spaces.
 
 Instances of abusive, harassing, or otherwise unacceptable behaviour may be
 reported to the project maintainers responsible for enforcement via a
-[GitHub private security advisory](https://github.com/YKUNAKORN/power-app-yaml/security/advisories/new)
+[GitHub private security advisory](https://github.com/YKUNAKORN/supersub/security/advisories/new)
 or by opening a confidential issue. All complaints will be reviewed and
 investigated promptly and fairly.
 
