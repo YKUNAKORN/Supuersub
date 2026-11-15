@@ -1,0 +1,21 @@
+# App fixture 'clean', screen 1 of 2. Navigates to scrDetail (the other file).
+Screens:
+  scrHome:
+    Children:
+      - lblHomeTitle:
+          Control: Label@2.5.1
+          Properties:
+            Text: ="Home"
+            X: =40
+            Y: =40
+            Width: =400
+            Height: =32
+      - btnHomeOpen:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: ="Open"
+            OnSelect: =Navigate(scrDetail, ScreenTransition.None)
+            X: =40
+            Y: =100
+            Width: =200
+            Height: =40

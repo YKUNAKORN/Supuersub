@@ -143,6 +143,17 @@ nothing that needs the network, and under the `power-apps` target a fixed canvas
 effect the canvas cannot reproduce) and ends in a verdict. Ask for a "mockup", a
 "wireframe" or to "prototype the screens".
 
+Hand a `power-apps` mockup folder to `create-app` and it converts every screen: one
+`.pa.yaml` per screen under `supersub/app/`, `Navigate()` wired between them, control
+names unique across the app, and a `PASTE-ORDER.md`. Lint the set as one app:
+
+```bash
+python skills/create-app/scripts/pa_lint.py --app-dir supersub/app --sitemap supersub/mockup/sitemap.json
+```
+
+Whether a multi-screen paste works as `PASTE-ORDER.md` describes has not been tested in
+Studio yet; the open questions are in [`docs/test-plan.md`](docs/test-plan.md#multi-screen-paste).
+
 ## Repository layout
 
 ```
@@ -182,7 +193,7 @@ effect the canvas cannot reproduce) and ends in a verdict. Ask for a "mockup", a
 ├── tests/
 │   ├── fixtures/                     # linter fixtures with .expected.json sidecars
 │   ├── apps/ten-screen-app/          # synthetic 171-control app, for app_inventory.py
-│   ├── evals/                        # 5 eval cases: mockup.html + expectations.yaml + notes.md
+│   ├── evals/                        # 6 eval cases: mockup (file or mock-ui folder) + expectations.yaml + notes.md
 │   └── test_*.py                     # the unittest suite
 └── .github/                          # issue / PR templates, CI
 ```
@@ -289,11 +300,12 @@ The linter proves a file will paste. It cannot tell you whether the screen is th
 the mockup showed, and it cannot tell you whether an edit to `SKILL.md` helped or hurt.
 [`tests/evals/`](tests/evals/) and `scripts/run_eval.py` are the part that can.
 
-Five cases, each a small self-contained `mockup.html`, an `expectations.yaml` of
+Six cases, each a small self-contained mockup, an `expectations.yaml` of
 mechanically checkable assertions, and a `notes.md` saying what the case is meant to
 stress: **app shell**, **multi-section form**, **card grid**, **mixed shell + form**,
-and a deliberately hard one built entirely from effects listed under `impossible_css`
-— which has no right conversion, only a right disclosure.
+a deliberately hard one built entirely from effects listed under `impossible_css`
+— which has no right conversion, only a right disclosure — and **multi-screen-mock**,
+whose input is a three-screen `mock-ui` folder and whose output is one file per screen.
 
 ```bash
 python scripts/run_eval.py out.pa.yaml --case tests/evals/app-shell

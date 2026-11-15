@@ -57,11 +57,12 @@ SNIPPET_MIN = 12
 # app stops fitting on a page, it has stopped doing its job.
 INVENTORY_MAX_BYTES = 2048
 # Eval cases. Five archetypes, each covering a layout shape the others do not --
-# plus the hard one, which covers the honesty path rather than a layout at all.
-EVAL_CASES_MIN = 5
+# plus the hard one, which covers the honesty path rather than a layout at all --
+# and the mock-ui pipeline: a mockup folder in, one file per screen out.
+EVAL_CASES_MIN = 6
 REQUIRED_EVAL_CASES = {
     "app-shell", "multi-section-form", "card-grid",
-    "shell-with-form", "impossible-effects",
+    "shell-with-form", "impossible-effects", "multi-screen-mock",
 }
 # A case asserting one or two of these is not measuring enough to tell a good
 # conversion from a bad one.
@@ -588,24 +589,38 @@ check(len(case_dirs) >= EVAL_CASES_MIN,
       f"at least {EVAL_CASES_MIN} eval cases exist", f"found {len(case_dirs)}")
 missing_required = REQUIRED_EVAL_CASES - {d.name for d in case_dirs}
 check(not missing_required,
-      "the five archetypes all have a case",
+      "every required case (five archetypes + the mock-ui pipeline) exists",
       f"missing: {sorted(missing_required)}. Each one covers a layout shape the "
       "others do not, and the hard case covers the honesty path.")
 
 for case_dir in case_dirs:
     name = case_dir.name
-    for filename in ("mockup.html", "expectations.yaml", "notes.md"):
+    # The input is one mockup.html, or (for the mock-ui pipeline) a mockup folder
+    # with sitemap.json and one .html per screen, in the project layout.
+    mock_folder = case_dir / "supersub" / "mockup"
+    folder_case = (mock_folder / "sitemap.json").is_file()
+    required = ("expectations.yaml", "notes.md")
+    if not folder_case:
+        required = ("mockup.html",) + required
+    for filename in required:
         check((case_dir / filename).is_file(), f"{name}/{filename} present",
-              "a case is a mockup, its assertions, and a written reason to exist")
+              "a case is a mockup (mockup.html, or supersub/mockup/ with a "
+              "sitemap.json), its assertions, and a written reason to exist")
 
-    mockup = case_dir / "mockup.html"
-    if mockup.is_file():
+    inputs = ([case_dir / "mockup.html"] if not folder_case
+              else sorted(mock_folder.glob("*.html")))
+    if folder_case:
+        check(len(inputs) >= 2, f"{name}/supersub/mockup/ holds screen files",
+              "a mockup folder needs index.html and at least one screen file")
+    for mockup in inputs:
+        if not mockup.is_file():
+            continue
         html = mockup.read_text(encoding="utf-8")
         # A case that needs the network scores differently on a machine without it.
         external = re.search(r"""(?:src|href)\s*=\s*["'](?:https?:)?//""", html, re.I)
         imported = re.search(r"""@import\s+(?:url\()?['"]?(?:https?:)?//""", html, re.I)
         check(external is None and imported is None,
-              f"{name}/mockup.html is self-contained",
+              f"{name}/{mockup.relative_to(case_dir).as_posix()} is self-contained",
               "it pulls an external asset; a fixture that needs the network is not "
               "a fixture")
 

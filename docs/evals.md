@@ -14,7 +14,8 @@ important thing on this page.
 - [The loop, in three commands](#the-loop-in-three-commands)
 - [Reading the table](#reading-the-table)
 - [What a case asserts](#what-a-case-asserts)
-- [The five cases](#the-five-cases)
+- [The cases](#the-cases)
+- [A mockup folder: multi-screen-mock](#a-mockup-folder-multi-screen-mock)
 - [Comparing two runs](#comparing-two-runs)
 - [What the harness cannot see](#what-the-harness-cannot-see)
 - [Adding a case](#adding-a-case)
@@ -132,11 +133,14 @@ A few details worth knowing:
 - **`navigation.targets_resolve` accepts a commented placeholder**, per SKILL.md
   rule 7. A single-screen deliverable cannot contain the screen it navigates to;
   what it can do is say so on the line.
+- **`navigation.sitemap` names a `mock-ui` sitemap.json**, relative to the case.
+  Its screen ids count as existing `Navigate()` targets, for the navigation row and
+  for the lint verdict alike, because they are the other files of the same app.
 - **`catalog.max_untagged_unverified` reuses `pa_lint`'s L3 check** rather than
   reimplementing "an unverified item with no `# UNVERIFIED` comment", so the two
   cannot drift apart.
 
-## The five cases
+## The cases
 
 | Case | Stresses | Reference output |
 |---|---|---|
@@ -145,6 +149,7 @@ A few details worth knowing:
 | [`card-grid`](../tests/evals/card-grid/notes.md) | 17 repeated rows without abbreviating; per-row state; no `Gallery` | `example-card-grid.yaml` |
 | [`shell-with-form`](../tests/evals/shell-with-form/notes.md) | the seam — three layout idioms in one coordinate space | none |
 | [`impossible-effects`](../tests/evals/impossible-effects/notes.md) | honesty: declare the limitation, or fake it | none |
+| [`multi-screen-mock`](../tests/evals/multi-screen-mock/notes.md) | a `mock-ui` folder in, one file per screen out, wired navigation | `supersub/app/scrLoanDetail.pa.yaml` |
 
 `impossible-effects` is the one that matters most and the one a scorer is least
 obviously able to check. Every effect in its mockup is listed under
@@ -154,6 +159,35 @@ produced file**, that none of the invented property names a model reaches for
 (`BoxShadow`, `BorderLeftThickness`, `Transition`, …) appear, and that the
 sanctioned substitute for the one-sided border — a thin `Rectangle` — is actually
 there, so "dropped it" and "substituted it" do not score alike.
+
+## A mockup folder: multi-screen-mock
+
+The other cases take one `mockup.html` and expect one screen back. This one takes the
+three-screen mockup `mock-ui` ships (a copy, kept identical by a test, in
+`tests/evals/multi-screen-mock/supersub/mockup/`) and expects three files back.
+
+`run_eval.py` still scores **one file per run**. Teaching it to score a folder would
+need a second shape of case: per-screen expectation blocks and a list of references in
+place of one. That is a redesign of the scorer, and this case does not attempt it.
+Instead the work is split:
+
+| What | Checked by |
+|---|---|
+| Each screen file: structure, lint verdict, control counts, no `Gallery`/`Form`, geometry, navigation to the sitemap's screens | `run_eval.py <file> --case tests/evals/multi-screen-mock`, once per file. The ranges hold for all three screens. |
+| Across the files: a control name used on two screens, a screen id defined twice, every target resolving | `pa_lint.py --app-dir <dir> --sitemap tests/evals/multi-screen-mock/supersub/mockup/sitemap.json` |
+| Three files with the right names, `PASTE-ORDER.md`, the `box-shadow` declaration on the detail screen, placeholder actions, the hand-off to `create-list` and `create-flow` | **you**, by hand, from the checklist in the case's `notes.md` |
+
+```bash
+for f in /tmp/run1/app/*.pa.yaml; do
+  python scripts/run_eval.py "$f" --case tests/evals/multi-screen-mock
+done
+python skills/create-app/scripts/pa_lint.py --app-dir /tmp/run1/app \
+    --sitemap tests/evals/multi-screen-mock/supersub/mockup/sitemap.json
+```
+
+The CI self-check scores the reference `scrLoanDetail.pa.yaml`; the unit tests score the
+other two reference screens and lint all three as one app. Like every reference here,
+they were not produced by a fresh model session.
 
 ## Comparing two runs
 
@@ -233,8 +267,9 @@ python scripts/run_eval.py          # no arguments
 ```
 
 With no arguments, the scorer runs every case that names a `reference.output` and
-scores it against that file. Three of the five do, and the reference in each case
-is one of the bundled example screens.
+scores it against that file. Four of the six do. In three of them the reference is
+one of the bundled example screens; in `multi-screen-mock` it is one of the three
+screens converted from the `mock-ui` example in the Phase 04 working session.
 
 **This exercises the scorer. It says nothing about the skill's output quality.**
 The examples were written by hand, long before the harness, and were never

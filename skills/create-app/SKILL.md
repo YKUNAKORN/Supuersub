@@ -1,14 +1,14 @@
 ---
 name: create-app
 description: >-
-  Converts an HTML/CSS mockup (Google Stitch, v0, Figma export) or a UI screenshot into
-  Power Apps Canvas source code (.pa.yaml, source schema v3.0) for "Paste code" on a blank
-  screen in Power Apps Studio. Use when someone shares an HTML mockup, UI screenshot,
-  wireframe or design export and wants a Power Apps screen, or asks to "convert this to
-  pa.yaml", "make this a Power Apps screen", or "turn this design into code I can paste
-  into Power Apps" — even without the term ".pa.yaml". Also to fix or debug a .pa.yaml
-  that failed to paste in Studio (PA1001 / PA2108), to add a new screen to an existing
-  app, or to extend a screen made this way.
+  Converts an HTML/CSS mockup (Google Stitch, v0, Figma export), a UI screenshot, or a
+  mock-ui folder (sitemap.json + screen HTML files) into Power Apps Canvas
+  source (.pa.yaml, schema v3.0), one file per screen, for "Paste code" in Power Apps
+  Studio. Use when someone shares an HTML mockup, UI screenshot, wireframe or design
+  export and wants a Power Apps screen, or asks to "convert this to pa.yaml", "make this
+  a Power Apps screen", or "turn this design into code I can paste into Power Apps" —
+  even without the term ".pa.yaml". Also to fix or debug a .pa.yaml that failed to
+  paste (PA1001 / PA2108), or to add or extend a screen in an existing app.
 ---
 
 # HTML / Image → Power Apps Canvas YAML
@@ -19,18 +19,20 @@ Paths are relative to this skill's folder: `${CLAUDE_SKILL_DIR}`, or run from th
 
 ## The workflow (in order)
 
-Two branches. **App already exists** — first
+Three branches. **App already exists** — first
 `python3 ${CLAUDE_SKILL_DIR}/scripts/app_inventory.py <src>`, then
 [`extend-existing-app.md`](references/extend-existing-app.md) alongside these steps.
 **Data-bound** — [`data-binding.md`](references/data-binding.md); none of it is
 confirmed, so hand over the matching [`assets/test-snippets/`](assets/test-snippets/).
+**`mock-ui` folder** (`sitemap.json` + screens) — read
+[`from-mock-ui.md`](references/from-mock-ui.md) first: one file per screen.
 
 1. **Read [`references/controls.yaml`](references/controls.yaml)** — the catalog of what
    works. Fresh each time; the user may have added entries since.
    [`confirmed-controls.md`](references/confirmed-controls.md) is the same facts in prose,
    plus gotchas and the paste-error table.
-2. **Pick pattern(s) from [`assets/patterns/`](assets/patterns/)** — 13 lint-clean snippets
-   extracted from the examples. Read only what you need:
+2. **Pick pattern(s) from [`assets/patterns/`](assets/patterns/)** — lint-clean snippets
+   from the examples. Read only what you need:
    `screen-shell`, `sidebar-nav-item`, `top-bar`, `card-container`, `section-header`,
    `form-field-text`, `form-field-dropdown`, `tile-grid-cell`, `badge`, `divider`,
    `avatar-row`, `footer-nav`, `two-column-split`.
@@ -71,10 +73,10 @@ DataTable…) is **unverified** — paste-test with `assets/test-snippets/` firs
 
 ## Templates
 
-Per-pattern templates are in `assets/patterns/`. These two you always need.
+You always need these two.
 
 ```yaml
-# 1. Screen wrapper — the outer shell, never a bare control
+# 1. Screen wrapper — never a bare control
 Screens:
   MyScreen:                          # letters/digits/_ only
     Properties:
@@ -85,7 +87,7 @@ Screens:
 ```
 
 ```yaml
-# 2. Container (card / panel) — the only control that nests children
+# 2. Container (card / panel) — the only control with children
 - grpCard:
     Control: GroupContainer@1.5.0
     Variant: ManualLayout            # required, or child X/Y are ignored
@@ -107,13 +109,12 @@ Screens:
 4. **Real nesting = a real nested `Children:` key.** Visual overlap in Studio does NOT nest.
 5. **Nav items are `Classic/Button@2.2.0`**, never `Label`, however plain the mockup looks.
 6. **Only catalogued controls/properties in the main file.** Anything else gets tagged and tested.
-7. **`Navigate('Target', ...)` only if `Target` exists** here — else keep the placeholder and comment on the same line that it isn't wired up. Never invent a screen name.
+7. **Real `Navigate()` only to a screen here, in the sitemap or the app.** Any other link gets one named after it: `Navigate('Requests', ScreenTransition.None)  # placeholder - no such screen`. Never `=false`.
 8. **Tag anything you're unsure of** inline: `# UNVERIFIED — <why you guessed>`, and
    **separately** hand over the isolated snippet `pa_lint.py` generates for it, labeled
-   "paste-test this one first." If it has no confirmed Power Fx equivalent at all —
-   see `impossible_css` in `controls.yaml` — say so plainly and offer the closest real
-   substitute (a thin `Rectangle` for a left border). Never drop it silently or fake a
-   property.
+   "paste-test this one first." If it has no confirmed Power Fx equivalent
+   (`impossible_css` in `controls.yaml`), say so and offer the closest real substitute
+   (a thin `Rectangle` for a left border). Never drop it silently or fake a property.
 
 Example-file defaults, to override with the mockup's real values: font
 `=Font.'Segoe UI'`; bold `=FontWeight.Bold` (confirmed on `Label` only); screen bg
@@ -129,16 +130,15 @@ Example-file defaults, to override with the mockup's real values: font
 - **On a screenshot,** compare point-by-point (position, color, size, font, border,
   radius) and name the differences; never say "looks close." Fix only what's broken.
 - **Never read a property's absence from an export as "does not support."**
+- **Name the next skills:** `create-list` (lists the screens use), `create-flow`
+  (flows their actions call).
 
 ## Pre-send checklist
 
 - [ ] `pa_lint.py` run; **zero L0/L1 errors** remain
-- [ ] Full `Screens: -> name -> Children` wrapper present
-- [ ] Every value starts with `=`; `Properties` block-style, no `{ }`
+- [ ] Rules 1–7 hold: full wrapper, `=` values, block-style, real `Children:` under
+      `ManualLayout`, nav Buttons, `Navigate()` targets exist or are commented
 - [ ] Every control type/version catalogued, or tagged `# UNVERIFIED` + given a snippet
-- [ ] Nested controls sit in a real `Children:` key; containers are `ManualLayout`
-- [ ] Nav items are `Classic/Button`, not `Label`
-- [ ] Every `Navigate()` target exists, or is a commented placeholder
 - [ ] Rows close, nothing exceeds the canvas width, screen `Height` set if content runs
       past the viewport
 - [ ] Unconfirmed items flagged; impossible ones called out with a substitute

@@ -1,0 +1,8 @@
+{
+  "description": "Linted alone: scrB is in another file. Alone, nothing is compared with the other files.",
+  "expected_exit_code": 0,
+  "expected_verdict_code": "unverified",
+  "expected_findings": [
+    {"layer": "L3", "check": "L3.navigate-target-missing"}
+  ]
+}

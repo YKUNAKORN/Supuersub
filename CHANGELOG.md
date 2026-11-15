@@ -7,8 +7,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Phase 03 of 2.0.0: the `mock-ui` skill, and the HTML contract between it and
-`create-app`.
+Phase 04 of 2.0.0: `create-app` takes a `mock-ui` mockup folder and writes one
+`.pa.yaml` per screen. Phase 03: the `mock-ui` skill, and the HTML contract between it
+and `create-app`.
+
+### Added (phase 04)
+- **`create-app` pipeline branch**, `references/from-mock-ui.md`: read `sitemap.json`
+  first (a `web` target is refused with the reason and two ways on), convert the screens
+  one at a time with the existing steps, repeat the shared chrome with per-screen names,
+  turn every `data-nav` into a real `Navigate()`, render `data-repeat`/`data-source`
+  content as static controls with the binding named in a comment (no `Gallery` or
+  `Form` while they are unattempted), give each `data-action` a placeholder `OnSelect`
+  that names it, apply the catalog's substitute for `data-unsupported`, offer theme
+  `Set()` formulas as text only, and write `PASTE-ORDER.md`.
+- **`pa_lint.py --app-dir DIR`** (or `--one-app` with files): lints the screen files of
+  one app together. New L3 checks `L3.duplicate-control-name-in-app` (a control name on
+  two screens: Studio renames the second with `_1`) and `L3.duplicate-screen-in-app`
+  (a screen id defined twice). A screen in another file of the app is a valid
+  `Navigate()` target.
+- **`pa_lint.py --sitemap PATH` and `--known-screens a,b`**: their screen ids are valid
+  `Navigate()` targets. The JSON report gains `app_checked` and `known_screens`.
+- **Eval case `multi-screen-mock`**: the `mock-ui` Kitroom example (a copy kept
+  identical by a test) and three converted screens with `PASTE-ORDER.md`. The screens
+  were written in the Phase 04 working session by following the skill, not in a fresh
+  model session. They lint `SAFE TO PASTE` as one app with the sitemap.
+- **`run_eval.py`: `navigation.sitemap`** in a case's expectations. The sitemap's screens
+  count as existing targets, for the navigation row and the lint verdict.
+- Fixtures `tests/fixtures/app/clean/` and `tests/fixtures/app/collisions/`, each screen
+  file with its single-file sidecar and each folder with a `<case>.app.expected.json`.
+- `docs/test-plan.md`, section "Multi-screen paste": four questions for Studio (does a
+  pasted screen keep its name; can a screen that navigates to a missing screen be
+  pasted; does the error clear; any `_1` after all three).
+
+### Changed (phase 04)
+- `create-app` `SKILL.md`: a third branch pointing to `from-mock-ui.md`; rule 7 accepts a
+  target in the sitemap or the app; the hand-off names `create-list` and `create-flow`;
+  the description names a mock-ui folder as input (650 characters, no trigger dropped).
+  The pre-send checklist now points at rules 1–7 instead of repeating them, to stay
+  inside the 8,192-byte budget (8,184).
+- Cross-file checks run only when the files are declared one app (`--app-dir` or
+  `--one-app`). Files passed together without the flag are linted as before: the
+  bundled patterns all use one placeholder screen name, and comparing them would be
+  wrong.
+- `validate.py` and `tests/test_run_eval.py`: a case's input may be a
+  `supersub/mockup/` folder with a `sitemap.json` instead of `mockup.html`;
+  `multi-screen-mock` is a required case (six in all).
+- Docs: `docs/evals.md` (the case, and why it is scored one file at a time),
+  `docs/troubleshooting.md`, `README.md`, `references/extend-existing-app.md`.
+
+### Evidence (phase 04)
+- Before/after eval, one blind subagent run per case and skill version (a sample of
+  one each). `app-shell`: 20 pass / 2 fail before and after, the same two rows
+  (`controls.by_type:GroupContainer` 7 > 6, and `navigation.count` 0: both runs wrote
+  `OnSelect: =false` with a comment rather than a commented `Navigate()` placeholder).
+  `impossible-effects`: 29 / 29 before and after. No row changed between versions.
+- Both `app-shell` failures were followed up:
+  - `navigation.count`: rule 7 said "keep the placeholder" without showing one, and
+    "never invent a screen name" pushed both runs to `=false`. Rule 7 now shows the
+    placeholder the skill's own examples and docs use, a commented `Navigate()` named
+    after the link, and says never `=false`.
+  - `GroupContainer` 7 > 6: the range was derived from the reference, which draws
+    glyph icons. The mockup's `.ico` is a rounded CSS square, and `GroupContainer` is
+    the only control with confirmed `Radius*`, so the range is now 1–8, with the
+    derivation in a comment.
+  - A blind re-run with the fixed skill: 22 / 22 on `app-shell`, with 4 placeholder
+    `Navigate()` calls. One run.
+
+### Not changed (phase 04)
+- No catalog entry, no check id, message or exit code. Every v1 fixture and eval
+  self-check passes with its expected file untouched. No `App:` or `DataSources:` block
+  is emitted.
 
 ### Added (phase 03)
 - **Skill `mock-ui`** (`skills/mock-ui/`). Takes a `DESIGN.md` (or, if the user declines

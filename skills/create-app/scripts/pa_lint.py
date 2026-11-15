@@ -6,6 +6,19 @@ as the compiler by pasting into Power Apps Studio and reading back errors.
 
     python3 scripts/pa_lint.py FILE [FILE...] [--catalog PATH] [--candidates PATH]
                                [--json] [--strict] [--quiet]
+    python3 scripts/pa_lint.py --app-dir DIR [--sitemap sitemap.json]
+                               [--known-screens scrA,scrB]
+
+Several files that make up ONE app (one .pa.yaml per screen, as create-app writes
+from a mock-ui mockup) are linted with --app-dir DIR, or with --one-app plus the
+files. Only then do the cross-file checks run: a control name used on two screens
+(Studio renames the second one with _1 on paste) and a screen id defined twice.
+Unrelated files passed together are never compared -- the bundled patterns all use
+the same placeholder screen name, and that is not an error.
+
+A Navigate() target resolves when it is a screen in the same file, a screen in
+another file of the same app, a screen id in --sitemap, or one of --known-screens
+(a screen already in the app, e.g. from app_inventory.py).
 
 Four layers, run in order. A layer that makes later layers meaningless stops the run:
 
@@ -591,11 +604,14 @@ def _unverified_tagged(lines, *nodes):
     return False
 
 
-def convention_layer(controls, root_node, lines, l2_findings):
+def convention_layer(controls, root_node, lines, l2_findings, known_screens=None):
     findings = []
     screens = {scalar_of(k) for k, _v in map_items(map_get(root_node, "Screens"))}
+    known = set(known_screens or ())
 
     # 1. Navigate() targets must exist, unless flagged as a placeholder in a comment.
+    #    "Exist" also covers screens the caller vouches for: another file of the same
+    #    app, the mock-ui sitemap, or a screen already in the app (--known-screens).
     for ctrl in controls:
         for name, _key_node, value_node in ctrl.properties:
             text = scalar_of(value_node) or ""
@@ -603,16 +619,21 @@ def convention_layer(controls, root_node, lines, l2_findings):
                 continue
             for match in NAVIGATE_RE.finditer(text):
                 target = next(g for g in match.groups() if g)
-                if target in screens or _line_has_comment(lines, value_node):
+                if (target in screens or target in known
+                        or _line_has_comment(lines, value_node)):
                     continue
+                detail = ("Add the screen, or keep the placeholder and comment on "
+                          "the same line that it is not wired up yet. Screens in "
+                          f"this file: {', '.join(sorted(screens)) or '(none)'}.")
+                if known:
+                    detail += (" Screens known from the app, sitemap or "
+                               f"--known-screens: {', '.join(sorted(known))}.")
                 findings.append(Finding(
                     "L3", "L3.navigate-target-missing", WARNING,
                     f"{name} navigates to {target!r}, which is not a screen in this file.",
                     path=f"{fmt_path(ctrl.path)}.Properties.{name}",
                     line=line_of(value_node),
-                    detail=("Add the screen, or keep the placeholder and comment on "
-                            "the same line that it is not wired up yet. Screens in "
-                            f"this file: {', '.join(sorted(screens)) or '(none)'}."),
+                    detail=detail,
                 ))
 
     # 2. Duplicate control names within one screen (Studio renames these silently).
@@ -682,7 +703,7 @@ def convention_layer(controls, root_node, lines, l2_findings):
 # ------------------------------------------------------------------------ orchestration
 
 
-def lint_file(path: Path, catalog: Catalog, schema, candidates=None):
+def lint_file(path: Path, catalog: Catalog, schema, candidates=None, known_screens=None):
     text = path.read_text(encoding="utf-8-sig")
     lines = text.splitlines()
 
@@ -700,10 +721,26 @@ def lint_file(path: Path, catalog: Catalog, schema, candidates=None):
             controls = list(walk_controls(root_node))
             l2 = catalog_layer(controls, catalog, candidates)
             findings += l2
-            findings += convention_layer(controls, root_node, lines, l2)
+            findings += convention_layer(controls, root_node, lines, l2, known_screens)
 
-    errors = sum(1 for f in findings if f.severity == ERROR)
-    warnings = sum(1 for f in findings if f.severity == WARNING)
+    return _report(path, findings, degraded)
+
+
+def _report(path: Path, findings, degraded):
+    return _settle({
+        "path": path.as_posix(),
+        "findings": [f.as_dict() for f in findings],
+        "degraded": degraded,
+    })
+
+
+def _settle(report):
+    """Count findings and set the verdict. Run again after app-level findings are
+    added to a file, so the verdict always matches the findings it lists."""
+    findings = report["findings"]
+    degraded = report["degraded"]
+    errors = sum(1 for f in findings if f["severity"] == ERROR)
+    warnings = sum(1 for f in findings if f["severity"] == WARNING)
 
     if errors:
         code, verdict = "will_fail", f"VERDICT: WILL FAIL — {errors} blocking error(s)"
@@ -719,14 +756,118 @@ def lint_file(path: Path, catalog: Catalog, schema, candidates=None):
         code, verdict = "safe", "VERDICT: SAFE TO PASTE"
 
     return {
-        "path": path.as_posix(),
-        "findings": [f.as_dict() for f in findings],
+        "path": report["path"],
+        "findings": findings,
         "errors": errors,
         "warnings": warnings,
         "verdict": verdict,
         "verdict_code": code,
         "degraded": degraded,
     }
+
+
+# ------------------------------------------------- app level: several files, one app
+#
+# create-app writes one .pa.yaml per screen. Each file is pasted on its own blank
+# screen, but the names land in one app, where Studio requires them to be unique:
+# a second control with a name already taken is renamed with _1 on paste, without an
+# error. These checks compare the files with each other. They only run when the
+# caller says the files are one app (--app-dir or --one-app).
+
+
+def _composed_root(path: Path):
+    """The composed tree of a file, or None when it does not parse."""
+    try:
+        text = path.read_text(encoding="utf-8-sig")
+    except OSError:
+        return None
+    if scan_flow_style_rgba(text.splitlines()):
+        return None
+    try:
+        return yaml.compose(text)
+    except yaml.YAMLError:
+        return None
+
+
+def app_screens(paths):
+    """Every screen id defined across the files, for Navigate() resolution."""
+    screens = set()
+    for path in paths:
+        root = _composed_root(path)
+        if root is not None:
+            screens.update(scalar_of(k) for k, _v in map_items(map_get(root, "Screens")))
+    return screens
+
+
+def app_layer(paths):
+    """{path: [Finding]} for names that collide across the app.
+
+    A finding is attached to the LATER occurrence, in argument order (sorted file
+    names under --app-dir), and names where the first one is.
+    """
+    out = {}
+    screen_home = {}    # screen id -> (file, line)
+    control_home = {}   # control name -> (file, screen, line)
+    for path in paths:
+        root = _composed_root(path)
+        if root is None:
+            continue   # its own L0 finding already says why
+        found = out.setdefault(path, [])
+        for screen_key, screen_node in map_items(map_get(root, "Screens")):
+            screen = scalar_of(screen_key)
+            if screen in screen_home:
+                first_file, first_line = screen_home[screen]
+                found.append(Finding(
+                    "L3", "L3.duplicate-screen-in-app", WARNING,
+                    f"Screen {screen!r} is also defined in {first_file}.",
+                    path=fmt_path(["Screens", screen]), line=line_of(screen_key),
+                    detail=(f"First defined at {first_file} line {first_line}. One app "
+                            "has one screen per name: keep one file per screen and "
+                            "delete or rename the other. Its controls are not compared "
+                            "again, so the name collisions it causes are not listed "
+                            "twice."),
+                ))
+                continue
+            screen_home[screen] = (path.as_posix(), line_of(screen_key))
+            base = ["Screens", screen]
+            for ctrl in _walk_children(map_get(screen_node, "Children"),
+                                       screen, base, None, None):
+                home = control_home.get(ctrl.name)
+                if home is None:
+                    control_home[ctrl.name] = (path.as_posix(), screen,
+                                               line_of(ctrl.name_node))
+                    continue
+                first_file, first_screen, first_line = home
+                if first_screen == screen and first_file == path.as_posix():
+                    continue   # same screen: L3.duplicate-control-name reports it
+                found.append(Finding(
+                    "L3", "L3.duplicate-control-name-in-app", WARNING,
+                    f"Control name {ctrl.name!r} on screen {screen!r} is already used "
+                    f"on screen {first_screen!r}.",
+                    path=fmt_path(ctrl.path), line=line_of(ctrl.name_node),
+                    detail=(f"First used in {first_file} line {first_line}. Control "
+                            "names are unique across the whole app, not per screen: "
+                            "Studio renames this one with _1 on paste, without an "
+                            "error, and every formula that refers to it by the name "
+                            "you wrote points at the other screen's control. Put the "
+                            "screen in the name (lblLoanListTitle)."),
+                ))
+    return out
+
+
+def load_sitemap_screens(path: Path):
+    """Screen ids listed in a mock-ui sitemap.json. Raises ValueError with a sentence."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8-sig"))
+    except OSError as exc:
+        raise ValueError(f"cannot read sitemap {path}: {exc}") from exc
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"sitemap {path} is not valid JSON: {exc}") from exc
+    screens = data.get("screens") if isinstance(data, dict) else None
+    if not isinstance(screens, list):
+        raise ValueError(f"sitemap {path} has no 'screens' list")
+    ids = [s.get("id") for s in screens if isinstance(s, dict)]
+    return {i for i in ids if isinstance(i, str) and i}
 
 
 LAYER_TITLES = {
@@ -785,7 +926,21 @@ def main(argv=None):
         description="Verify a Power Apps Canvas .pa.yaml offline, before it reaches "
                     "Power Apps Studio.",
     )
-    parser.add_argument("files", nargs="+", type=Path, help=".pa.yaml file(s) to check")
+    parser.add_argument("files", nargs="*", type=Path, help=".pa.yaml file(s) to check")
+    parser.add_argument("--app-dir", type=Path,
+                        help="lint every *.pa.yaml in DIR as the screens of ONE app, "
+                             "with the cross-file checks (control names unique across "
+                             "the app, no screen id defined twice)")
+    parser.add_argument("--one-app", action="store_true",
+                        help="treat the FILES given as the screens of one app: the "
+                             "same cross-file checks as --app-dir")
+    parser.add_argument("--sitemap", type=Path,
+                        help="a mock-ui sitemap.json; its screen ids count as existing "
+                             "Navigate() targets")
+    parser.add_argument("--known-screens", default="",
+                        help="comma-separated screen ids that already exist in the app "
+                             "(for example from app_inventory.py); they count as "
+                             "existing Navigate() targets")
     parser.add_argument("--catalog", type=Path, default=DEFAULT_CATALOG,
                         help="path to controls.yaml (default: the bundled catalog)")
     parser.add_argument("--candidates", type=Path, default=DEFAULT_CANDIDATES,
@@ -798,6 +953,28 @@ def main(argv=None):
     parser.add_argument("--quiet", action="store_true",
                         help="print only the verdict line(s)")
     args = parser.parse_args(argv)
+
+    files = list(args.files)
+    if args.app_dir is not None:
+        if not args.app_dir.is_dir():
+            print(f"ERROR: no such directory: {args.app_dir}", file=sys.stderr)
+            return 2
+        found = sorted(args.app_dir.glob("*.pa.yaml"))
+        if not found:
+            print(f"ERROR: no *.pa.yaml files in {args.app_dir}", file=sys.stderr)
+            return 2
+        files += [p for p in found if p not in files]
+    if not files:
+        parser.error("give at least one .pa.yaml file, or --app-dir DIR")
+    one_app = args.one_app or args.app_dir is not None
+
+    known = {s.strip() for s in args.known_screens.split(",") if s.strip()}
+    if args.sitemap is not None:
+        try:
+            known |= load_sitemap_screens(args.sitemap)
+        except ValueError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 2
 
     if not args.json:
         try:
@@ -821,12 +998,25 @@ def main(argv=None):
             print(f"ERROR: cannot read schema {SCHEMA_PATH}: {exc}", file=sys.stderr)
             return 2
 
-    reports = []
-    for path in args.files:
+    for path in files:
         if not path.is_file():
             print(f"ERROR: no such file: {path}", file=sys.stderr)
             return 2
-        reports.append(lint_file(path, catalog, schema, candidates))
+
+    # Screens in the other files of the same app are real Navigate() targets.
+    if one_app:
+        known |= app_screens(files)
+
+    reports = []
+    for path in files:
+        reports.append(lint_file(path, catalog, schema, candidates, known or None))
+
+    if one_app:
+        extra = app_layer(files)
+        for path, report in zip(files, reports):
+            if extra.get(path):
+                report["findings"] += [f.as_dict() for f in extra[path]]
+                report.update(_settle(report))
 
     total_errors = sum(r["errors"] for r in reports)
     total_warnings = sum(r["warnings"] for r in reports)
@@ -847,6 +1037,8 @@ def main(argv=None):
             "candidate_ids": args.candidates.as_posix(),
             "studio_version_tested": catalog.studio_version,
             "schema_checked": schema is not None,
+            "app_checked": one_app,
+            "known_screens": sorted(known),
             "files": reports,
             "summary": {
                 "files": len(reports),
@@ -863,6 +1055,9 @@ def main(argv=None):
         print()
         print(f"SUMMARY: {len(reports)} files, {total_errors} error(s), "
               f"{total_warnings} warning(s)")
+        if one_app:
+            print("APP: files linted as one app -- control names compared across "
+                  "screens, screen ids checked for duplicates.")
     return exit_code
 
 

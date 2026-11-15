@@ -93,8 +93,10 @@ Two things break when a rename happens behind your back:
 - The names you hand back in your explanation no longer match the names in the app,
   so every follow-up instruction is wrong.
 
-`pa_lint.py` catches duplicates *within your file* (`L3.duplicate-control-name`). It
-cannot see the host app, so collisions against the host are entirely on this step.
+`pa_lint.py` catches duplicates *within your file* (`L3.duplicate-control-name`), and
+across several new files of one app with `--app-dir DIR`
+(`L3.duplicate-control-name-in-app`). It cannot see the host app, so collisions
+against the host are entirely on this step.
 
 **Prevents:** silent `_1` renames and the broken cross-control references that follow.
 
@@ -118,7 +120,9 @@ OnSelect: =Navigate(ScrPlaceholder)  # not wired up - no such screen in this app
 ```
 
 `pa_lint.py` enforces exactly this at `L3.navigate-target-missing`, and the trailing
-comment is what tells it the placeholder is deliberate. Screen names are also
+comment is what tells it the placeholder is deliberate. Pass the inventory's screens
+with `--known-screens scrHome,scrRequestList` and a `Navigate()` to one of them needs
+no comment: the linter then knows they exist. Screen names are also
 case-sensitive and also collide: a new screen called `Home` in an app that already has
 `Home` becomes `Home_1`, and every `Navigate(Home)` in your file then points at the old
 one.

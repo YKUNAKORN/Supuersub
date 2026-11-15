@@ -135,11 +135,19 @@ The comment is not decoration. `L3.navigate-target-missing` treats a commented
 placeholder as deliberate and an uncommented one as a dangling link, which is the
 only mechanical difference between the two.
 
+A target in another file is not dangling when the linter is told about it. For the
+screens converted from a `mock-ui` mockup, lint them together:
+`pa_lint.py --app-dir supersub/app --sitemap supersub/mockup/sitemap.json`. For
+screens already in the app, pass `--known-screens scrHome,scrSettings`.
+
 ### A control got renamed to `name_1`
 
-Two controls in one screen had the same name. Studio renames the second silently
-on paste — no error, no warning. `L3.duplicate-control-name` catches it before
-that happens.
+Two controls with the same name. Studio renames the second silently on paste — no
+error, no warning. `L3.duplicate-control-name` catches it within one screen;
+`L3.duplicate-control-name-in-app` catches it across the screen files of one app,
+when they are linted with `--app-dir` (or with `--one-app` and the files).
+`L3.duplicate-screen-in-app` is the same problem one level up: one screen id defined
+in two files.
 
 ### Pasting into an app that already exists went subtly wrong
 

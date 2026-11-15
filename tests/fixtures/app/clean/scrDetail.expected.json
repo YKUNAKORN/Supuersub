@@ -1,0 +1,8 @@
+{
+  "description": "Linted alone: scrHome and scrSettings are not in this file. As an app with the sitemap, both resolve.",
+  "expected_exit_code": 0,
+  "expected_verdict_code": "unverified",
+  "expected_findings": [
+    {"layer": "L3", "check": "L3.navigate-target-missing"}
+  ]
+}

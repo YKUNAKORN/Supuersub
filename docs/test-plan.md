@@ -93,6 +93,35 @@ DataSources: block survives a Studio round-trip?   yes / no / not applicable  __
    non-Screens block at all is a separate, untested question)
 ```
 
+## Multi-screen paste
+
+`create-app` turns a `mock-ui` mockup into one `.pa.yaml` per screen, with `Navigate()`
+between them. Each file pastes onto its own blank screen. Two things about putting
+several of them into one app are **unverified**, and until they are settled the
+skill's `PASTE-ORDER.md` tells the user to create every screen before judging any
+`Navigate()` error.
+
+Use the three screens in
+[`tests/evals/multi-screen-mock/supersub/app/`](../tests/evals/multi-screen-mock/supersub/app/)
+(they lint `SAFE TO PASTE` and navigate to each other) in a **new, empty** app.
+
+| # | Question | How to test | Answer | Studio version | Date |
+|---|---|---|---|---|---|
+| M1 | Does a pasted screen keep the name under `Screens:` (`scrNewLoan`), or does Studio keep its own (`Screen2`)? | Add a blank screen, paste `scrNewLoan.pa.yaml`, read the name in the tree view. | | | |
+| M2 | Can a screen be pasted when its `Navigate()` names a screen that does not exist yet? | In the same app, before any other screen: was M1's paste blocked, accepted with a warning, or accepted with a formula error on the nav buttons? Copy Studio's exact words. | | | |
+| M3 | Does that formula error clear once the target screen is pasted? | Paste `scrLoanList.pa.yaml` onto a second blank screen. Do the errors on `scrNewLoan`'s Loans and Cancel buttons go away by themselves, or only after the formula is edited? | | | |
+| M4 | After all three, does any control name end in `_1`? | Paste `scrLoanDetail.pa.yaml`, then search the tree view for `_1`. Expected: none, because the three files share no control name. | | | |
+
+What each answer changes:
+
+- **M1 no** (Studio keeps its own name): `PASTE-ORDER.md` must tell the user to rename
+  every screen to its id before anything navigates, and `from-mock-ui.md` should say so
+  as a fact, not a check.
+- **M2 blocked**: the paste order becomes a dependency order (targets first), and a
+  cycle such as list ↔ detail needs a placeholder on one side, wired after both exist.
+- **M2 accepted and M3 yes**: the order does not matter; drop "create every screen
+  first" from `PASTE-ORDER.md`.
+
 ## Feeding a result back into the catalog
 
 A result becomes durable only when it lands in
